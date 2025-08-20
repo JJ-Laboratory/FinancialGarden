@@ -166,6 +166,7 @@
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2WSJ3W54FF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FIG/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -199,6 +200,7 @@
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2WSJ3W54FF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FIG/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
