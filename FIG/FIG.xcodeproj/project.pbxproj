@@ -27,11 +27,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		B59846D62E56E86500DEB52A /* Exceptions for "FIG" folder in "Compile Sources" phase from "FIG" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = B5983F7D2E5445DD00DEB52A /* Sources */;
+			membershipExceptions = (
+				FIG.entitlements,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B5983F832E5445DD00DEB52A /* FIG */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				B5983F972E5445DF00DEB52A /* Exceptions for "FIG" folder in "FIG" target */,
+				B59846D62E56E86500DEB52A /* Exceptions for "FIG" folder in "Compile Sources" phase from "FIG" target */,
 			);
 			path = FIG;
 			sourceTree = "<group>";
