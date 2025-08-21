@@ -27,11 +27,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		B59846D62E56E86500DEB52A /* Exceptions for "FIG" folder in "Compile Sources" phase from "FIG" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = B5983F7D2E5445DD00DEB52A /* Sources */;
+			membershipExceptions = (
+				FIG.entitlements,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B5983F832E5445DD00DEB52A /* FIG */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				B5983F972E5445DF00DEB52A /* Exceptions for "FIG" folder in "FIG" target */,
+				B59846D62E56E86500DEB52A /* Exceptions for "FIG" folder in "Compile Sources" phase from "FIG" target */,
 			);
 			path = FIG;
 			sourceTree = "<group>";
@@ -166,6 +177,7 @@
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2WSJ3W54FF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FIG/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -199,6 +211,7 @@
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2WSJ3W54FF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FIG/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
