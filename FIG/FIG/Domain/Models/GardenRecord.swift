@@ -10,4 +10,9 @@ import Foundation
 struct GardenRecord {
     let totlaSeeds: Int
     let totalFruits: Int
+
+    init(totlaSeeds: Int = 0, totalFruits: Int = 0) {
+        self.totlaSeeds = totlaSeeds
+        self.totalFruits = totalFruits
+    }
 }
