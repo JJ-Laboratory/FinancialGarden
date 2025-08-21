@@ -27,7 +27,7 @@ final class CoreDataService {
         // 데이터 변경 있을 경우 알림
         storeDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         
-        container.loadPersistentStores { storeDescription, error in
+        container.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 self.logger.error("❌ Core Data 로드 실패: \(error, privacy: .public)")
                 self.logger.debug("Error UserInfo: \(error.userInfo, privacy: .private)")
@@ -58,10 +58,10 @@ final class CoreDataService {
                 return Disposables.create()
             }
             
-            let context = context ?? self.mainContext
+            let context = context ?? mainContext
             
             if context.hasChanges {
-                self.logger.debug("🧪 변경사항 저장 시작")
+                logger.debug("🧪 변경사항 저장 시작")
                 
                 do {
                     try context.save()
@@ -70,16 +70,16 @@ final class CoreDataService {
                     let insertedCount = context.insertedObjects.count
                     let updatedCount = context.updatedObjects.count
                     let deletedCount = context.deletedObjects.count
-                    self.logger.info("✅ 저장 완료 - 추가: \(insertedCount), 수정: \(updatedCount), 삭제: \(deletedCount)")
+                    logger.info("✅ 저장 완료 - 추가: \(insertedCount), 수정: \(updatedCount), 삭제: \(deletedCount)")
                     
                     observer.onNext(())
                     observer.onCompleted()
                 } catch {
-                    self.logger.error("❌ 저장 실패: \(error.localizedDescription, privacy: .public)")
+                    logger.error("❌ 저장 실패: \(error.localizedDescription, privacy: .public)")
                     observer.onError(CoreDataError.saveFailed(error))
                 }
             } else {
-                self.logger.debug("🧪 변경사항 없음")
+                logger.debug("🧪 변경사항 없음")
                 observer.onNext(())
                 observer.onCompleted()
             }
@@ -103,7 +103,7 @@ final class CoreDataService {
             }
             
             let entityName = String(describing: entityType)
-            self.logger.debug("🧪 Fetch 시작 - Entity: \(entityName, privacy: .public)")
+            logger.debug("🧪 Fetch 시작 - Entity: \(entityName, privacy: .public)")
             
             let fetchRequest = NSFetchRequest<T>(entityName: entityName)
             fetchRequest.predicate = predicate
@@ -114,13 +114,13 @@ final class CoreDataService {
             }
             
             do {
-                let results = try self.mainContext.fetch(fetchRequest)
-                self.logger.info("✅ Fetch 성공 - \(entityName): \(results.count)개")
+                let results = try mainContext.fetch(fetchRequest)
+                logger.info("✅ Fetch 성공 - \(entityName): \(results.count)개")
                 
                 observer.onNext(results)
                 observer.onCompleted()
             } catch {
-                self.logger.error("❌ Fetch 실패 - \(entityName): \(error.localizedDescription, privacy: .public)")
+                logger.error("❌ Fetch 실패 - \(entityName): \(error.localizedDescription, privacy: .public)")
                 observer.onError(CoreDataError.fetchFailed(error))
             }
             return Disposables.create()
@@ -138,12 +138,12 @@ final class CoreDataService {
             }
             
             let entityName = String(describing: type(of: object))
-            self.logger.debug("🧪 Delete 시작 - Entity: \(entityName, privacy: .public)")
+            logger.debug("🧪 Delete 시작 - Entity: \(entityName, privacy: .public)")
             
-            self.mainContext.delete(object)
+            mainContext.delete(object)
             
-            return self.save()
-                .subscribe (
+            return save()
+                .subscribe(
                     onNext: {
                         self.logger.info("✅ Delete 성공 - \(entityName)")
                         observer.onNext(())
