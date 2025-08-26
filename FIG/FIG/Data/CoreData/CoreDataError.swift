@@ -25,7 +25,7 @@ enum CoreDataError: LocalizedError {
             return "🧪 Delete failed: \(error.localizedDescription)"
         case .contextNotAvailable:
             return "🧪 Context not available"
-            case .entityNotFound:
+        case .entityNotFound:
             return "🧪 Entity not found"
         case .invalidDate:
             return "🧪 Invalid date"

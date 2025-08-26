@@ -16,7 +16,6 @@ final class TransactionRepository: TransactionRepositoryInterface {
     private let categoryService: CategoryService
     private let logger = Logger.transaction
     
-    
     init(
         coreDataService: CoreDataService = .shared,
         categoryService: CategoryService = .shared
@@ -32,7 +31,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
                 return Disposables.create()
             }
             
-            let context = self.coreDataService.mainContext
+            let context = coreDataService.mainContext
             let entity = TransactionEntity(context: context)
             
             entity.id = transaction.id
@@ -43,7 +42,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
             entity.date = transaction.date
             entity.memo = transaction.memo
             
-            return self.coreDataService.save()
+            return coreDataService.save()
                 .map { _ in
                     self.logger.info("✅ 거래 저장완: \(transaction.title)")
                     return transaction
@@ -87,7 +86,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
         .map { [weak self] entities -> [Transaction] in
             guard let self = self else { return [] }
             let transactions = entities.compactMap { self.toModel($0) }
-            self.logger.info("✅ \(year). \(month)월의 내역 개수: \(transactions.count)")
+            logger.info("✅ \(year). \(month)월의 내역 개수: \(transactions.count)")
             return transactions
         }
     }
@@ -102,7 +101,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
                 }
                 
                 guard let entity = entities.first else {
-                    self.logger.error("❌ 수정 내역을 찾을수 없음 \(transaction.id)")
+                    logger.error("❌ 수정 내역을 찾을수 없음 \(transaction.id)")
                     return Observable.error(CoreDataError.entityNotFound)
                 }
                 
@@ -113,7 +112,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
                 entity.date = transaction.date
                 entity.memo = transaction.memo
                 
-                return self.coreDataService.save()
+                return coreDataService.save()
                     .map { _ in
                         self.logger.info("✅ 수정 완: \(transaction.title)")
                         return transaction
@@ -131,11 +130,11 @@ final class TransactionRepository: TransactionRepositoryInterface {
                 }
                 
                 guard let entity = entities.first else {
-                    self.logger.error("❌ 삭제할 내역을 찾을수 없음 \(id)")
+                    logger.error("❌ 삭제할 내역을 찾을수 없음 \(id)")
                     return Observable.error(CoreDataError.entityNotFound)
                 }
                 
-                return self.coreDataService.delete(entity)
+                return coreDataService.delete(entity)
                     .do { _ in
                         self.logger.info("✅ 삭제 완")
                     }
@@ -148,7 +147,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
               let date = entity.date,
               let paymentMethodString = entity.paymentMethod,
               let paymentMethod = PaymentMethod(rawValue: paymentMethodString),
-              let categoryID = entity.categoryID else   {
+              let categoryID = entity.categoryID else {
             logger.warning("❌ Failed to transform TransactionEntity to Transaction")
             return nil
         }
