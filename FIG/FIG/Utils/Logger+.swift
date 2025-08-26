@@ -13,4 +13,5 @@ extension Logger {
     
     static let coreData = Logger(subsystem: subsystem, category: "CoreData")
     static let category = Logger(subsystem: subsystem, category: "CategoryService")
+    static let transaction = Logger(subsystem: subsystem, category: "TransactionRepository")
 }

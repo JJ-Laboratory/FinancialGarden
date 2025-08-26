@@ -18,14 +18,21 @@ final class CategoryService {
     static let shared = CategoryService()
     private let logger = Logger.category
     
-    private var categoriesRelay = BehaviorRelay<[Category]>(value: [])
-    
-    var categories: Observable<[Category]> {
-        return categoriesRelay.asObservable()
-    }
+    private var categories: [Category] = []
+    private var categoryDict: [UUID: Category] = [:]
     
     private init() {
         loadCategories()
+    }
+    
+    /// 모든 카테고리 가져오기
+    func fetchAllCategories() -> [Category] {
+        return categories
+    }
+    
+    /// ID로 카테고리 가져오기
+    func fetchCategoryByID(_ id: UUID) -> Category? {
+        return categoryDict[id]
     }
     
     private func loadCategories() {
@@ -38,31 +45,13 @@ final class CategoryService {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let response = try decoder.decode(CategoryResponse.self, from: data)
-            categoriesRelay.accept(response.categories)
+            self.categories = response.categories
+            self.categoryDict = Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0) })
+            logger.info("✅ 카테고리 로드 완: \(self.categories.count)")
         } catch {
             logger.error("❌ defaultCategories json parsing 실패: \(error)")
-            categoriesRelay.accept([])
+            self.categories = []
+            self.categoryDict = [:]
         }
-    }
-    
-    /// 모든 카테고리 가져오기
-    func fetchAllCategories() -> Observable<[Category]> {
-        return categories
-    }
-    
-    /// ID로 카테고리 가져오기
-    func fetchCategory(by id: UUID) -> Observable<Category?> {
-        return categories
-            .map { categories in
-                categories.first { $0.id == id }
-            }
-    }
-    
-    /// 타입 별 카테고리 가져오기
-    func fetchCategories(by type: TransactionType) -> Observable<Category?> {
-        return categories
-            .map { categories in
-                categories.first { $0.transactionType == type }
-            }
     }
 }
