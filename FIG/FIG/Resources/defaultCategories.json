@@ -1,0 +1,142 @@
+{
+    "categories": [
+        {
+            "id": "00000000-0000-0000-0000-000000000001",
+            "title": "식비",
+            "iconName": "fork.knife",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000002",
+            "title": "카페・간식",
+            "iconName": "cup.and.heat.waves.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000003",
+            "title": "편의점・마트・잡화",
+            "iconName": "cart.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000004",
+            "title": "술・유흥",
+            "iconName": "wineglass.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000005",
+            "title": "쇼핑",
+            "iconName": "bag.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "title": "취미・여가",
+            "iconName": "gamecontroller.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000007",
+            "title": "의료・건강・피트니스",
+            "iconName": "plus.square.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000008",
+            "title": "주거・통신",
+            "iconName": "house.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000009",
+            "title": "보험・세금・기타금융",
+            "iconName": "doc.text.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000010",
+            "title": "미용",
+            "iconName": "sparkles",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000011",
+            "title": "교통・자동차",
+            "iconName": "car.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000012",
+            "title": "여행・숙박",
+            "iconName": "airplane",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000013",
+            "title": "교육",
+            "iconName": "book.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000014",
+            "title": "생활",
+            "iconName": "washer.fill",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000015",
+            "title": "기부・후원",
+            "iconName": "gift",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000016",
+            "title": "기타 지출",
+            "iconName": "ellipsis.circle",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000017",
+            "title": "ATM출금",
+            "iconName": "banknote",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000018",
+            "title": "이체",
+            "iconName": "arrow.left.arrow.right",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000019",
+            "title": "카드대금",
+            "iconName": "creditcard",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000020",
+            "title": "저축・투자",
+            "iconName": "chart.line.uptrend.xyaxis",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000021",
+            "title": "후불결제대금",
+            "iconName": "clock.arrow.circlepath",
+            "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000022",
+            "title": "급여(수입)",
+            "iconName": "wonsign.arrow.trianglehead.counterclockwise.rotate.90",
+            "transactionType": "income"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000023",
+            "title": "기타 수입",
+            "iconName": "plus.circle",
+            "transactionType": "income"
+        }
+    ]
+}

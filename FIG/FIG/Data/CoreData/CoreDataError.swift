@@ -12,6 +12,8 @@ enum CoreDataError: LocalizedError {
     case saveFailed(Error)
     case deleteFailed(Error)
     case contextNotAvailable
+    case entityNotFound
+    case invalidDate
     
     var errorDescription: String? {
         switch self {
@@ -23,6 +25,10 @@ enum CoreDataError: LocalizedError {
             return "🧪 Delete failed: \(error.localizedDescription)"
         case .contextNotAvailable:
             return "🧪 Context not available"
+        case .entityNotFound:
+            return "🧪 Entity not found"
+        case .invalidDate:
+            return "🧪 Invalid date"
         }
     }
 }

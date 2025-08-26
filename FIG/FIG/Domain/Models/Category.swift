@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum TransactionType: CaseIterable {
+enum TransactionType: String, CaseIterable, Codable {
     case income
     case expense
     
@@ -21,24 +21,13 @@ enum TransactionType: CaseIterable {
     }
 }
 
-struct Category {
+struct Category: Codable {
     let id: UUID
     let title: String
     let iconName: String
     let transactionType: TransactionType
-    let isDefault: Bool
-
-    init(
-        id: UUID = UUID(),
-        title: String,
-        iconName: String,
-        transactionType: TransactionType,
-        isDefault: Bool = false
-    ) {
-        self.id = id
-        self.title = title
-        self.iconName = iconName
-        self.transactionType = transactionType
-        self.isDefault = isDefault
-    }
+    
+    enum CodingKeys: String, CodingKey {
+            case id, title, iconName, transactionType
+        }
 }

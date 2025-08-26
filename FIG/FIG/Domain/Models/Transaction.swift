@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum PaymentMethod {
+enum PaymentMethod: String, CaseIterable {
     case cash
     case card
     case account
