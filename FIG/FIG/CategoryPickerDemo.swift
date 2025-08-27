@@ -24,7 +24,6 @@ final class CategoryPickerDemo: UIViewController {
     private let resultLabel = UILabel().then {
         $0.text = "선택된 카테고리: 없음"
         $0.font = .preferredFont(forTextStyle: .title3)
-        $0.adjustsFontForContentSizeCategory = true
         $0.textAlignment = .center
         $0.numberOfLines = 0
         $0.textColor = .secondaryLabel
@@ -75,4 +74,9 @@ final class CategoryPickerDemo: UIViewController {
             }
             .disposed(by: disposeBag)
     }
+}
+
+@available(iOS 17.0, *)
+#Preview {
+    CategoryPickerDemo()
 }

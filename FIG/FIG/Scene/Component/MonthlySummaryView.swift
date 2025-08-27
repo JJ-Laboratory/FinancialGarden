@@ -32,7 +32,6 @@ final class MonthlySummaryView: UIView {
     
     private let expenseTitleLabel = UILabel().then {
         $0.font = UIFont.preferredFont(forTextStyle: .body)
-        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = .gray
         $0.text = "지출"
         $0.setContentHuggingPriority(.required, for: .horizontal)
@@ -40,7 +39,6 @@ final class MonthlySummaryView: UIView {
     
     private let expenseAmountLabel = UILabel().then {
         $0.font = .preferredFont(forTextStyle: .title2).withWeight(.bold)
-        $0.adjustsFontForContentSizeCategory = true
         $0.textAlignment = .right
         $0.textColor = .darkGray
         $0.text = "0원"
@@ -55,7 +53,6 @@ final class MonthlySummaryView: UIView {
     
     private let incomeTitleLabel = UILabel().then {
         $0.font = UIFont.preferredFont(forTextStyle: .body)
-        $0.adjustsFontForContentSizeCategory = true
         $0.textColor = .gray
         $0.text = "수입"
         $0.setContentHuggingPriority(.required, for: .horizontal)
@@ -63,7 +60,6 @@ final class MonthlySummaryView: UIView {
     
     private let incomeAmountLabel = UILabel().then {
         $0.font = .preferredFont(forTextStyle: .title2).withWeight(.bold)
-        $0.adjustsFontForContentSizeCategory = true
         $0.textAlignment = .right
         $0.textColor = .primary
         $0.text = "0원"
