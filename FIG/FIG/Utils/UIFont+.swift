@@ -8,10 +8,15 @@
 import UIKit
 
 extension UIFont {
-    static func preferredFont(for style: TextStyle, weight: Weight) -> UIFont {
-        let metrics = UIFontMetrics(forTextStyle: style)
-        let descriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: style)
-        let font = UIFont.systemFont(ofSize: descriptor.pointSize, weight: weight)
-        return metrics.scaledFont(for: font)
+    func withWeight(_ weight: UIFont.Weight) -> UIFont {
+      guard let textStyle = fontDescriptor.fontAttributes[UIFontDescriptor.AttributeName.textStyle] as? UIFont.TextStyle else {
+        return self
+      }
+        let traitCollection = UITraitCollection(preferredContentSizeCategory: .large)
+      let descriptor = UIFontDescriptor.preferredFontDescriptor(withTextStyle: textStyle, compatibleWith: traitCollection)
+      return UIFontMetrics(forTextStyle: textStyle).scaledFont(
+        for: .systemFont(ofSize: descriptor.pointSize, weight: weight),
+        compatibleWith: nil
+      )
     }
 }
