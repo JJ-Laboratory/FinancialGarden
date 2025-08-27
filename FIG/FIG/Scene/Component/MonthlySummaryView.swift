@@ -39,7 +39,7 @@ final class MonthlySummaryView: UIView {
     }
     
     private let expenseAmountLabel = UILabel().then {
-        $0.font = .preferredFont(for: .title2, weight: .bold)
+        $0.font = .preferredFont(forTextStyle: .title2).withWeight(.bold)
         $0.adjustsFontForContentSizeCategory = true
         $0.textAlignment = .right
         $0.textColor = .darkGray
@@ -62,7 +62,7 @@ final class MonthlySummaryView: UIView {
     }
     
     private let incomeAmountLabel = UILabel().then {
-        $0.font = .preferredFont(for: .title2, weight: .bold)
+        $0.font = .preferredFont(forTextStyle: .title2).withWeight(.bold)
         $0.adjustsFontForContentSizeCategory = true
         $0.textAlignment = .right
         $0.textColor = .primary

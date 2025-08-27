@@ -35,6 +35,11 @@ final class CategoryService {
         return categoryDict[id]
     }
     
+    /// 타입 별 카테고리 가져오기
+    func fetchCategoriesByType(_ type: TransactionType) -> [Category] {
+        return categories.filter { $0.transactionType == type }
+    }
+    
     private func loadCategories() {
         guard let url = Bundle.main.url(forResource: "defaultCategories", withExtension: "json") else {
             logger.error("❌ defaultCategories json 파일 찾을 수 없음")
