@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-class popupViewController: UIViewController {
+class PopupViewController: UIViewController {
     
     private let popupView: PopupView
     private let popupTransitioningDelegate = PopupTransitioningDelegate()
