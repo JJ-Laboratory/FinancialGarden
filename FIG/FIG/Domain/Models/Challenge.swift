@@ -10,7 +10,7 @@ import Foundation
 enum ChallengeDuration: Int, CaseIterable {
     case week = 7
     case month = 30
-
+    
     var title: String {
         switch self {
         case .week:
@@ -19,7 +19,7 @@ enum ChallengeDuration: Int, CaseIterable {
             return "한달"
         }
     }
-
+    
     var requiredSeed: Int {
         switch self {
         case .week:
@@ -41,7 +41,7 @@ struct Challenge {
     let targetFruitsCount: Int
     let isCompleted: Bool
     let isSuccess: Bool
-
+    
     init(
         id: UUID = UUID(),
         category: Category,
@@ -64,5 +64,31 @@ struct Challenge {
         self.targetFruitsCount = targetFruitsCount
         self.isCompleted = isCompleted
         self.isSuccess = isSuccess
+    }
+}
+
+enum ChallengeType {
+    case success
+    case failure
+    
+    var title: String {
+        switch self {
+        case .success: return "챌린지 성공!"
+        case .failure: return "챌린지 실패!"
+        }
+    }
+    
+    var message: String {
+        switch self {
+        case .success: return "개의 열매를 수확했어요"
+        case .failure: return "개의 씨앗이 소멸되었어요"
+        }
+    }
+    
+    var buttonTitle: String {
+        switch self {
+        case .success: return "새 챌린지 도전하기"
+        case .failure: return "챌린지 다시 도전하기"
+        }
     }
 }

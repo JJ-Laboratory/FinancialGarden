@@ -33,14 +33,15 @@ class CustomButton: UIButton {
     override var intrinsicContentSize: CGSize {
         let originalSize = super.intrinsicContentSize
         let newHeight = max(originalSize.height, 52)
-        return CGSize(width: originalSize.width, height: style == .outline ? originalSize.height : newHeight)
+        let newWidth = max(originalSize.width, 60)
+        return CGSize(width: newWidth, height: (style == .outline) ? originalSize.height : newHeight)
     }
     
     private func setupHandler() {
         configurationUpdateHandler = { [weak self] button in
             guard let self else { return }
-                        
-            var config: UIButton.Configuration = style == .filled ? .filled() : .plain()
+            
+            var config: UIButton.Configuration = (style == .filled) ? .filled() : .plain()
             config.cornerStyle = .medium
             config.contentInsets = .init(top: 8, leading: 10, bottom: 8, trailing: 10)
             
@@ -48,7 +49,7 @@ class CustomButton: UIButton {
             paragraphStyle.alignment = .center
             
             var attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.preferredFont(forTextStyle: style == .outline ? .body : .headline),
+                .font: UIFont.preferredFont(forTextStyle: (style == .outline) ? .body : .headline),
                 .paragraphStyle: paragraphStyle
             ]
             
@@ -66,7 +67,7 @@ class CustomButton: UIButton {
                 attributes[.foregroundColor] = UIColor.gray1
                 attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
             }
-
+            
             let title = button.currentTitle ?? ""
             let attributedString = NSAttributedString(string: title, attributes: attributes)
             config.attributedTitle = AttributedString(attributedString)
