@@ -1,5 +1,5 @@
 {
-  "originHash" : "a285102c0ba1ff27738d042b587198597bfee75496d511179653132882f81def",
+  "originHash" : "2e123ef0e00edcdc15c0e719362140d14596a7ee6aa63301ef5a7e0a406e6b28",
   "pins" : [
     {
       "identity" : "reactorkit",
@@ -26,6 +26,15 @@
       "state" : {
         "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
         "version" : "5.7.1"
+      }
+    },
+    {
+      "identity" : "then",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/devxoul/Then.git",
+      "state" : {
+        "revision" : "d41ef523faef0f911369f79c0b96815d9dbb6d7a",
+        "version" : "3.0.0"
       }
     },
     {
