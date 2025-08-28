@@ -28,7 +28,7 @@ final class TransactionCoordinator: Coordinator {
     
     private func showTransactionList() {
         let transactiontVC = createTransactionViewController()
-        navigationController.setViewControllers([transactiontVC], animated: false)
+//        navigationController.setViewControllers([transactiontVC], animated: false)
     }
     
     func pushTransactionInput() {
@@ -42,8 +42,8 @@ final class TransactionCoordinator: Coordinator {
     
     // MARK: - ViewController Factory Methods
     
-    private func createTransactionViewController() -> TransactionViewController {
-        let viewController = TransactionViewController()
+    private func createTransactionViewController() -> RecordListViewController {
+        let viewController = RecordListViewController()
         viewController.coordinator = self
         return viewController
     }
