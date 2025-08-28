@@ -66,3 +66,29 @@ struct Challenge {
         self.isSuccess = isSuccess
     }
 }
+
+enum ChallengeType {
+    case success
+    case failure
+    
+    var title: String {
+        switch self {
+        case .success: return "챌린지 성공!"
+        case .failure: return "챌린지 실패!"
+        }
+    }
+    
+    var message: String {
+        switch self {
+        case .success: return "개의 열매를 수확했어요"
+        case .failure: return "개의 씨앗이 소멸되었어요"
+        }
+    }
+    
+    var buttonTitle: String {
+        switch self {
+        case .success: return "새 챌린지 도전하기"
+        case .failure: return "챌린지 다시 도전하기"
+        }
+    }
+}
