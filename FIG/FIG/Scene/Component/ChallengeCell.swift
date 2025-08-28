@@ -14,8 +14,7 @@ class ChallengeCell: UICollectionViewCell {
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.numberOfLines = 0
-        $0.font = .preferredFont(forTextStyle: .body)
-        $0.adjustsFontForContentSizeCategory = true
+        $0.font = .preferredFont(forTextStyle: .body).withWeight(.semibold)
     }
     
     private let dDayLabel = UILabel().then {
@@ -24,8 +23,7 @@ class ChallengeCell: UICollectionViewCell {
         $0.clipsToBounds = true
         $0.textAlignment = .center
         $0.backgroundColor = .lightPink
-        $0.font = .preferredFont(forTextStyle: .caption1)
-        $0.adjustsFontForContentSizeCategory = true
+        $0.font = .preferredFont(forTextStyle: .caption1).withWeight(.semibold)
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
     
@@ -40,7 +38,6 @@ class ChallengeCell: UICollectionViewCell {
         $0.textColor = .gray1
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .subheadline)
-        $0.adjustsFontForContentSizeCategory = true
     }
     
     private let amountIcon = UIImageView().then {
@@ -54,7 +51,7 @@ class ChallengeCell: UICollectionViewCell {
         let text = NSMutableAttributedString(
             string: "1,200,793원",
             attributes: [
-                .font: UIFont.preferredFont(forTextStyle: .body),
+                .font: UIFont.preferredFont(forTextStyle: .body).withWeight(.semibold),
                 .foregroundColor: UIColor.secondary
             ]
         )
@@ -67,7 +64,6 @@ class ChallengeCell: UICollectionViewCell {
         ))
         $0.attributedText = text
         $0.numberOfLines = 0
-        $0.adjustsFontForContentSizeCategory = true
     }
     
     private let statusImageView = UIImageView().then {
@@ -86,7 +82,6 @@ class ChallengeCell: UICollectionViewCell {
         $0.textColor = .gray1
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .footnote)
-        $0.adjustsFontForContentSizeCategory = true
     }
     
     private let confirmButton = CustomButton(style: .filled).then {
@@ -209,7 +204,7 @@ class ChallengeCell: UICollectionViewCell {
         let text = NSMutableAttributedString(
             string: "1,200,793원",
             attributes: [
-                .font: UIFont.preferredFont(forTextStyle: .body),
+                .font: UIFont.preferredFont(forTextStyle: .body).withWeight(.semibold),
                 .foregroundColor: UIColor.secondary
             ]
         )

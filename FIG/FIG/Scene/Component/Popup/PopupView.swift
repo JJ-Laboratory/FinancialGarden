@@ -23,8 +23,7 @@ class PopupView: UIView {
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.textAlignment = .center
-        $0.font = .preferredFont(forTextStyle: .title3)
-        $0.adjustsFontForContentSizeCategory = true
+        $0.font = .preferredFont(forTextStyle: .title3).withWeight(.semibold)
     }
     
     private let messageLabel = UILabel().then {
@@ -32,7 +31,6 @@ class PopupView: UIView {
         $0.numberOfLines = 0
         $0.textAlignment = .center
         $0.font = .preferredFont(forTextStyle: .footnote)
-        $0.adjustsFontForContentSizeCategory = true
     }
     
     private let challengeButton = CustomButton(style: .filled)
