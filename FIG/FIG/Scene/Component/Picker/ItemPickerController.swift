@@ -68,7 +68,7 @@ final class ItemPickerController<Item: Hashable>: PickerController {
     
     private func makeDataSource(_ collectionView: UICollectionView) -> UICollectionViewDiffableDataSource<Int, Item> {
         let cellRegistration = UICollectionView.CellRegistration<ItemCell, Item> {
-            [itemImage, itemTitle, itemBackgroundColor, itemIconColor] cell, indexPath, item in
+            [itemImage, itemTitle, itemBackgroundColor, itemIconColor] cell, _, item in
             cell.imageView.image = itemImage(item)
             cell.imageBackgroundView.backgroundColor = itemBackgroundColor(item)
             cell.imageView.tintColor = itemIconColor(item)
@@ -100,7 +100,7 @@ extension ItemPickerController {
                 subitems: [item]
             )
             let section = NSCollectionLayoutSection(group: group).then {
-                $0.interGroupSpacing = 15
+                $0.interGroupSpacing = 16
             }
             self.init(section: section)
         }
