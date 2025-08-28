@@ -10,7 +10,7 @@ import Foundation
 enum ChallengeDuration: Int, CaseIterable {
     case week = 7
     case month = 30
-
+    
     var title: String {
         switch self {
         case .week:
@@ -19,7 +19,7 @@ enum ChallengeDuration: Int, CaseIterable {
             return "한달"
         }
     }
-
+    
     var requiredSeed: Int {
         switch self {
         case .week:
@@ -41,7 +41,7 @@ struct Challenge {
     let targetFruitsCount: Int
     let isCompleted: Bool
     let isSuccess: Bool
-
+    
     init(
         id: UUID = UUID(),
         category: Category,
