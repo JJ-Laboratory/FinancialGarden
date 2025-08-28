@@ -12,6 +12,7 @@
 		B5983FA12E54473C00DEB52A /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA02E54473C00DEB52A /* RxSwift */; };
 		B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA32E54474A00DEB52A /* ReactorKit */; };
 		B5983FA72E54475700DEB52A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA62E54475700DEB52A /* SnapKit */; };
+		B5FF75332E5DBFA200298146 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = B5FF75322E5DBFA200298146 /* Then */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5FF75332E5DBFA200298146 /* Then in Frameworks */,
 				B5983FA12E54473C00DEB52A /* RxSwift in Frameworks */,
 				B5983FA72E54475700DEB52A /* SnapKit in Frameworks */,
 				B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */,
@@ -97,6 +99,7 @@
 				B5983FA02E54473C00DEB52A /* RxSwift */,
 				B5983FA32E54474A00DEB52A /* ReactorKit */,
 				B5983FA62E54475700DEB52A /* SnapKit */,
+				B5FF75322E5DBFA200298146 /* Then */,
 			);
 			productName = FIG;
 			productReference = B5983F812E5445DD00DEB52A /* FIG.app */;
@@ -130,6 +133,7 @@
 				B5983F9D2E54473C00DEB52A /* XCRemoteSwiftPackageReference "RxSwift" */,
 				B5983FA22E54474A00DEB52A /* XCRemoteSwiftPackageReference "ReactorKit" */,
 				B5983FA52E54475700DEB52A /* XCRemoteSwiftPackageReference "SnapKit" */,
+				B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5983F822E5445DD00DEB52A /* Products */;
@@ -420,6 +424,14 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -442,6 +454,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B5983FA52E54475700DEB52A /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		B5FF75322E5DBFA200298146 /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
