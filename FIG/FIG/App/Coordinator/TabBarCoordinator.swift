@@ -22,7 +22,7 @@ final class TabBarCoordinator: Coordinator {
         setupTabs()
         navigationController.setViewControllers([tabBarController], animated: false)
     }
-    
+
     private func setupTabs() {
         tabBarController.tabBar.backgroundColor = .systemBackground
         tabBarController.tabBar.tintColor = .primary
