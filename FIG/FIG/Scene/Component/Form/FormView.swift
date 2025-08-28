@@ -137,6 +137,7 @@ extension FormView {
                     bottomView
                 }
             }
+            
             addSubview(contentView)
             contentView.snp.makeConstraints {
                 $0.directionalEdges.equalToSuperview().inset(16)
@@ -145,6 +146,7 @@ extension FormView {
             // Tap Action
             if let action {
                 addAction(action, for: .touchUpInside)
+                contentView.isUserInteractionEnabled = false
             }
         }
         

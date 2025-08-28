@@ -14,7 +14,6 @@ import RxCocoa
 final class RecordFormViewController: UIViewController {
     
     // MARK: - Properties
-    
     weak var coordinator: TransactionCoordinator?
     private let disposeBag = DisposeBag()
     
@@ -33,6 +32,7 @@ final class RecordFormViewController: UIViewController {
         $0.contentMode = .scaleAspectFit
     }
     
+    // FIXME: 입력패드 안내려감
     private let amountTextField = UITextField().then {
         $0.keyboardType = .decimalPad
         $0.placeholder = "금액을 입력해주세요"
@@ -46,6 +46,7 @@ final class RecordFormViewController: UIViewController {
         $0.textColor = .charcoal
     }
     
+    // FIXME: 입력패드 안내려감
     private let memoTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
@@ -55,96 +56,87 @@ final class RecordFormViewController: UIViewController {
     private let saveButton = CustomButton(style: .filled).then {
         $0.setTitle("저장", for: .normal)
     }
-    
-    private lazy var recordStackView = UIStackView(axis: .vertical, spacing: 20) {
         
-        titleLabel
-        
-        makeAmountInputSection()
-        
-        FormView {
-            FormItem("카테고리")
-                .image(UIImage(systemName: "folder"))
-                .showsDisclosureIndicator(true)
-                .action {
-                  print("카테고리 선택")
-                }
-            
-            FormItem("거래처")
-                .image(UIImage(systemName: "person.circle"))
-                .trailing { placeTextField }
-            
-            FormItem("결제수단")
-                .image(UIImage(systemName: "creditcard"))
-                .showsDisclosureIndicator(true)
-                .action {
-                    print("결제수단 선택")
-                }
-            
-            FormItem("날짜")
-                .image(UIImage(systemName: "calendar"))
-                .showsDisclosureIndicator(true)
-                .action {
-                    print("날짜 선택")
-                }
-            
-            FormItem("메모")
-                .image(UIImage(systemName: "doc.text"))
-                .bottom { memoTextField }
-        }
+    private lazy var amountStackView = UIStackView(
+        axis: .horizontal, spacing: 10
+    ) {
+        wonIconImageView
+        amountTextField
     }
     
+    private let amountInputView = UIView()
+    
+    private lazy var formView = FormView {
+        FormItem("카테고리")
+            .image(UIImage(systemName: "folder"))
+            .showsDisclosureIndicator(true)
+            .action { [weak self] in
+                self?.presentCategoryPicker()
+            }
+        
+        FormItem("거래처")
+            .image(UIImage(systemName: "person.circle"))
+            .trailing { placeTextField }
+        
+        FormItem("결제수단")
+            .image(UIImage(systemName: "creditcard"))
+            .showsDisclosureIndicator(true)
+            .action { [weak self] in
+                self?.presentPaymentPicker()
+            }
+        
+        FormItem("날짜")
+            .image(UIImage(systemName: "calendar"))
+            .showsDisclosureIndicator(true)
+            .action { [weak self] in
+                self?.presentDatePicker()
+            }
+        
+        FormItem("메모")
+            .image(UIImage(systemName: "doc.text"))
+            .bottom { memoTextField }
+    }
+    
+    private lazy var contentStackView = UIStackView(axis: .vertical, spacing: 20) {
+        titleLabel
+        amountInputView
+        formView
+    }
+    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        bind()
         setupNavigationBar()
+        bind()
     }
     
+    // MARK: - Setup UI
     private func setupUI() {
         view.backgroundColor = .background
         
-        view.addSubview(recordStackView)
+        amountInputView.addSubview(amountStackView)
+        view.addSubview(contentStackView)
         view.addSubview(saveButton)
         
-        recordStackView.snp.makeConstraints {
+        amountStackView.alignment = .center
+        amountStackView.snp.makeConstraints {
+            $0.leading.top.equalToSuperview()
+            $0.bottom.equalToSuperview().offset(-16)
+        }
+        
+        contentStackView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide).offset(30)
             $0.leading.trailing.equalToSuperview().inset(20)
         }
         
         saveButton.snp.makeConstraints {
-            $0.bottom.leading.trailing.equalToSuperview().inset(20)
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
     
-    private func bind() {
-        saveButton.rx.tap
-            .subscribe(onNext: { [weak self] in
-                // TODO: 실제 저장 로직 구현
-                print("저장 버튼 탭됨")
-                self?.coordinator?.popTransactionInput()
-            })
-            .disposed(by: disposeBag)
-    }
-    
-    private func makeAmountInputSection() -> UIView {
-        let containerView = UIView()
-        
-        let stackView = UIStackView(axis: .horizontal, spacing: 10) {
-            wonIconImageView
-            amountTextField
-        }
-        stackView.alignment = .center
-        
-        containerView.addSubview(stackView)
-        stackView.snp.makeConstraints {
-            $0.leading.top.equalToSuperview()
-            $0.bottom.equalToSuperview().offset(-16)
-        }
-        
-        return containerView
-    }
-    
+    // MARK: - Setup Navigation
     private func setupNavigationBar() {
         title = ""
         
@@ -155,13 +147,50 @@ final class RecordFormViewController: UIViewController {
             action: #selector(backButtonTapped)
         )
         navigationController?.navigationBar.tintColor = .charcoal
-        
         navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.largeTitleDisplayMode = .never
     }
     
+    // MARK: - Bind
+    private func bind() {
+        saveButton.rx.tap
+            .subscribe(onNext: { [weak self] in
+                print("저장 버튼 탭")
+                self?.coordinator?.popTransactionInput()
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    // MARK: - Actions
     @objc private func backButtonTapped() {
         coordinator?.popTransactionInput()
+    }
+    
+    private func presentCategoryPicker() {
+        let picker = ItemPickerController<Category>.allCategoriesPicker()
+        picker.itemSelected = { category in
+            print("선택된 카테고리: \(category.title)")
+        }
+        
+        present(picker, animated: true)
+    }
+    
+    private func presentPaymentPicker() {
+        let picker = ItemPickerController<PaymentMethod>.paymentMethodPicker()
+        picker.itemSelected = { payment in
+            print("선택된 카테고리: \(payment.title)")
+        }
+        
+        present(picker, animated: true)
+    }
+    
+    private func presentDatePicker() {
+        let picker = DatePickerController(title: "날짜 선택", mode: .date)
+        picker.dateSelected = { date in
+            print("선택된 날짜: \(date)")
+        }
+        
+        present(picker, animated: true)
     }
 }
 

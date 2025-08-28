@@ -41,10 +41,10 @@ extension ItemPickerController where Item == Category {
     
     /// Category 전용 편의 생성자
     /// - Parameters:
-    ///   - title: 선택기 제목
+    ///   - title: 피커 제목
     ///   - categories: 표시할 카테고리 배열
     ///   - selectedCategory: 미리 선택된 카테고리 (옵션)
-    ///   - contentHeight: 선택기 높이 (기본값: 500)
+    ///   - contentHeight: 피커 높이 (기본값: 500)
     convenience init(
         title: String,
         categories: [Category],
@@ -71,10 +71,10 @@ extension ItemPickerController where Item == Category {
         )
     }
     
-    /// 전체 카테고리 선택기를 생성하는 팩토리 메서드
+    /// 전체 카테고리 피커 생성하는 팩토리 메서드
     /// - Parameters:
     ///   - selectedCategory: 미리 선택된 카테고리 (옵션)
-    ///   - contentHeight: 선택기 높이 (기본값: 500)
+    ///   - contentHeight: 피커 높이 (기본값: 500)
     /// - Returns: 전체 카테고리를 표시하는 선택기
     static func allCategoriesPicker(
         selectedCategory: Category? = nil,
@@ -86,6 +86,43 @@ extension ItemPickerController where Item == Category {
             title: "카테고리 선택",
             categories: allCategories,
             selectedCategory: selectedCategory,
+            contentHeight: contentHeight
+        )
+    }
+}
+
+// MARK: - ItemPickerController PaymentMethod
+
+extension ItemPickerController where Item == PaymentMethod {
+    
+    /// PaymentMethod 전용 편의 생성자
+    convenience init(
+        title: String,
+        paymentMethods: [PaymentMethod],
+        selectedPaymentMethod: PaymentMethod? = nil,
+        contentHeight: CGFloat = 400
+    ) {
+        self.init(
+            title: title,
+            items: paymentMethods,
+            selectedItem: selectedPaymentMethod,
+            contentHeight: contentHeight,
+            itemImage: { $0.icon },
+            itemTitle: { $0.title },
+            itemBackgroundColor: { _ in .lightPink },
+            itemIconColor: { _ in .primary }
+        )
+    }
+    
+    /// 전체 결제수단 피커 생성하는 팩토리 메서드
+    static func paymentMethodPicker(
+        selectedPaymentMethod: PaymentMethod? = nil,
+        contentHeight: CGFloat = 400
+    ) -> ItemPickerController<PaymentMethod> {
+        return ItemPickerController(
+            title: "결제수단 선택",
+            paymentMethods: PaymentMethod.allCases,
+            selectedPaymentMethod: selectedPaymentMethod,
             contentHeight: contentHeight
         )
     }
