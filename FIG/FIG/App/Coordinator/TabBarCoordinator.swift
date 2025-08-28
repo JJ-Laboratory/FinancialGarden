@@ -23,54 +23,50 @@ final class TabBarCoordinator: Coordinator {
         navigationController.setViewControllers([tabBarController], animated: false)
     }
     
-
     private func setupTabs() {
         tabBarController.tabBar.backgroundColor = .systemBackground
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeNav = UINavigationController()
         let homeVC = createHomeViewController()
-        homeNav.setViewControllers([homeVC], animated: false)
-        homeNav.tabBarItem = UITabBarItem(
+        homeVC.tabBarItem = UITabBarItem(
             title: "홈",
             image: UIImage(systemName: "house"),
             selectedImage: UIImage(systemName: "house.fill")
         )
         
         // 가계부 탭
-        let transactionNav = UINavigationController()
-        let transactionCoordinator = TransactionCoordinator(navigationController: transactionNav)
+        let transactionVC = TransactionViewController()
+        let transactionCoordinator = TransactionCoordinator(navigationController: navigationController)
+        transactionVC.coordinator = transactionCoordinator
         addChildCoordinator(transactionCoordinator)
-        transactionCoordinator.start()
-        transactionNav.tabBarItem = UITabBarItem(
+        
+        transactionVC.tabBarItem = UITabBarItem(
             title: "가계부",
             image: UIImage(systemName: "list.clipboard"),
             selectedImage: UIImage(systemName: "list.clipboard.fill")
         )
         
         // 챌린지 탭
-        let challengeNav = UINavigationController()
-        let challengeCoordinator = ChallengeCoordinator(navigationController: challengeNav)
+        let challengeVC = ChallengeViewController()
+        let challengeCoordinator = ChallengeCoordinator(navigationController: navigationController)
         addChildCoordinator(challengeCoordinator)
         challengeCoordinator.start()
-        challengeNav.tabBarItem = UITabBarItem(
+        challengeVC.tabBarItem = UITabBarItem(
             title: "챌린지",
             image: UIImage(systemName: "target"),
             selectedImage: UIImage(systemName: "target")
         )
         
         // 차트 탭
-        let chartNav = UINavigationController()
         let chartVC = createChartViewController()
-        chartNav.setViewControllers([chartVC], animated: false)
-        chartNav.tabBarItem = UITabBarItem(
+        chartVC.tabBarItem = UITabBarItem(
             title: "차트",
             image: UIImage(systemName: "chart.bar"),
             selectedImage: UIImage(systemName: "chart.bar.fill")
         )
         
-        tabBarController.viewControllers = [homeNav, transactionNav, challengeNav, chartNav]
+        tabBarController.viewControllers = [homeVC, transactionVC, challengeVC, chartVC]
     }
     
     // 임시 ViewController

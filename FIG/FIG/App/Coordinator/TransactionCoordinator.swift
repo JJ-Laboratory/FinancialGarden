@@ -32,8 +32,8 @@ final class TransactionCoordinator: Coordinator {
     }
     
     func pushTransactionInput() {
-        let transactionInputVC = createTransactionInputViewController()
-        navigationController.pushViewController(transactionInputVC, animated: true)
+        let recordFormVC = createRecordFormViewController()
+        navigationController.pushViewController(recordFormVC, animated: true)
     }
     
     func popTransactionInput() {
@@ -48,8 +48,8 @@ final class TransactionCoordinator: Coordinator {
         return viewController
     }
     
-    private func createTransactionInputViewController() -> TransactionInputViewController {
-        let viewController = TransactionInputViewController()
+    private func createRecordFormViewController() -> RecordFormViewController {
+        let viewController = RecordFormViewController()
         viewController.coordinator = self
         return viewController
     }
