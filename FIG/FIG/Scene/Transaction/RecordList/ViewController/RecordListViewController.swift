@@ -26,6 +26,7 @@ final class RecordListViewController: UIViewController {
     
     // MARK: - UI Components
     
+    // FIXME: push pop 이후 title, image 뒤바뀌는 문제
     private let monthButton = UIButton(type: .system).then {
         $0.titleLabel?.font = .preferredFont(forTextStyle: .title2).withWeight(.semibold)
         $0.setTitleColor(.label, for: .normal)
@@ -98,8 +99,8 @@ final class RecordListViewController: UIViewController {
         monthButton.setTitle(formatter.string(from: selectedMonth), for: .normal)
     }
     
-    // TODO: 현재 날짜 포함된 달까지만 뜨도록
     @objc private func monthButtonTapped() {
+        // TODO: 현재 날짜 포함된 달까지만 뜨도록
         let picker = DatePickerController(title: "월 선택", mode: .yearAndMonth)
         picker.dateSelected = { [weak self] date in
             self?.selectedMonth = date
