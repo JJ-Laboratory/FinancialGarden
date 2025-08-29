@@ -6,8 +6,37 @@
 //
 
 import UIKit
+import SnapKit
+import Then
 
-final class RecordHeaderCell: UITableViewCell {
+final class SectionHeaderCell: UICollectionViewCell {
+    
+    private let titleLabel = UILabel().then {
+        $0.text = "전체 내역"
+        $0.font = .preferredFont(forTextStyle: .headline)
+        $0.textColor = .charcoal
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(titleLabel)
+        
+        titleLabel.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+    }
+}
+
+final class RecordHeaderCell: UICollectionViewCell {
     private let mainStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .firstBaseline
@@ -28,8 +57,8 @@ final class RecordHeaderCell: UITableViewCell {
         $0.numberOfLines = 0
     }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
     }
     
@@ -39,8 +68,7 @@ final class RecordHeaderCell: UITableViewCell {
     }
     
     private func setupUI() {
-        backgroundColor = .systemGroupedBackground
-        selectionStyle = .none
+        backgroundColor = .white
         
         contentView.addSubview(mainStackView)
         
@@ -67,6 +95,7 @@ final class RecordHeaderCell: UITableViewCell {
         
         var summaryParts: [String] = []
         
+        // TODO: .primary
         if income > 0 {
             summaryParts.append("+\(income.formattedWithComma)원")
         }

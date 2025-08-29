@@ -1,5 +1,5 @@
 //
-//  MonthlySummaryView.swift
+//  MonthlySummaryCell.swift
 //  FIG
 //
 //  Created by Milou on 8/26/25.
@@ -8,6 +8,32 @@
 import UIKit
 import SnapKit
 import Then
+
+final class MonthlySummaryCell: UICollectionViewCell {
+    private let montlySummaryView = MonthlySummaryView()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(montlySummaryView)
+        
+        montlySummaryView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+    }
+    
+    func configure(expense: Int, income: Int) {
+        montlySummaryView.configure(expense: expense, income: income)
+    }
+}
 
 final class MonthlySummaryView: UIView {
     
@@ -40,7 +66,7 @@ final class MonthlySummaryView: UIView {
     private let expenseAmountLabel = UILabel().then {
         $0.font = .preferredFont(forTextStyle: .title2).withWeight(.bold)
         $0.textAlignment = .right
-        $0.textColor = .darkGray
+        $0.textColor = .charcoal
         $0.text = "0원"
     }
     

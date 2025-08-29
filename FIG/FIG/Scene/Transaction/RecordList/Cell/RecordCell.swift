@@ -9,14 +9,14 @@ import UIKit
 import SnapKit
 import Then
 
-final class RecordCell: UITableViewCell {
+final class RecordCell: UICollectionViewCell {
     private let mainStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .center
+        $0.spacing = 16
     }
     
     private let iconContainerView = UIView().then {
-        $0.layer.cornerRadius = 20
         $0.clipsToBounds = true
     }
     
@@ -49,8 +49,8 @@ final class RecordCell: UITableViewCell {
         $0.setContentHuggingPriority(.required, for: .horizontal)
     }
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
     }
     
@@ -59,9 +59,13 @@ final class RecordCell: UITableViewCell {
         setupUI()
     }
     
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        iconContainerView.layer.cornerRadius = iconContainerView.bounds.height * 0.5
+    }
+    
     private func setupUI() {
-        backgroundColor = .systemBackground
-        selectionStyle = .none
+        backgroundColor = .white
         
         contentView.addSubview(mainStackView)
         iconContainerView.addSubview(iconImageView)
@@ -74,7 +78,7 @@ final class RecordCell: UITableViewCell {
         contentStackView.addArrangedSubview(detailLabel)
         
         mainStackView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16))
         }
         
         iconContainerView.snp.makeConstraints {
@@ -124,7 +128,7 @@ final class RecordCell: UITableViewCell {
             amountLabel.textAlignment = .left
         } else {
             mainStackView.alignment = .center
-            mainStackView.spacing = 12
+            mainStackView.spacing = 16
             amountLabel.textAlignment = .right
         }
     }

@@ -66,7 +66,7 @@ final class RecordFormViewController: UIViewController {
     
     private let amountInputView = UIView()
     
-    private lazy var formView = FormView {
+    private lazy var formView = FormView(titleSize: .fixed(100)) {
         FormItem("카테고리")
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)
@@ -126,7 +126,7 @@ final class RecordFormViewController: UIViewController {
         }
         
         contentStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).offset(30)
+            $0.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             $0.leading.trailing.equalToSuperview().inset(20)
         }
         
