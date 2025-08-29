@@ -91,15 +91,12 @@ final class RecordListViewController: UIViewController {
         collectionView.collectionViewLayout.register(GroupBackgroundView.self, forDecorationViewOfKind: GroupBackgroundView.elementKind)
     }
     
-  
-    
     private func updateMonthButton() {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "M월"
         monthButton.setTitle(formatter.string(from: selectedMonth), for: .normal)
     }
-    
     
     // TODO: 현재 날짜 포함된 달까지만 뜨도록
     @objc private func monthButtonTapped() {
@@ -119,7 +116,7 @@ final class RecordListViewController: UIViewController {
 
 extension RecordListViewController {
     private func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, env in
+        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
             guard let section = Section(rawValue: sectionIndex) else { return nil }
             
             switch section {
@@ -152,6 +149,7 @@ extension RecordListViewController {
         return section
     }
     
+    // 전체내역
     private func createSectionHeaderSection() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
@@ -166,7 +164,7 @@ extension RecordListViewController {
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 10, trailing: 20)
         
         return section
     }
@@ -174,13 +172,13 @@ extension RecordListViewController {
     private func createRecordsSection() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(200)
+            heightDimension: .estimated(44)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(200)
+            heightDimension: .estimated(44)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         

@@ -61,7 +61,5 @@ extension RecordListViewController: UICollectionViewDataSource {
             cell.configure(with: recordGroup)
             return cell
         }
-        
-        
     }
 }

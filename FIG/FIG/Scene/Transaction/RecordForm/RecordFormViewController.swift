@@ -154,10 +154,10 @@ final class RecordFormViewController: UIViewController {
     // MARK: - Bind
     private func bind() {
         saveButton.rx.tap
-            .subscribe(onNext: { [weak self] in
+            .subscribe { [weak self] _ in
                 print("저장 버튼 탭")
                 self?.coordinator?.popTransactionInput()
-            })
+            }
             .disposed(by: disposeBag)
     }
     

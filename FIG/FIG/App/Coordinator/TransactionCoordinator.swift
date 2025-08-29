@@ -27,12 +27,12 @@ final class TransactionCoordinator: Coordinator {
     // MARK: - Navigation Methods
     
     private func showTransactionList() {
-        let transactiontVC = createTransactionViewController()
-//        navigationController.setViewControllers([transactiontVC], animated: false)
+        _ = createTransactionViewController()
     }
     
     func pushTransactionInput() {
         let recordFormVC = createRecordFormViewController()
+        recordFormVC.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(recordFormVC, animated: true)
     }
     

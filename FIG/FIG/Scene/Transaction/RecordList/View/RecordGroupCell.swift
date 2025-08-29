@@ -9,11 +9,42 @@ import UIKit
 import SnapKit
 import Then
 
+final class SectionHeaderCell: UICollectionViewCell {
+    
+    private let titleLabel = UILabel().then {
+        $0.text = "전체 내역"
+        $0.font = .preferredFont(forTextStyle: .headline)
+        $0.textColor = .charcoal
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupUI()
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(titleLabel)
+        
+        titleLabel.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+    }
+}
+
 final class RecordGroupCell: UICollectionViewCell {
     
     private let stackView = UIStackView().then {
         $0.axis = .vertical
         $0.spacing = 0
+    }
+    
+    private let spacerView = UIView().then {
+        $0.backgroundColor = .clear
     }
     
     override init(frame: CGRect) {
@@ -36,16 +67,17 @@ final class RecordGroupCell: UICollectionViewCell {
         stackView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+        
+        spacerView.snp.makeConstraints {
+            $0.height.equalTo(16)
+        }
     }
     
     func configure(with recordGroup: RecordListViewController.RecordGroup) {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        // 헤더 뷰 생성 (UIView 컨테이너 사용)
-        let headerView = UIView()
-        
-        let headerCell = RecordHeaderCell()
-        headerCell.configure(
+        let headerView = RecordHeaderView()
+        headerView.configure(
             date: recordGroup.date,
             income: recordGroup.transactions
                 .filter { $0.category.transactionType == .income }
@@ -55,27 +87,14 @@ final class RecordGroupCell: UICollectionViewCell {
                 .reduce(0) { $0 + $1.amount }
         )
         
-        headerView.addSubview(headerCell)
-        headerCell.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-            $0.height.equalTo(40)
-        }
-        
         stackView.addArrangedSubview(headerView)
+        stackView.addArrangedSubview(spacerView)
         
         for record in recordGroup.transactions {
-            let cellView = UIView()
+            let recordView = RecordItemView()
+            recordView.configure(with: record)
             
-            let cell = RecordCell()
-            cell.configure(with: record)
-            
-            cellView.addSubview(cell)
-            cell.snp.makeConstraints {
-                $0.edges.equalToSuperview()
-                $0.height.equalTo(76) // RecordCell 높이 (패딩 16*2 + 내용 44)
-            }
-            
-            stackView.addArrangedSubview(cellView)
+            stackView.addArrangedSubview(recordView)
         }
     }
 }
@@ -122,7 +141,7 @@ struct RecordGroupCell_Previews: PreviewProvider {
         
         // 위에서 만든 래퍼를 사용하여 프리뷰를 생성합니다.
         RecordGroupCellPreviewWrapper(recordGroup: recordGroup)
-            .frame(height: 250) // 이제 정상적으로 작동합니다.
+        //            .frame(height: 250) // 이제 정상적으로 작동합니다.
             .previewLayout(.sizeThatFits)
             .previewDisplayName("RecordGroupCell")
     }

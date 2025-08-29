@@ -33,6 +33,7 @@ final class ChallengeCoordinator: Coordinator {
     
     func pushChallengeInput() {
         let challengeInputVC = createChallengeInputViewController()
+        challengeInputVC.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(challengeInputVC, animated: true)
     }
     

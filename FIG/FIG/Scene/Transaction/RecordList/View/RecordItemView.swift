@@ -1,5 +1,5 @@
 //
-//  RecordCell.swift
+//  RecordItemView.swift
 //  FIG
 //
 //  Created by Milou on 8/29/25.
@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Then
 
-final class RecordCell: UICollectionViewCell {
+final class RecordItemView: UIView {
     private let mainStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .center
@@ -59,15 +59,10 @@ final class RecordCell: UICollectionViewCell {
         setupUI()
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        iconContainerView.layer.cornerRadius = iconContainerView.bounds.height * 0.5
-    }
-    
     private func setupUI() {
         backgroundColor = .white
         
-        contentView.addSubview(mainStackView)
+        addSubview(mainStackView)
         iconContainerView.addSubview(iconImageView)
         
         mainStackView.addArrangedSubview(iconContainerView)
@@ -78,7 +73,7 @@ final class RecordCell: UICollectionViewCell {
         contentStackView.addArrangedSubview(detailLabel)
         
         mainStackView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16))
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 0, left: 20, bottom: 16, right: 20))
         }
         
         iconContainerView.snp.makeConstraints {
@@ -100,7 +95,6 @@ final class RecordCell: UICollectionViewCell {
     
     func configure(with transaction: Transaction) {
         titleLabel.text = transaction.title
-        
         detailLabel.text = "\(transaction.category.title) | \(transaction.payment.title)"
         
         iconImageView.image = transaction.category.icon
@@ -120,16 +114,32 @@ final class RecordCell: UICollectionViewCell {
     private func updateLayoutForContentSize() {
         let isAccessibilityCategory = traitCollection.preferredContentSizeCategory.isAccessibilityCategory
         
-        mainStackView.axis = isAccessibilityCategory ? .vertical : .horizontal
-        
         if isAccessibilityCategory {
+            mainStackView.axis = .vertical
             mainStackView.alignment = .leading
             mainStackView.spacing = 8
             amountLabel.textAlignment = .left
+            
+            iconContainerView.snp.updateConstraints {
+                $0.size.equalTo(52)
+            }
+            iconImageView.snp.updateConstraints {
+                $0.size.equalTo(28)
+            }
+            iconContainerView.layer.cornerRadius = 26
         } else {
+            mainStackView.axis = .horizontal
             mainStackView.alignment = .center
             mainStackView.spacing = 16
             amountLabel.textAlignment = .right
+            
+            iconContainerView.snp.updateConstraints {
+                $0.size.equalTo(44)
+            }
+            iconImageView.snp.updateConstraints {
+                $0.size.equalTo(24)
+            }
+            iconContainerView.layer.cornerRadius = 22
         }
     }
 }

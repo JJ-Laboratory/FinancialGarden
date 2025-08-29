@@ -1,5 +1,5 @@
 //
-//  RecordHeaderCell.swift
+//  RecordHeaderView.swift
 //  FIG
 //
 //  Created by Milou on 8/29/25.
@@ -9,34 +9,7 @@ import UIKit
 import SnapKit
 import Then
 
-final class SectionHeaderCell: UICollectionViewCell {
-    
-    private let titleLabel = UILabel().then {
-        $0.text = "전체 내역"
-        $0.font = .preferredFont(forTextStyle: .headline)
-        $0.textColor = .charcoal
-    }
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setupUI()
-    }
-    
-    private func setupUI() {
-        contentView.addSubview(titleLabel)
-        
-        titleLabel.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-    }
-}
-
-final class RecordHeaderCell: UICollectionViewCell {
+final class RecordHeaderView: UIView {
     private let mainStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .firstBaseline
@@ -75,6 +48,10 @@ final class RecordHeaderCell: UICollectionViewCell {
         $0.backgroundColor = .gray3
     }
     
+    private let spacerView = UIView().then {
+        $0.backgroundColor = .clear
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -88,9 +65,9 @@ final class RecordHeaderCell: UICollectionViewCell {
     private func setupUI() {
         backgroundColor = .white
         
-        contentView.addSubview(mainStackView)
-        contentView.addSubview(summaryStackView)
-        contentView.addSubview(seperatorView)
+        addSubview(mainStackView)
+        addSubview(seperatorView)
+        addSubview(spacerView)
         
         mainStackView.addArrangedSubview(dateLabel)
         mainStackView.addArrangedSubview(summaryStackView)
@@ -99,7 +76,7 @@ final class RecordHeaderCell: UICollectionViewCell {
         summaryStackView.addArrangedSubview(expenseLabel)
         
         mainStackView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 16, left: 20, bottom: 10, right: 20))
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 16, left: 20, bottom: 16, right: 20))
         }
         
         seperatorView.snp.makeConstraints {
@@ -129,15 +106,22 @@ final class RecordHeaderCell: UICollectionViewCell {
     private func updateLayoutForContentSize() {
         let isAccessibilityCategory = traitCollection.preferredContentSizeCategory.isAccessibilityCategory
         
-        mainStackView.axis = isAccessibilityCategory ? .vertical : .horizontal
-        summaryStackView.axis = isAccessibilityCategory ? .vertical : .horizontal
-        
         if isAccessibilityCategory {
+            mainStackView.axis = .vertical
             mainStackView.alignment = .leading
-            mainStackView.spacing = 4
+            mainStackView.spacing = 8
+            
+            summaryStackView.axis = .vertical
+            summaryStackView.alignment = .leading
+            summaryStackView.spacing = 4
         } else {
+            mainStackView.axis = .horizontal
             mainStackView.alignment = .firstBaseline
             mainStackView.spacing = 16
+            
+            summaryStackView.axis = .horizontal
+            summaryStackView.alignment = .firstBaseline
+            summaryStackView.spacing = 4
         }
     }
 }
