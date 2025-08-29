@@ -50,11 +50,29 @@ final class RecordHeaderCell: UICollectionViewCell {
         $0.setContentHuggingPriority(.required, for: .horizontal)
     }
     
-    private let summaryLabel = UILabel().then {
-        $0.font = .preferredFont(forTextStyle: .caption1)
-        $0.textColor = .systemGray
+    private let summaryStackView = UIStackView().then {
+        $0.axis = .horizontal
+        $0.alignment = .firstBaseline
+        $0.distribution = .equalSpacing
+        $0.spacing = 4
+    }
+    
+    private let incomeLabel = UILabel().then {
+        $0.font = .preferredFont(forTextStyle: .footnote)
+        $0.textColor = .primary
         $0.textAlignment = .right
-        $0.numberOfLines = 0
+        $0.numberOfLines = 1
+    }
+    
+    private let expenseLabel = UILabel().then {
+        $0.font = .preferredFont(forTextStyle: .footnote)
+        $0.textColor = .gray2
+        $0.textAlignment = .right
+        $0.numberOfLines = 1
+    }
+    
+    private let seperatorView = UIView().then {
+        $0.backgroundColor = .gray3
     }
     
     override init(frame: CGRect) {
@@ -71,12 +89,23 @@ final class RecordHeaderCell: UICollectionViewCell {
         backgroundColor = .white
         
         contentView.addSubview(mainStackView)
+        contentView.addSubview(summaryStackView)
+        contentView.addSubview(seperatorView)
         
         mainStackView.addArrangedSubview(dateLabel)
-        mainStackView.addArrangedSubview(summaryLabel)
+        mainStackView.addArrangedSubview(summaryStackView)
+        
+        summaryStackView.addArrangedSubview(incomeLabel)
+        summaryStackView.addArrangedSubview(expenseLabel)
         
         mainStackView.snp.makeConstraints {
-            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16))
+            $0.edges.equalToSuperview().inset(UIEdgeInsets(top: 16, left: 20, bottom: 10, right: 20))
+        }
+        
+        seperatorView.snp.makeConstraints {
+            $0.horizontalEdges.equalToSuperview().inset(20)
+            $0.bottom.equalToSuperview()
+            $0.height.equalTo(1)
         }
         
         updateLayoutForContentSize()
@@ -93,32 +122,22 @@ final class RecordHeaderCell: UICollectionViewCell {
         formatter.dateFormat = "d일 EEEE"
         dateLabel.text = formatter.string(from: date)
         
-        var summaryParts: [String] = []
-        
-        // TODO: .primary
-        if income > 0 {
-            summaryParts.append("+\(income.formattedWithComma)원")
-        }
-        if expense > 0 {
-            summaryParts.append("-\(expense.formattedWithComma)원")
-        }
-        
-        summaryLabel.text = summaryParts.joined(separator: " ・ ")
+        incomeLabel.text = "+\(income.formattedWithComma)원"
+        expenseLabel.text = "• -\(expense.formattedWithComma)원"
     }
     
     private func updateLayoutForContentSize() {
         let isAccessibilityCategory = traitCollection.preferredContentSizeCategory.isAccessibilityCategory
         
         mainStackView.axis = isAccessibilityCategory ? .vertical : .horizontal
+        summaryStackView.axis = isAccessibilityCategory ? .vertical : .horizontal
         
         if isAccessibilityCategory {
             mainStackView.alignment = .leading
             mainStackView.spacing = 4
-            summaryLabel.textAlignment = .left
         } else {
             mainStackView.alignment = .firstBaseline
             mainStackView.spacing = 16
-            summaryLabel.textAlignment = .right
         }
     }
 }
