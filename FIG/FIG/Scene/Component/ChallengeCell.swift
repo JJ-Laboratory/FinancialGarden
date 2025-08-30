@@ -82,10 +82,13 @@ class ChallengeCell: UICollectionViewCell {
         $0.textColor = .gray1
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .footnote)
+        $0.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
     }
     
     private let confirmButton = CustomButton(style: .filled).then {
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
+        $0.setContentHuggingPriority(.defaultHigh, for: .horizontal)
     }
     
     private lazy var titleStackView = UIStackView(arrangedSubviews: [titleLabel, dDayLabel]).then {
@@ -124,7 +127,7 @@ class ChallengeCell: UICollectionViewCell {
         $0.spacing = 8
         $0.axis = .horizontal
         $0.alignment = .center
-        $0.distribution = .equalCentering
+        $0.distribution = .equalSpacing
     }
     
     // MARK: - Initializer
@@ -191,13 +194,15 @@ class ChallengeCell: UICollectionViewCell {
             statusImageView.snp.makeConstraints {
                 $0.width.height.equalTo(50).priority(999)
             }
+            contentStackView.alignment = .center
+            bottomStackView.distribution = .equalSpacing
         }
     }
     
     // MARK: - Configuration
     
-    func configure() {
-        titleLabel.text = "의료・건강・피트니스"
+    func configure(with challenge: Challenge) {
+        titleLabel.text = challenge.category.title
         dDayLabel.text = "D-3"
         dateLabel.text = "2025.8.27 ~ 8.30"
         

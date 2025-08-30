@@ -103,8 +103,8 @@ class GardenInfoCell: UICollectionViewCell{
         }
     }
     
-    func configure(with: GardenRecord) {
-        seedItem.configure(count: with.totlaSeeds)
-        fruitItem.configure(count: with.totalFruits)
+    func configure(with record: GardenRecord) {
+        seedItem.configure(count: record.totlaSeeds)
+        fruitItem.configure(count: record.totalFruits)
     }
 }

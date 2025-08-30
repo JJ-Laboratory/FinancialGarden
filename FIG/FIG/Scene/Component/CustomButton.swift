@@ -32,7 +32,7 @@ class CustomButton: UIButton {
     
     override var intrinsicContentSize: CGSize {
         let originalSize = super.intrinsicContentSize
-        let newHeight = max(originalSize.height, 52)
+        let newHeight = max(originalSize.height, 48)
         let newWidth = max(originalSize.width, 60)
         return CGSize(width: newWidth, height: (style == .outline) ? originalSize.height : newHeight)
     }
