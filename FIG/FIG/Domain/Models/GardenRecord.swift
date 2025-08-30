@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GardenRecord {
+struct GardenRecord: Hashable {
     let totlaSeeds: Int
     let totalFruits: Int
 

@@ -30,7 +30,7 @@ enum ChallengeDuration: Int, CaseIterable {
     }
 }
 
-struct Challenge {
+struct Challenge: Hashable {
     let id: UUID
     let category: Category
     let startDate: Date
@@ -67,7 +67,7 @@ struct Challenge {
     }
 }
 
-enum ChallengeType {
+enum ChallengeStatus {
     case success
     case failure
     
@@ -91,4 +91,19 @@ enum ChallengeType {
         case .failure: return "챌린지 다시 도전하기"
         }
     }
+}
+
+enum FilterType: String, CaseIterable {
+    case inProgress = "진행 중"
+    case completed = "완료"
+}
+
+enum ChallengeSection: Int {
+    case gardenInfo
+    case challengeList
+}
+
+enum ChallengeItem: Hashable {
+    case gardenInfo(GardenRecord)
+    case challenge(Challenge)
 }
