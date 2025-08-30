@@ -8,11 +8,11 @@
 import Foundation
 
 struct GardenRecord: Hashable {
-    let totlaSeeds: Int
+    let totalSeeds: Int
     let totalFruits: Int
 
-    init(totlaSeeds: Int = 0, totalFruits: Int = 0) {
-        self.totlaSeeds = totlaSeeds
+    init(totalSeeds: Int = 0, totalFruits: Int = 0) {
+        self.totalSeeds = totalSeeds
         self.totalFruits = totalFruits
     }
 }

@@ -28,7 +28,7 @@ final class ChallengeListViewController: UIViewController, View {
         $0.backgroundColor = .clear
     }
     
-    init(reactor: ChallengeViewReactor) {
+    init(reactor: ChallengeListViewReactor) {
         super.init(nibName: nil, bundle: nil)
         self.reactor = reactor
     }
@@ -57,7 +57,7 @@ final class ChallengeListViewController: UIViewController, View {
         }
     }
     
-    func bind(reactor: ChallengeViewReactor) {
+    func bind(reactor: ChallengeListViewReactor) {
         
         let gardenInfoDriver = reactor.state
             .map(\.gardenInfo)
