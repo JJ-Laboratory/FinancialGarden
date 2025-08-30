@@ -20,15 +20,16 @@ final class AppCoordinator: Coordinator {
     }
     
     func start() {
-        window.rootViewController = navigationController
-        window.makeKeyAndVisible()
-        
         startTabBarFlow()
     }
     
     private func startTabBarFlow() {
-        let tabBarCoordinator = TabBarCoordinator(navigationController: navigationController)
+        let tabBarCoordinator = TabBarCoordinator()
         addChildCoordinator(tabBarCoordinator)
+        
+        window.rootViewController = tabBarCoordinator.tabBarController
+        window.makeKeyAndVisible()
+        
         tabBarCoordinator.start()
     }
 }
