@@ -17,6 +17,8 @@ final class RecordFormViewController: UIViewController {
     weak var coordinator: TransactionCoordinator?
     private let disposeBag = DisposeBag()
     
+    private var actualAmount: Int = 0
+    
     // MARK: - UI Components
     private let titleLabel = UILabel().then {
         $0.text = "어떤 소비를 하셨나요?"
@@ -108,12 +110,15 @@ final class RecordFormViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupNavigationBar()
+        setupTextFieldDelegates()
         bind()
     }
     
     // MARK: - Setup UI
     private func setupUI() {
         view.backgroundColor = .background
+        
+        setupKeyboardDismiss()
         
         amountInputView.addSubview(amountStackView)
         view.addSubview(contentStackView)
@@ -149,6 +154,57 @@ final class RecordFormViewController: UIViewController {
         navigationController?.navigationBar.tintColor = .charcoal
         navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.largeTitleDisplayMode = .never
+    }
+    
+    private func setupTextFieldDelegates() {
+        amountTextField.delegate = self
+        placeTextField.delegate = self
+        memoTextField.delegate = self
+        
+        amountTextField.addTarget(
+            self,
+            action: #selector(amountTextFieldDidChange(_:)),
+            for: .editingChanged
+        )
+    }
+    
+    @objc private func amountTextFieldDidChange(_ textField: UITextField) {
+        guard let text = textField.text else { return }
+        
+        let numbersOnly = text.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+        
+        if numbersOnly.isEmpty {
+            actualAmount = 0
+            textField.text = ""
+            return
+        }
+        
+        if numbersOnly.count >= 10 {
+            let limitedNumbers = String(numbersOnly.prefix(10))
+            actualAmount = Int(limitedNumbers) ?? 0
+        } else {
+            actualAmount = Int(numbersOnly) ?? 0
+        }
+        
+        if actualAmount == 0 {
+            textField.text = ""
+            return
+        }
+        
+        textField.text = actualAmount.formattedWithComma
+    }
+    
+    private func getCurrentAmout() -> Int {
+        return actualAmount
+    }
+    
+    private func setAmount(_ amount: Int) {
+        actualAmount = amount
+        if amount == 0 {
+            amountTextField.text = ""
+        } else {
+            amountTextField.text = amount.formattedWithComma
+        }
     }
     
     // MARK: - Bind
@@ -191,6 +247,42 @@ final class RecordFormViewController: UIViewController {
         }
         
         present(picker, animated: true)
+    }
+}
+
+extension RecordFormViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == amountTextField {
+            placeTextField.becomeFirstResponder()
+        } else if textField == placeTextField {
+            memoTextField.becomeFirstResponder()
+        } else if textField == memoTextField {
+            textField.resignFirstResponder()
+        }
+        return true
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == amountTextField {
+            // 숫자와 백스페이스만 허용
+            let allowedCharacters = CharacterSet.decimalDigits
+            let characterSet = CharacterSet(charactersIn: string)
+            
+            // 백스페이스 허용
+            if string.isEmpty {
+                return true
+            }
+            return allowedCharacters.isSuperset(of: characterSet)
+        }
+        return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField == amountTextField {
+            if actualAmount == 0 {
+                textField.text = ""
+            }
+        }
     }
 }
 
