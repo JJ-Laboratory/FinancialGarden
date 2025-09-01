@@ -21,7 +21,7 @@ final class ChallengeListViewController: UIViewController, View {
     private let titleLabel = UILabel().then {
         $0.text = "나의 정원"
         $0.textColor = .charcoal
-        $0.font = .preferredFont(forTextStyle: .title1).withWeight(.semibold)
+        $0.font = .preferredFont(forTextStyle: .title2).withWeight(.semibold)
     }
     
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCompositionalLayout()).then {
@@ -89,7 +89,13 @@ final class ChallengeListViewController: UIViewController, View {
             case .gardenInfo(let countData):
                 return collectionView.dequeueConfiguredReusableCell(using: gardenRegistration, for: indexPath, item: countData)
             case .challenge(let challengeData):
-                return collectionView.dequeueConfiguredReusableCell(using: challengeRegistration, for: indexPath, item: challengeData)
+                let cell = collectionView.dequeueConfiguredReusableCell(using: challengeRegistration, for: indexPath, item: challengeData)
+                cell.onConfirmButtonTapped = { [weak self] status in
+                    let count = (status == .success) ? challengeData.targetFruitsCount : challengeData.requiredSeedCount
+                    self?.presentPopup(status: status, count: count)
+                }
+                
+                return cell
             }
         }
         
@@ -130,7 +136,7 @@ final class ChallengeListViewController: UIViewController, View {
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                       heightDimension: .estimated(240))
+                                                       heightDimension: .estimated(100))
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
@@ -138,11 +144,11 @@ final class ChallengeListViewController: UIViewController, View {
                 
             case .challengeList:
                 let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                      heightDimension: .estimated(240))
+                                                      heightDimension: .estimated(100))
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                       heightDimension: .estimated(240))
+                                                       heightDimension: .estimated(100))
                 let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
@@ -177,5 +183,10 @@ final class ChallengeListViewController: UIViewController, View {
     
     @objc private func addButtonTapped() {
         coordinator?.pushChallengeInput()
+    }
+    
+    private func presentPopup(status: ChallengeStatus, count: Int) {
+        let popupVC = PopupViewController(type: status, count: count)
+        present(popupVC, animated: true)
     }
 }

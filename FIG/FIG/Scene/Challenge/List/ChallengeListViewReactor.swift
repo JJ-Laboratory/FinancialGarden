@@ -73,8 +73,8 @@ class ChallengeListViewReactor: Reactor {
         let allChallenges = [
             // 일주일 챌린지 데이터
             Challenge(category: Category(id: UUID(), title: "의료・건강・피트니스", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5),
-            Challenge(category: Category(id: UUID(), title: "일주일", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5),
-            Challenge(category: Category(id: UUID(), title: "일주일", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5),
+            Challenge(category: Category(id: UUID(), title: "일주일 실패", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, status: .failure),
+            Challenge(category: Category(id: UUID(), title: "일주일 성공", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, status: .success),
             Challenge(category: Category(id: UUID(), title: "일주일 챌린지 완료", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, isCompleted: true),
             // 한달 챌린지 데이터
             Challenge(category: Category(id: UUID(), title: "한달", iconName: "ll", transactionType: .expense), endDate: Date(), duration: .month, spendingLimit: 7897890, requiredSeedCount: 5),
