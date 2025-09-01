@@ -10,6 +10,7 @@ import SnapKit
 import Then
 
 final class RecordItemView: UIView {
+    
     private let mainStackView = UIStackView().then {
         $0.axis = .horizontal
         $0.alignment = .center
@@ -49,9 +50,13 @@ final class RecordItemView: UIView {
         $0.setContentHuggingPriority(.required, for: .horizontal)
     }
     
+    var onTap: ((Transaction) -> Void)?
+    private var transaction: Transaction?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
+        setupTapGesture()
     }
     
     required init?(coder: NSCoder) {
@@ -93,7 +98,20 @@ final class RecordItemView: UIView {
         }
     }
     
+    private func setupTapGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(itemTapped))
+        addGestureRecognizer(tapGesture)
+        isUserInteractionEnabled = true
+    }
+    
+    @objc private func itemTapped() {
+        guard let transaction = transaction else { return }
+        onTap?(transaction)
+    }
+    
     func configure(with transaction: Transaction) {
+        self.transaction = transaction
+        
         titleLabel.text = transaction.title
         detailLabel.text = "\(transaction.category.title) | \(transaction.payment.title)"
         

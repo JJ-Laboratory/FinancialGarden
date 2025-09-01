@@ -63,6 +63,10 @@ extension RecordListViewController: UICollectionViewDataSource {
             let recordGroups = reactor.currentState.recordGroups
             let recordGroup = recordGroups[indexPath.item]
             cell.configure(with: recordGroup)
+            
+            cell.onRecordTap = { [weak self] transaction in
+                self?.coordinator?.pushTransactionEdit(transaction: transaction)
+            }
             return cell
         }
     }

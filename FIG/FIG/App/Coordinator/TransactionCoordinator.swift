@@ -41,6 +41,12 @@ final class TransactionCoordinator: Coordinator {
         navigationController.popViewController(animated: true)
     }
     
+    func pushTransactionEdit(transaction: Transaction) {
+        let recordFormVC = createRecordFormViewController(editingTransaction: transaction)
+        recordFormVC.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(recordFormVC, animated: true)
+    }
+    
     // MARK: - ViewController Factory Methods
     
     private func createRecordListViewController() -> RecordListViewController {
@@ -50,8 +56,8 @@ final class TransactionCoordinator: Coordinator {
         return viewController
     }
     
-    private func createRecordFormViewController() -> RecordFormViewController {
-        let reactor = RecordFormReactor()
+    private func createRecordFormViewController(editingTransaction: Transaction? = nil) -> RecordFormViewController {
+        let reactor = RecordFormReactor(editingRecord: editingTransaction)
         let viewController = RecordFormViewController(reactor: reactor)
         viewController.coordinator = self
         return viewController

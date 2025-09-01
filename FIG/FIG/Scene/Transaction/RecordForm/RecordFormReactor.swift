@@ -21,6 +21,7 @@ final class RecordFormReactor: Reactor {
         case setMemo(String)
         case save
         case loadForEdit(Transaction)
+        case delete
     }
     
     enum Mutation {
@@ -32,6 +33,7 @@ final class RecordFormReactor: Reactor {
         case setMemo(String)
         case setEditingRecord(Transaction?)
         case setSaveResult(Result<Transaction, Error>)
+        case setDeleteResult(Result<Void, Error>)
     }
     
     struct State {
@@ -44,7 +46,7 @@ final class RecordFormReactor: Reactor {
         var editingRecord: Transaction?
         var saveResult: Result<Transaction, Error>?
         var isSaveEnabled: Bool = false
-        
+        var deleteResult: Result<Void, Error>?
         var isEditMode: Bool {
             return editingRecord != nil
         }
@@ -84,6 +86,8 @@ final class RecordFormReactor: Reactor {
         case .loadForEdit(let transaction):
             return Observable.just(.setEditingRecord(transaction))
                 .concat(loadTransactionData(transaction))
+        case .delete:
+            return deleteTransaction()
         }
     }
     
@@ -107,6 +111,8 @@ final class RecordFormReactor: Reactor {
             newState.editingRecord = transaction
         case .setSaveResult(let result):
             newState.saveResult = result
+        case .setDeleteResult(let result):
+            newState.deleteResult = result
         }
         
         newState.isSaveEnabled = newState.amount > 0 && newState.selectedCategory != nil && newState.selectedPayment != nil
@@ -116,13 +122,6 @@ final class RecordFormReactor: Reactor {
 }
 
 extension RecordFormReactor {
-    func validateInput() -> Bool {
-        let state = currentState
-        return state.amount > 0 &&
-        state.selectedCategory != nil &&
-        state.selectedPayment != nil
-    }
-    
     func saveTransaction() -> Observable<Mutation> {
         let state = currentState
         
@@ -179,5 +178,17 @@ extension RecordFormReactor {
             Observable.just(.setDate(transaction.date)),
             Observable.just(.setMemo(transaction.memo ?? "")),
         ])
+    }
+    
+    func deleteTransaction() -> Observable<Mutation> {
+        guard let editingRecord = currentState.editingRecord else {
+            return Observable.just(.setDeleteResult(.failure(CoreDataError.entityNotFound)))
+        }
+        
+        return transactionRepository.deleteTransaction(id: editingRecord.id)
+            .map { _ in .setDeleteResult(.success(())) }
+            .catch { error in
+                Observable.just(.setDeleteResult(.failure(error)))
+            }
     }
 }
