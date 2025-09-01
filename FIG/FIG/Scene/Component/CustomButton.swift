@@ -12,11 +12,16 @@ class CustomButton: UIButton {
     enum ButtonStyle {
         case plain
         case filled
+        case filledSmall
         case outline
         case underline
     }
     
     var style: ButtonStyle {
+        didSet { setNeedsUpdateConfiguration() }
+    }
+    
+    override var isSelected: Bool {
         didSet { setNeedsUpdateConfiguration() }
     }
     
@@ -32,16 +37,17 @@ class CustomButton: UIButton {
     
     override var intrinsicContentSize: CGSize {
         let originalSize = super.intrinsicContentSize
-        let newHeight = max(originalSize.height, 48)
-        let newWidth = max(originalSize.width, 60)
-        return CGSize(width: newWidth, height: (style == .outline) ? originalSize.height : newHeight)
+        let minHeight: CGFloat = (style == .outline || style == .filledSmall) ? 40 : 52
+        let minWidth: CGFloat = 60
+        return CGSize(width: max(originalSize.width, minWidth),
+                      height: max(originalSize.height, minHeight))
     }
     
     private func setupHandler() {
         configurationUpdateHandler = { [weak self] button in
             guard let self else { return }
             
-            var config: UIButton.Configuration = (style == .filled) ? .filled() : .plain()
+            var config: UIButton.Configuration = (style == .filled || style == .filledSmall) ? .filled() : .plain()
             config.cornerStyle = .medium
             config.contentInsets = .init(top: 8, leading: 10, bottom: 8, trailing: 10)
             
@@ -56,13 +62,14 @@ class CustomButton: UIButton {
             switch style {
             case .plain:
                 attributes[.foregroundColor] = UIColor.primary
-            case .filled:
+            case .filled, .filledSmall:
                 config.baseBackgroundColor = .primary
                 attributes[.foregroundColor] = UIColor.white
             case .outline:
                 config.background.strokeWidth = 1
-                config.background.strokeColor = .gray1
-                attributes[.foregroundColor] = UIColor.gray1
+                config.baseBackgroundColor = .clear
+                config.background.strokeColor = isSelected ? .primary : .gray1
+                attributes[.foregroundColor] = isSelected ? UIColor.primary : UIColor.gray1
             case .underline:
                 attributes[.foregroundColor] = UIColor.gray1
                 attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
