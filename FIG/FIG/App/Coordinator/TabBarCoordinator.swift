@@ -46,9 +46,10 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 챌린지 탭
-        let challengeVC = ChallengeViewController()
+        let challengeVC = ChallengeListViewController(reactor: ChallengeListViewReactor())
         let challengeNavController = UINavigationController(rootViewController: challengeVC)
         let challengeCoordinator = ChallengeCoordinator(navigationController: challengeNavController)
+        challengeVC.coordinator = challengeCoordinator
         addChildCoordinator(challengeCoordinator)
         
         challengeNavController.tabBarItem = UITabBarItem(

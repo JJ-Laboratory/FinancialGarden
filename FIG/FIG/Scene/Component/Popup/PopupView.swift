@@ -36,7 +36,7 @@ class PopupView: UIView {
     private let challengeButton = CustomButton(style: .filled)
     private let closeButton = CustomButton(style: .underline)
     
-    init(type: ChallengeType, count: Int) {
+    init(type: ChallengeStatus, count: Int) {
         super.init(frame: .zero)
         setupUI()
         configure(type: type, count: count)
@@ -83,7 +83,7 @@ class PopupView: UIView {
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
     }
     
-    private func configure(type: ChallengeType, count: Int) {
+    private func configure(type: ChallengeStatus, count: Int) {
         titleLabel.text = type.title
         messageLabel.text = "\(count)" + type.message
         challengeButton.setTitle( type.buttonTitle, for: .normal)
