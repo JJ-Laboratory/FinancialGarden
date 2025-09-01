@@ -50,14 +50,14 @@ final class RecordFormViewController: UIViewController, View {
     
     private let categoryLabel = UILabel().then {
         $0.textColor = .charcoal
-        $0.textAlignment = .right
+        $0.textAlignment = .left
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
     
     private let paymentLabel = UILabel().then {
         $0.textColor = .charcoal
-        $0.textAlignment = .right
+        $0.textAlignment = .left
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
@@ -65,7 +65,7 @@ final class RecordFormViewController: UIViewController, View {
     private let dateLabel = UILabel().then {
         $0.text = Date().fullDateString
         $0.textColor = .charcoal
-        $0.textAlignment = .right
+        $0.textAlignment = .left
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
@@ -90,7 +90,7 @@ final class RecordFormViewController: UIViewController, View {
     
     private let amountInputView = UIView()
     
-    private lazy var formView = FormView(titleSize: .fixed(100)) {
+    private lazy var formView = FormView(titleSize: .fixed(120)) {
         FormItem("카테고리")
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)
