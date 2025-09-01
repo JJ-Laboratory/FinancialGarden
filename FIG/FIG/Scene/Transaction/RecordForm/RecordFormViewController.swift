@@ -10,12 +10,13 @@ import SnapKit
 import Then
 import RxSwift
 import RxCocoa
+import ReactorKit
 
-final class RecordFormViewController: UIViewController {
+final class RecordFormViewController: UIViewController, View {
     
     // MARK: - Properties
     weak var coordinator: TransactionCoordinator?
-    private let disposeBag = DisposeBag()
+    var disposeBag = DisposeBag()
     
     private var actualAmount: Int = 0
     
@@ -34,7 +35,6 @@ final class RecordFormViewController: UIViewController {
         $0.contentMode = .scaleAspectFit
     }
     
-    // FIXME: 입력패드 안내려감
     private let amountTextField = UITextField().then {
         $0.keyboardType = .decimalPad
         $0.placeholder = "금액을 입력해주세요"
@@ -48,7 +48,7 @@ final class RecordFormViewController: UIViewController {
         $0.textColor = .charcoal
     }
     
-    // FIXME: 입력패드 안내려감
+    // FIXME: 키보드 위로 입력창 올리기
     private let memoTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
@@ -58,7 +58,7 @@ final class RecordFormViewController: UIViewController {
     private let saveButton = CustomButton(style: .filled).then {
         $0.setTitle("저장", for: .normal)
     }
-        
+    
     private lazy var amountStackView = UIStackView(
         axis: .horizontal, spacing: 10
     ) {
@@ -105,20 +105,31 @@ final class RecordFormViewController: UIViewController {
         formView
     }
     
+    init(reactor: RecordFormReactor) {
+        super.init(nibName: nil, bundle: nil)
+        self.reactor = reactor
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupNavigationBar()
         setupTextFieldDelegates()
-        bind()
     }
     
     // MARK: - Setup UI
+    
     private func setupUI() {
         view.backgroundColor = .background
         
         setupKeyboardDismiss()
+        setupKeyboardToolbar()
         
         amountInputView.addSubview(amountStackView)
         view.addSubview(contentStackView)
@@ -156,6 +167,30 @@ final class RecordFormViewController: UIViewController {
         navigationItem.largeTitleDisplayMode = .never
     }
     
+    private func setupKeyboardToolbar() {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        
+        let flexibleSpace = UIBarButtonItem(
+            barButtonSystemItem: .flexibleSpace,
+            target: nil,
+            action: nil
+        )
+        
+        let doneButton = UIBarButtonItem(
+            title: "완료",
+            style: .done,
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+        
+        toolbar.items = [flexibleSpace, doneButton]
+        
+        amountTextField.inputAccessoryView = toolbar
+        placeTextField.inputAccessoryView = toolbar
+        memoTextField.inputAccessoryView = toolbar
+    }
+    
     private func setupTextFieldDelegates() {
         amountTextField.delegate = self
         placeTextField.delegate = self
@@ -167,6 +202,59 @@ final class RecordFormViewController: UIViewController {
             for: .editingChanged
         )
     }
+    
+    // MARK: - Bind
+    func bind(reactor: RecordFormReactor) {
+        bindAction(reactor)
+        bindState(reactor)
+    }
+    
+    private func bindAction(_ reactor: RecordFormReactor) {
+        placeTextField.rx.text.orEmpty
+            .distinctUntilChanged()
+            .map(Reactor.Action.setPlace)
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        memoTextField.rx.text.orEmpty
+            .distinctUntilChanged()
+            .map(Reactor.Action.setMemo)
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        saveButton.rx.tap
+            .map { Reactor.Action.save }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindState(_ reactor: RecordFormReactor) {
+        reactor.state.map(\.isSaveEnabled)
+            .distinctUntilChanged()
+            .bind(to: saveButton.rx.isEnabled)
+            .disposed(by: disposeBag)
+        
+        reactor.state.compactMap(\.saveResult)
+            .subscribe(onNext: {[weak self] result in
+                switch result {
+                case .success(let transaction):
+                    self?.coordinator?.popTransactionInput()
+                case .failure(let error):
+                    print("저장실패: \(error.localizedDescription)")
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.editingRecord)
+            .compactMap { $0 }
+            .take(1)
+            .subscribe { [weak self] transaction in
+                self?.loadEditingData(transaction)
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    // MARK: - Actions
     
     @objc private func amountTextFieldDidChange(_ textField: UITextField) {
         guard let text = textField.text else { return }
@@ -194,6 +282,12 @@ final class RecordFormViewController: UIViewController {
         textField.text = actualAmount.formattedWithComma
     }
     
+    private func loadEditingData(_ transaction: Transaction) {
+        setAmount(transaction.amount)
+        placeTextField.text = transaction.title
+        memoTextField.text = transaction.memo ?? ""
+    }
+    
     private func getCurrentAmout() -> Int {
         return actualAmount
     }
@@ -207,17 +301,6 @@ final class RecordFormViewController: UIViewController {
         }
     }
     
-    // MARK: - Bind
-    private func bind() {
-        saveButton.rx.tap
-            .subscribe { [weak self] _ in
-                print("저장 버튼 탭")
-                self?.coordinator?.popTransactionInput()
-            }
-            .disposed(by: disposeBag)
-    }
-    
-    // MARK: - Actions
     @objc private func backButtonTapped() {
         coordinator?.popTransactionInput()
     }
@@ -288,5 +371,5 @@ extension RecordFormViewController: UITextFieldDelegate {
 
 @available(iOS 17.0, *)
 #Preview {
-    RecordFormViewController()
+    RecordFormViewController(reactor: RecordFormReactor())
 }

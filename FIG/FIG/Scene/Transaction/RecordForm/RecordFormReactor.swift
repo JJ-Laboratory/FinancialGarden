@@ -31,7 +31,6 @@ final class RecordFormReactor: Reactor {
         case setPayment(PaymentMethod?)
         case setDate(Date)
         case setMemo(String)
-        case setLoading(Bool)
         case setEditingRecord(Transaction?)
         case setSaveResult(Result<Transaction, Error>)
         case setValidation(Bool)
@@ -44,7 +43,6 @@ final class RecordFormReactor: Reactor {
         var selectedPayment: PaymentMethod?
         var selectedDate: Date = Date()
         var memo: String = ""
-        var isLoading: Bool = false
         var editingRecord: Transaction?
         var saveResult: Result<Transaction, Error>?
         var isValid: Bool = false
@@ -55,7 +53,6 @@ final class RecordFormReactor: Reactor {
         
         var isSaveEnabled: Bool {
             return isValid &&
-            !isLoading &&
             amount > 0 &&
             selectedCategory != nil &&
             selectedPayment != nil &&
@@ -120,19 +117,15 @@ final class RecordFormReactor: Reactor {
             newState.selectedDate = date
         case .setMemo(let memo):
             newState.memo = memo
-        case .setLoading(let isLoading):
-            newState.isLoading = isLoading
         case .setEditingRecord(let transaction):
             newState.editingRecord = transaction
         case .setSaveResult(let result):
             newState.saveResult = result
-            newState.isLoading = false
         case .setValidation(let isValid):
             newState.isValid = isValid
         }
         return newState
     }
-    
 }
 
 extension RecordFormReactor {
@@ -177,7 +170,6 @@ extension RecordFormReactor {
         }
         
         return Observable.concat([
-            Observable.just(.setLoading(true)),
             saveObservable
                 .map { transaction in
                         .setSaveResult(.success(transaction))
