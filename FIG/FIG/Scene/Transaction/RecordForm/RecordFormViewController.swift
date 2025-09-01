@@ -280,7 +280,7 @@ final class RecordFormViewController: UIViewController, View {
         reactor.state.compactMap(\.saveResult)
             .subscribe { [weak self] result in
                 switch result {
-                case .success(let transaction):
+                case .success:
                     self?.coordinator?.popTransactionInput()
                 case .failure(let error):
                     print("저장실패: \(error.localizedDescription)")

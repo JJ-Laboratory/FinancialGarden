@@ -162,3 +162,9 @@ extension RecordListReactor {
         return (expense, income)
     }
 }
+
+extension RecordListReactor.RecordGroup: Equatable {
+    static func == (lhs: RecordListReactor.RecordGroup, rhs: RecordListReactor.RecordGroup) -> Bool {
+        return lhs.date == rhs.date && lhs.transactions.count == rhs.transactions.count
+    }
+}
