@@ -48,6 +48,28 @@ final class RecordFormViewController: UIViewController, View {
         $0.textColor = .charcoal
     }
     
+    private let categoryLabel = UILabel().then {
+        $0.textColor = .charcoal
+        $0.textAlignment = .right
+        $0.numberOfLines = 0
+        $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
+    }
+    
+    private let paymentLabel = UILabel().then {
+        $0.textColor = .charcoal
+        $0.textAlignment = .right
+        $0.numberOfLines = 0
+        $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
+    }
+    
+    private let dateLabel = UILabel().then {
+        $0.text = Date().fullDateString
+        $0.textColor = .charcoal
+        $0.textAlignment = .right
+        $0.numberOfLines = 0
+        $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
+    }
+    
     // FIXME: 키보드 위로 입력창 올리기
     private let memoTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
@@ -72,6 +94,7 @@ final class RecordFormViewController: UIViewController, View {
         FormItem("카테고리")
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)
+            .trailing { categoryLabel }
             .action { [weak self] in
                 self?.presentCategoryPicker()
             }
@@ -83,6 +106,7 @@ final class RecordFormViewController: UIViewController, View {
         FormItem("결제수단")
             .image(UIImage(systemName: "creditcard"))
             .showsDisclosureIndicator(true)
+            .trailing { paymentLabel }
             .action { [weak self] in
                 self?.presentPaymentPicker()
             }
@@ -90,6 +114,7 @@ final class RecordFormViewController: UIViewController, View {
         FormItem("날짜")
             .image(UIImage(systemName: "calendar"))
             .showsDisclosureIndicator(true)
+            .trailing { dateLabel }
             .action { [weak self] in
                 self?.presentDatePicker()
             }
@@ -234,15 +259,33 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: saveButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
+        reactor.state.map(\.selectedCategory)
+            .distinctUntilChanged { $0?.id == $1?.id }
+            .map { $0?.title ?? "" }
+            .bind(to: categoryLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.selectedPayment)
+            .distinctUntilChanged()
+            .map { $0?.title ?? "" }
+            .bind(to: paymentLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.selectedDate)
+            .distinctUntilChanged()
+            .map(\.fullDateString)
+            .bind(to: dateLabel.rx.text)
+            .disposed(by: disposeBag)
+        
         reactor.state.compactMap(\.saveResult)
-            .subscribe(onNext: {[weak self] result in
+            .subscribe { [weak self] result in
                 switch result {
                 case .success(let transaction):
                     self?.coordinator?.popTransactionInput()
                 case .failure(let error):
                     print("저장실패: \(error.localizedDescription)")
                 }
-            })
+            }
             .disposed(by: disposeBag)
         
         reactor.state.map(\.editingRecord)
@@ -264,6 +307,7 @@ final class RecordFormViewController: UIViewController, View {
         if numbersOnly.isEmpty {
             actualAmount = 0
             textField.text = ""
+            reactor?.action.onNext(.setAmount(0))
             return
         }
         
@@ -276,10 +320,12 @@ final class RecordFormViewController: UIViewController, View {
         
         if actualAmount == 0 {
             textField.text = ""
+            reactor?.action.onNext(.setAmount(0))
             return
         }
         
         textField.text = actualAmount.formattedWithComma
+        reactor?.action.onNext(.setAmount(actualAmount))
     }
     
     private func loadEditingData(_ transaction: Transaction) {
@@ -307,8 +353,9 @@ final class RecordFormViewController: UIViewController, View {
     
     private func presentCategoryPicker() {
         let picker = ItemPickerController<Category>.allCategoriesPicker()
-        picker.itemSelected = { category in
+        picker.itemSelected = { [weak self] category in
             print("선택된 카테고리: \(category.title)")
+            self?.reactor?.action.onNext(.selectCategory(category))
         }
         
         present(picker, animated: true)
@@ -316,8 +363,9 @@ final class RecordFormViewController: UIViewController, View {
     
     private func presentPaymentPicker() {
         let picker = ItemPickerController<PaymentMethod>.paymentMethodPicker()
-        picker.itemSelected = { payment in
+        picker.itemSelected = { [weak self] payment in
             print("선택된 카테고리: \(payment.title)")
+            self?.reactor?.action.onNext(.selectPayment(payment))
         }
         
         present(picker, animated: true)
@@ -325,8 +373,10 @@ final class RecordFormViewController: UIViewController, View {
     
     private func presentDatePicker() {
         let picker = DatePickerController(title: "날짜 선택", mode: .date)
-        picker.dateSelected = { date in
+        picker.maximumDate = Date()
+        picker.dateSelected = { [weak self] date in
             print("선택된 날짜: \(date)")
+            self?.reactor?.action.onNext(.selectDate(date))
         }
         
         present(picker, animated: true)

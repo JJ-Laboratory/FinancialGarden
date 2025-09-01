@@ -23,7 +23,6 @@ final class RecordFormReactor: Reactor {
         case loadForEdit(Transaction)
     }
     
-    // 질문: Transaction 하나로 처리하는게 맞나??
     enum Mutation {
         case setAmount(Int)
         case setCategory(Category?)
@@ -33,7 +32,6 @@ final class RecordFormReactor: Reactor {
         case setMemo(String)
         case setEditingRecord(Transaction?)
         case setSaveResult(Result<Transaction, Error>)
-        case setValidation(Bool)
     }
     
     struct State {
@@ -45,18 +43,10 @@ final class RecordFormReactor: Reactor {
         var memo: String = ""
         var editingRecord: Transaction?
         var saveResult: Result<Transaction, Error>?
-        var isValid: Bool = false
+        var isSaveEnabled: Bool = false
         
         var isEditMode: Bool {
             return editingRecord != nil
-        }
-        
-        var isSaveEnabled: Bool {
-            return isValid &&
-            amount > 0 &&
-            selectedCategory != nil &&
-            selectedPayment != nil &&
-            !place.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
     
@@ -71,8 +61,7 @@ final class RecordFormReactor: Reactor {
         self.transactionRepository = transactionRepository
         self.initialState = .init(
             selectedDate: Date(),
-            editingRecord: editingRecord,
-            isValid: editingRecord != nil // 수정모드 시
+            editingRecord: editingRecord
         )
     }
     
@@ -80,15 +69,12 @@ final class RecordFormReactor: Reactor {
         switch action {
         case .setAmount(let amount):
             return Observable.just(.setAmount(amount))
-                .concat(Observable.just(.setValidation(validateInput())))
         case .selectCategory(let category):
             return Observable.just(.setCategory(category))
-                .concat(Observable.just(.setValidation(validateInput())))
         case .setPlace(let place):
             return Observable.just(.setPlace(place))
         case .selectPayment(let payment):
             return Observable.just(.setPayment(payment))
-                .concat(Observable.just(.setValidation(validateInput())))
         case .selectDate(let date):
             return Observable.just(.setDate(date))
         case .setMemo(let memo):
@@ -121,9 +107,10 @@ final class RecordFormReactor: Reactor {
             newState.editingRecord = transaction
         case .setSaveResult(let result):
             newState.saveResult = result
-        case .setValidation(let isValid):
-            newState.isValid = isValid
         }
+        
+        newState.isSaveEnabled = newState.amount > 0 && newState.selectedCategory != nil && newState.selectedPayment != nil
+        
         return newState
     }
 }
@@ -133,8 +120,7 @@ extension RecordFormReactor {
         let state = currentState
         return state.amount > 0 &&
         state.selectedCategory != nil &&
-        state.selectedPayment != nil &&
-        !state.place.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        state.selectedPayment != nil
     }
     
     func saveTransaction() -> Observable<Mutation> {
@@ -151,11 +137,15 @@ extension RecordFormReactor {
             return Observable.empty()
         }
         
+        let title = state.place.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        ? category.title
+        : state.place.trimmingCharacters(in: .whitespacesAndNewlines)
+        
         let transaction = Transaction(
             id: state.editingRecord?.id ?? UUID(),
             amount: state.amount,
             category: category,
-            title: state.place.trimmingCharacters(in: .whitespacesAndNewlines),
+            title: title,
             payment: payment,
             date: state.selectedDate,
             memo: state.memo.isEmpty ? nil: state.memo
@@ -188,7 +178,6 @@ extension RecordFormReactor {
             Observable.just(.setPayment(transaction.payment)),
             Observable.just(.setDate(transaction.date)),
             Observable.just(.setMemo(transaction.memo ?? "")),
-            Observable.just(.setValidation(true))
         ])
     }
 }
