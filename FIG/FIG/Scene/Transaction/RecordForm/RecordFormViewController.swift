@@ -375,6 +375,8 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private func loadEditingData(_ transaction: Transaction) {
+        reactor?.action.onNext(.loadForEdit(transaction))
+        
         setAmount(transaction.amount)
         placeTextField.text = transaction.title
         memoTextField.text = transaction.memo ?? ""

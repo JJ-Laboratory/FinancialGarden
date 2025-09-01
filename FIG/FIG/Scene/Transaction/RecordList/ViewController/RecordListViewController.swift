@@ -103,7 +103,6 @@ final class RecordListViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.state.map(\.recordGroups)
-            .distinctUntilChanged()
             .observe(on: MainScheduler.instance)
             .subscribe { [weak self] _ in
                 self?.collectionView.reloadData()

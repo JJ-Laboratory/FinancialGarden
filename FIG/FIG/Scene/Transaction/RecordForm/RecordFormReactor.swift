@@ -115,7 +115,7 @@ final class RecordFormReactor: Reactor {
             newState.deleteResult = result
         }
         
-        newState.isSaveEnabled = newState.amount > 0 && newState.selectedCategory != nil && newState.selectedPayment != nil
+        newState.isSaveEnabled = calculateSaveEnabled(newState)
         
         return newState
     }
@@ -178,6 +178,63 @@ extension RecordFormReactor {
             Observable.just(.setDate(transaction.date)),
             Observable.just(.setMemo(transaction.memo ?? "")),
         ])
+    }
+    
+    private func calculateSaveEnabled(_ state: State) -> Bool {
+
+        let hasRequiredFields = state.amount > 0 &&
+                               state.selectedCategory != nil &&
+                               state.selectedPayment != nil
+        
+        guard hasRequiredFields else { return false }
+        
+        // 새 등록 모드인 경우 - 기본 조건만 확인
+        guard state.isEditMode else { return true }
+        
+        // 수정 모드인 경우 - 원본과 변경사항 확인
+        guard let editingRecord = state.editingRecord else { return false }
+        
+        return hasChanges(state, editingRecord)
+    }
+    
+    private func hasChanges(_ currentState: State, _ originalRecord: Transaction) -> Bool {
+        // 금액 변경
+        if currentState.amount != originalRecord.amount {
+            return true
+        }
+        
+        // 카테고리 변경
+        if currentState.selectedCategory?.id != originalRecord.category.id {
+            return true
+        }
+        
+        // 거래처 변경
+        let currentTitle = currentState.place.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? (currentState.selectedCategory?.title ?? "")
+            : currentState.place.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if currentTitle != originalRecord.title {
+            return true
+        }
+        
+        // 결제수단 변경
+        if currentState.selectedPayment != originalRecord.payment {
+            return true
+        }
+        
+        // 날짜 변경 (같은 날인지 확인)
+        let calendar = Calendar.current
+        if !calendar.isDate(currentState.selectedDate, inSameDayAs: originalRecord.date) {
+            return true
+        }
+        
+        // 메모 변경
+        let currentMemo = currentState.memo.isEmpty ? nil : currentState.memo
+        if currentMemo != originalRecord.memo {
+            return true
+        }
+        
+        return false
     }
     
     func deleteTransaction() -> Observable<Mutation> {
