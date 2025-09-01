@@ -242,7 +242,7 @@ final class ChallengeFormViewController: UIViewController, View {
         // MARK: - State (Reactor -> View)
         
         reactor.state
-            .map(\.selectedcategory)
+            .map(\.selectedCategory)
             .distinctUntilChanged()
             .map { $0?.title ?? "" }
             .bind(to: categoryLabel.rx.text)

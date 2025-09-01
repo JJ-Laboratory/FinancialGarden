@@ -29,7 +29,7 @@ class ChallengeFormViewReactor: Reactor {
     
     struct State {
         var currentSeedCount: Int = 0
-        var selectedcategory: Category?
+        var selectedCategory: Category?
         var selectedPeriod: ChallengeDuration = .week
         var amount: Int = 0
         var fruitCount: Int = 0
@@ -74,7 +74,7 @@ class ChallengeFormViewReactor: Reactor {
         case .setCurrentSeedCount(let currentSeedCount):
             newState.currentSeedCount = currentSeedCount
         case .setCategory(let category):
-            newState.selectedcategory = category
+            newState.selectedCategory = category
         case .setPeriod(let period):
             newState.selectedPeriod = period
         case .setAmount(let amount):
@@ -84,7 +84,7 @@ class ChallengeFormViewReactor: Reactor {
         case .setCreate(let isCreating):
             newState.isCreating = isCreating
         }
-        newState.isEnabled = newState.selectedcategory != nil && newState.fruitCount > 0 && !newState.isCreating
+        newState.isEnabled = newState.selectedCategory != nil && newState.fruitCount > 0 && !newState.isCreating
         return newState
     }
 }
