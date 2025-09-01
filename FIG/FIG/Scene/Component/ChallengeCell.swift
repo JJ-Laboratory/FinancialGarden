@@ -11,6 +11,9 @@ import Then
 
 class ChallengeCell: UICollectionViewCell {
     
+    var onConfirmButtonTapped: ((ChallengeStatus) -> Void)?
+    private var currentStatus: ChallengeStatus?
+    
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.numberOfLines = 0
@@ -19,11 +22,14 @@ class ChallengeCell: UICollectionViewCell {
     
     private let dDayLabel = UILabel().then {
         $0.textColor = .primary
+        $0.textAlignment = .center
+        $0.font = .preferredFont(forTextStyle: .caption1).withWeight(.semibold)
+    }
+    private lazy var dDayView = UIView().then {
+        $0.addSubview(dDayLabel)
         $0.layer.cornerRadius = 5
         $0.clipsToBounds = true
-        $0.textAlignment = .center
         $0.backgroundColor = .lightPink
-        $0.font = .preferredFont(forTextStyle: .caption1).withWeight(.semibold)
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
     
@@ -86,12 +92,13 @@ class ChallengeCell: UICollectionViewCell {
         $0.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
     }
     
-    private let confirmButton = CustomButton(style: .filled).then {
+    private lazy var confirmButton = CustomButton(style: .filledSmall).then {
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
         $0.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        $0.addTarget(self, action: #selector(confirmButtonTapped), for: .touchUpInside)
     }
     
-    private lazy var titleStackView = UIStackView(arrangedSubviews: [titleLabel, dDayLabel]).then {
+    private lazy var titleStackView = UIStackView(arrangedSubviews: [titleLabel, dDayView]).then {
         $0.spacing = 8
         $0.axis = .horizontal
         $0.alignment = .center
@@ -160,6 +167,11 @@ class ChallengeCell: UICollectionViewCell {
             $0.leading.trailing.equalToSuperview().inset(15)
         }
         
+        dDayLabel.snp.makeConstraints {
+            $0.verticalEdges.equalToSuperview().inset(4)
+            $0.horizontalEdges.equalToSuperview().inset(8)
+        }
+        
         progressView.snp.makeConstraints {
             $0.top.equalTo(contentStackView.snp.bottom).offset(16)
             $0.leading.trailing.equalToSuperview().inset(15)
@@ -202,6 +214,8 @@ class ChallengeCell: UICollectionViewCell {
     // MARK: - Configuration
     
     func configure(with challenge: Challenge) {
+        currentStatus = challenge.status
+        
         titleLabel.text = challenge.category.title
         dDayLabel.text = "D-3"
         dateLabel.text = "2025.8.27 ~ 8.30"
@@ -214,7 +228,7 @@ class ChallengeCell: UICollectionViewCell {
             ]
         )
         text.append(NSAttributedString(
-            string: " / 1,300,000원",
+            string: " / \(challenge.spendingLimit.formattedWithComma)원",
             attributes: [
                 .font: UIFont.preferredFont(forTextStyle: .subheadline),
                 .foregroundColor: UIColor.gray1
@@ -224,10 +238,26 @@ class ChallengeCell: UICollectionViewCell {
         
         statusImageView.image = UIImage(systemName: "wonsign.circle")
         
-        let progress = Float(4) / Float(7)
+        let progress = Float(4) / Float(challenge.duration.rawValue)
         progressView.setProgress(progress, animated: true)
         
-        messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
-        confirmButton.setTitle("확인", for: .normal)
+        switch challenge.status {
+        case .progress:
+            bottomStackView.isHidden = true
+        case .success:
+            bottomStackView.isHidden = false
+            messageLabel.text = "목표 소비 금액보다 123원 절약했네요🎉\n열매를 수확해보세요!"
+            confirmButton.setTitle("수확", for: .normal)
+        case .failure:
+            bottomStackView.isHidden = false
+            messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
+            confirmButton.setTitle("확인", for: .normal)
+        }
+    }
+    
+    @objc private func confirmButtonTapped() {
+        guard let status = currentStatus else { return }
+        onConfirmButtonTapped?(status)
     }
 }
+
