@@ -13,7 +13,7 @@ class PopupViewController: UIViewController {
     private let popupView: PopupView
     private let popupTransitioningDelegate = PopupTransitioningDelegate()
     
-    init(type: ChallengeType, count: Int) {
+    init(type: ChallengeStatus, count: Int) {
         self.popupView = PopupView(type: type, count: count)
         super.init(nibName: nil, bundle: nil)
         

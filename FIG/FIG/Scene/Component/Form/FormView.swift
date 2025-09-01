@@ -166,6 +166,9 @@ extension FormView {
             guard let view = super.hitTest(point, with: event) else {
                 return nil
             }
+            if view is UIButton {
+                return view
+            }
             return view.canBecomeFirstResponder ? view : self
         }
     }

@@ -27,12 +27,11 @@ final class ChallengeCoordinator: Coordinator {
     // MARK: - Navigation Methods
     
     private func showChallengeList() {
-        let challengeListVC = createChallengeViewController()
-        navigationController.setViewControllers([challengeListVC], animated: false)
+        _ = createChallengeViewController()
     }
     
     func pushChallengeInput() {
-        let challengeInputVC = createChallengeInputViewController()
+        let challengeInputVC = createChallengeFormViewController()
         challengeInputVC.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(challengeInputVC, animated: true)
     }
@@ -43,14 +42,14 @@ final class ChallengeCoordinator: Coordinator {
     
     // MARK: - ViewController Factory Methods
     
-    private func createChallengeViewController() -> ChallengeViewController {
-        let viewController = ChallengeViewController()
+    private func createChallengeViewController() -> ChallengeListViewController {
+        let viewController = ChallengeListViewController(reactor: ChallengeListViewReactor())
         viewController.coordinator = self
         return viewController
     }
     
-    private func createChallengeInputViewController() -> ChallengeInputViewController {
-        let viewController = ChallengeInputViewController()
+    private func createChallengeFormViewController() -> ChallengeFormViewController {
+        let viewController = ChallengeFormViewController(reactor: ChallengeFormViewReactor())
         viewController.coordinator = self
         return viewController
     }

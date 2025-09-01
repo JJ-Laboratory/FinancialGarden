@@ -30,7 +30,7 @@ enum ChallengeDuration: Int, CaseIterable {
     }
 }
 
-struct Challenge {
+struct Challenge: Hashable {
     let id: UUID
     let category: Category
     let startDate: Date
@@ -40,7 +40,7 @@ struct Challenge {
     let requiredSeedCount: Int
     let targetFruitsCount: Int
     let isCompleted: Bool
-    let isSuccess: Bool
+    let status: ChallengeStatus
     
     init(
         id: UUID = UUID(),
@@ -52,7 +52,7 @@ struct Challenge {
         requiredSeedCount: Int,
         targetFruitsCount: Int = 1,
         isCompleted: Bool = false,
-        isSuccess: Bool = false
+        status: ChallengeStatus = .progress
     ) {
         self.id = id
         self.category = category
@@ -63,16 +63,18 @@ struct Challenge {
         self.requiredSeedCount = requiredSeedCount
         self.targetFruitsCount = targetFruitsCount
         self.isCompleted = isCompleted
-        self.isSuccess = isSuccess
+        self.status = status
     }
 }
 
-enum ChallengeType {
+enum ChallengeStatus: String {
+    case progress
     case success
     case failure
     
     var title: String {
         switch self {
+        case .progress: return "진행 중"
         case .success: return "챌린지 성공!"
         case .failure: return "챌린지 실패!"
         }
@@ -80,6 +82,7 @@ enum ChallengeType {
     
     var message: String {
         switch self {
+        case .progress: return ""
         case .success: return "개의 열매를 수확했어요"
         case .failure: return "개의 씨앗이 소멸되었어요"
         }
@@ -87,8 +90,24 @@ enum ChallengeType {
     
     var buttonTitle: String {
         switch self {
+        case .progress: return ""
         case .success: return "새 챌린지 도전하기"
         case .failure: return "챌린지 다시 도전하기"
         }
     }
+}
+
+enum FilterType: String, CaseIterable {
+    case inProgress = "진행 중"
+    case completed = "완료"
+}
+
+enum ChallengeSection: Int {
+    case gardenInfo
+    case challengeList
+}
+
+enum ChallengeItem: Hashable {
+    case gardenInfo(GardenRecord)
+    case challenge(Challenge)
 }
