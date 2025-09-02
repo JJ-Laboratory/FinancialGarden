@@ -26,14 +26,20 @@ final class RecordListViewController: UIViewController {
     
     // MARK: - UI Components
     
-    // FIXME: push pop 이후 title, image 뒤바뀌는 문제
-    private let monthButton = UIButton(type: .system).then {
-        $0.titleLabel?.font = .preferredFont(forTextStyle: .title2).withWeight(.semibold)
-        $0.setTitleColor(.label, for: .normal)
-        $0.semanticContentAttribute = .forceRightToLeft
-        $0.setImage(UIImage(systemName: "chevron.down", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)), for: .normal)
+    private let monthButton = UIButton(configuration: .plain()).then {
+        $0.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.foregroundColor = .charcoal
+            outgoing.font = .preferredFont(forTextStyle: .title2).withWeight(.semibold)
+            return outgoing
+        }
+        $0.configuration?.image = UIImage(
+            systemName: "chevron.down",
+            withConfiguration: UIImage.SymbolConfiguration(font: .preferredFont(forTextStyle: .title2).withWeight(.semibold)).applying(UIImage.SymbolConfiguration(scale: .small))
+        )
+        $0.configuration?.imagePlacement = .trailing
+        $0.configuration?.imagePadding = 8
         $0.tintColor = .charcoal
-        $0.imageEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 0)
     }
     
     private lazy var collectionView: UICollectionView = {
@@ -242,7 +248,7 @@ extension RecordListViewController {
         recordGroups = groups
         collectionView.reloadData()
     }
-
+    
     private func createSampleCategories() -> [Category] {
         return [
             Category(id: UUID(), title: "카페・간식", iconName: "cup.and.heat.waves.fill", transactionType: .expense),

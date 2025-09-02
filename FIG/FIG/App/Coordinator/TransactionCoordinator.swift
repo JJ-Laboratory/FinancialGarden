@@ -49,7 +49,8 @@ final class TransactionCoordinator: Coordinator {
     }
     
     private func createRecordFormViewController() -> RecordFormViewController {
-        let viewController = RecordFormViewController()
+        let reactor = RecordFormReactor()
+        let viewController = RecordFormViewController(reactor: reactor)
         viewController.coordinator = self
         return viewController
     }

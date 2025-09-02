@@ -117,7 +117,7 @@ extension ItemPickerController where Item == PaymentMethod {
     /// 전체 결제수단 피커 생성하는 팩토리 메서드
     static func paymentMethodPicker(
         selectedPaymentMethod: PaymentMethod? = nil,
-        contentHeight: CGFloat = 400
+        contentHeight: CGFloat = 450
     ) -> ItemPickerController<PaymentMethod> {
         return ItemPickerController(
             title: "결제수단 선택",
