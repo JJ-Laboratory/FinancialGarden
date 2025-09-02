@@ -18,12 +18,16 @@ final class ChallengeFormViewController: UIViewController, View {
     var disposeBag = DisposeBag()
     
     // MARK: - UI Components
+    private let deleteButton = CustomButton(style: .plain).then {
+        $0.setTitle("삭제", for: .normal)
+    }
+    
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.textAlignment = .left
         $0.numberOfLines = 0
         $0.text = "어떤 챌린지를 추가하시나요?"
-        $0.font = .preferredFont(forTextStyle: .title2).withWeight(.bold)
+        $0.font = .preferredFont(forTextStyle: .title1).withWeight(.bold)
     }
     
     private let categoryLabel = UILabel().then {
@@ -104,7 +108,7 @@ final class ChallengeFormViewController: UIViewController, View {
         $0.setTitle("추가", for: .normal)
     }
     
-    private lazy var formView = FormView(titleSize: .fixed(100)) {
+    private lazy var formView = FormView {
         FormItem("카테고리")
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)
@@ -165,6 +169,7 @@ final class ChallengeFormViewController: UIViewController, View {
             action: #selector(backButtonTapped)
         )
         navigationController?.navigationBar.tintColor = .charcoal
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: deleteButton)
     }
     
     private func setupUI() {
@@ -187,10 +192,14 @@ final class ChallengeFormViewController: UIViewController, View {
         }
     }
     
+    // MARK: - Bind
+    
     func bind(reactor: ChallengeFormViewReactor) {
-        
-        // MARK: - Action (View -> Reactor)
-        
+        bindAction(reactor)
+        bindState(reactor)
+    }
+    
+    private func bindAction(_ reactor: ChallengeFormViewReactor) {
         weekButton.rx.tap
             .map { .selectPeriod(.week) }
             .bind(to: reactor.action)
@@ -232,20 +241,53 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         createButton.rx.tap
+            .map { .createButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        deleteButton.rx.tap
             .subscribe(onNext: { [weak self] in
-                // TODO: 실제 챌린지 생성 로직 구현
-                print("생성 버튼 탭됨")
-                self?.coordinator?.popChallengeInput()
+                guard let self else { return }
+                let alert = UIAlertController(title: "삭제 확인", message: "정말로 삭제하시겠습니까?", preferredStyle: .alert)
+                let confirm = UIAlertAction(title: "삭제", style: .destructive) { _ in
+                    reactor.action.onNext(.deleteButtonTapped)
+                }
+                let cancel = UIAlertAction(title: "취소", style: .cancel, handler: nil)
+                
+                alert.addAction(confirm)
+                alert.addAction(cancel)
+                present(alert, animated: true, completion: nil)
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func bindState(_ reactor: ChallengeFormViewReactor) {
+        reactor.state.map { $0.isEditingEnable }
+            .distinctUntilChanged()
+            .subscribe(onNext: { [weak self] isEnabled in
+                guard let self = self else { return }
+                let formItemsToToggle = [
+                    weekButton, monthButton, amount1, amount2, amount3, amount4, minusButton, plusButton
+                ]
+                formItemsToToggle.forEach { $0.isEnabled = isEnabled }
+                // FormView의 카테고리 셀 탭은 어떻게..
             })
             .disposed(by: disposeBag)
         
-        // MARK: - State (Reactor -> View)
+        reactor.state
+            .map(\.mode)
+            .distinctUntilChanged()
+            .asDriver(onErrorJustReturn: .create)
+            .drive(onNext: { [weak self] mode in
+                self?.updateUI(for: mode)
+            })
+            .disposed(by: disposeBag)
         
         reactor.state
-            .map(\.selectedCategory)
+            .map(\.selectedCategory?.title)
             .distinctUntilChanged()
-            .map { $0?.title ?? "" }
-            .bind(to: categoryLabel.rx.text)
+            .asDriver(onErrorJustReturn: "")
+            .drive(categoryLabel.rx.text)
             .disposed(by: disposeBag)
         
         reactor.state
@@ -262,21 +304,24 @@ final class ChallengeFormViewController: UIViewController, View {
             .map(\.amount)
             .distinctUntilChanged()
             .map { "\($0.formattedWithComma)원" }
-            .bind(to: amountLabel.rx.text)
+            .asDriver(onErrorJustReturn: "0원")
+            .drive(amountLabel.rx.text)
             .disposed(by: disposeBag)
         
         reactor.state
             .map(\.fruitCount)
             .distinctUntilChanged()
             .map { "\($0)개" }
-            .bind(to: fruitCountLabel.rx.text)
+            .asDriver(onErrorJustReturn: "0개")
+            .drive(fruitCountLabel.rx.text)
             .disposed(by: disposeBag)
         
         reactor.state
             .map(\.currentSeedCount)
             .distinctUntilChanged()
             .map { "현재 사용 가능 씨앗 \($0)개" }
-            .bind(to: infoLabel.rx.text)
+            .asDriver(onErrorJustReturn: "")
+            .drive(infoLabel.rx.text)
             .disposed(by: disposeBag)
         
         reactor.state
@@ -284,6 +329,34 @@ final class ChallengeFormViewController: UIViewController, View {
             .distinctUntilChanged()
             .bind(to: createButton.rx.isEnabled)
             .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$isClose)
+            .compactMap { $0 }
+            .subscribe(onNext: { [weak self] isClose in
+                if isClose == true {
+                    self?.coordinator?.popChallengeInput()
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$errorMessage)
+            .compactMap { $0 }
+            .subscribe(onNext: { message in
+                print("error: \(message)")
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func updateUI(for mode: ChallengeFormViewReactor.Mode) {
+        switch mode {
+        case .create:
+            createButton.isHidden = false
+            deleteButton.isHidden = true
+            
+        case .detail( _):
+            createButton.isHidden = true
+            deleteButton.isHidden = false
+        }
     }
     
     @objc private func backButtonTapped() {
@@ -294,7 +367,6 @@ final class ChallengeFormViewController: UIViewController, View {
         guard let reactor = reactor else { return }
         let picker = ItemPickerController<Category>.allCategoriesPicker()
         picker.itemSelected = { category in
-            print("선택된 카테고리: \(category.title)")
             reactor.action.onNext(.selectCategory(category))
         }
         
