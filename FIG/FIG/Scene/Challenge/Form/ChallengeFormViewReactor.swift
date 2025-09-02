@@ -42,7 +42,6 @@ class ChallengeFormViewReactor: Reactor {
         var selectedPeriod: ChallengeDuration = .week
         var amount: Int = 0
         var fruitCount: Int = 0
-        var isEditingEnable: Bool = true
         @Pulse var isClose: Bool = false
         @Pulse var errorMessage: String?
         var isEnabled: Bool {
@@ -58,7 +57,6 @@ class ChallengeFormViewReactor: Reactor {
                 self.selectedPeriod = challenge.duration
                 self.amount = challenge.spendingLimit
                 self.fruitCount = challenge.targetFruitsCount
-                self.isEditingEnable = false
             }
         }
     }
@@ -153,6 +151,6 @@ class ChallengeFormViewReactor: Reactor {
             requiredSeedCount = currentState.fruitCount * 3
         }
         
-        return Challenge(category: category, endDate: endDate, duration: currentState.selectedPeriod, spendingLimit: currentState.amount, requiredSeedCount: requiredSeedCount, targetFruitsCount: currentState.fruitCount, status: .success)
+        return Challenge(category: category, endDate: endDate, duration: currentState.selectedPeriod, spendingLimit: currentState.amount, requiredSeedCount: requiredSeedCount, targetFruitsCount: currentState.fruitCount)
     }
 }

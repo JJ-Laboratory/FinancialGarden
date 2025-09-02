@@ -262,18 +262,6 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     private func bindState(_ reactor: ChallengeFormViewReactor) {
-        reactor.state.map { $0.isEditingEnable }
-            .distinctUntilChanged()
-            .subscribe(onNext: { [weak self] isEnabled in
-                guard let self = self else { return }
-                let formItemsToToggle = [
-                    weekButton, monthButton, amount1, amount2, amount3, amount4, minusButton, plusButton
-                ]
-                formItemsToToggle.forEach { $0.isEnabled = isEnabled }
-                // FormView의 카테고리 셀 탭은 어떻게..
-            })
-            .disposed(by: disposeBag)
-        
         reactor.state
             .map(\.mode)
             .distinctUntilChanged()
@@ -356,6 +344,7 @@ final class ChallengeFormViewController: UIViewController, View {
         case .detail( _):
             createButton.isHidden = true
             deleteButton.isHidden = false
+            formView.isUserInteractionEnabled = false
         }
     }
     

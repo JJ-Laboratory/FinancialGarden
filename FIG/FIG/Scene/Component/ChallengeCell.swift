@@ -72,7 +72,7 @@ class ChallengeCell: UICollectionViewCell {
         $0.numberOfLines = 0
     }
     
-    private let statusImageView = UIImageView().then {
+    private let stageImageView = UIImageView().then {
         $0.contentMode = .scaleAspectFit
     }
     
@@ -120,7 +120,7 @@ class ChallengeCell: UICollectionViewCell {
     
     private lazy var contentStackView = UIStackView(axis: .horizontal, distribution: .equalCentering, alignment: .center, spacing: 8) {
         dateAndAmountStackView
-        statusImageView
+        stageImageView
     }
     
     private lazy var bottomStackView = UIStackView(axis: .horizontal, distribution: .equalSpacing, alignment: .center, spacing: 8) {
@@ -181,12 +181,12 @@ class ChallengeCell: UICollectionViewCell {
         contentStackView.axis = isAccessibilityCategory ? .vertical: .horizontal
         
         if isAccessibilityCategory {
-            statusImageView.snp.remakeConstraints {
+            stageImageView.snp.remakeConstraints {
                 $0.width.height.equalTo(80).priority(999)
             }
             contentStackView.alignment = .fill
         } else {
-            statusImageView.snp.remakeConstraints {
+            stageImageView.snp.remakeConstraints {
                 $0.width.height.equalTo(50).priority(999)
             }
             contentStackView.alignment = .center
@@ -201,6 +201,7 @@ class ChallengeCell: UICollectionViewCell {
         
         titleLabel.text = challenge.category.title
         dDayLabel.text = challenge.endDate.dDayString
+        dDayView.isHidden = challenge.isCompleted ? true : false
         dateLabel.text = challenge.startDate.toFormattedRange(to: challenge.endDate)
         
         let text = NSMutableAttributedString(
@@ -219,30 +220,46 @@ class ChallengeCell: UICollectionViewCell {
         ))
         amountLabel.attributedText = text
         
-        statusImageView.image = UIImage(systemName: "wonsign.circle")
-        
-        let progress = Float(4) / Float(challenge.duration.rawValue)
-        progressView.setProgress(progress, animated: true)
+        let progressValue = challenge.startDate.progress(to: challenge.endDate)
+        UIView.animate(withDuration: 0.8) {
+            self.progressView.setProgress(progressValue, animated: true)
+        }
         progressView.progressTintColor = (challenge.status == .failure) ? .gray1 : .primary
+        
+        let stage = ProgressStage(progress: progressValue)
+        stageImageView.image = stage.image
         
         bottomStackView.isHidden = true
         
-        if !challenge.isCompleted {
-            switch challenge.status {
-            case .progress:
-                break
-            case .success:
+        switch challenge.status {
+        case .progress:
+            break
+            
+        case .success:
+            stageImageView.image = UIImage(systemName: "apple.meditate")
+            
+            if !challenge.isCompleted {
                 titleLabel.text = challenge.status.title
                 bottomStackView.isHidden = false
                 messageLabel.text = "목표 소비 금액보다 123원 절약했네요🎉\n열매를 수확해보세요!"
                 confirmButton.setTitle("수확", for: .normal)
-            case .failure:
+            }
+            
+        case .failure:
+            stageImageView.image = UIImage(systemName: "x.circle")
+            
+            if !challenge.isCompleted {
                 titleLabel.text = challenge.status.title
                 bottomStackView.isHidden = false
                 messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
                 confirmButton.setTitle("확인", for: .normal)
             }
         }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        progressView.progress = 0
     }
     
     @objc private func confirmButtonTapped() {

@@ -110,5 +110,23 @@ extension Date {
             return "D+\(abs(days))"
         }
     }
+    
+    func progress(to endDate: Date, now: Date = Date()) -> Float {
+        let startDate = self
+        let totalDuration = endDate.timeIntervalSince(startDate)
+        guard totalDuration > 0 else {
+            return 1.0
+        }
+        
+        let elapsedTime = now.timeIntervalSince(startDate)
+        guard elapsedTime > 0 else {
+            return 0.0
+        }
+        
+        let rawProgress = elapsedTime / totalDuration
+        let progress = min(1.0, max(0.0, rawProgress))
+        
+        return Float(progress)
+    }
 }
 

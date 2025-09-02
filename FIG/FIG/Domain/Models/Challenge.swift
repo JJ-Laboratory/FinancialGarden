@@ -111,3 +111,19 @@ enum ChallengeItem: Hashable {
     case gardenInfo(GardenRecord)
     case challenge(Challenge)
 }
+
+import UIKit
+
+enum ProgressStage: Int {
+    case level0, level1, level2, level3, level4, level5, level6
+    
+    init(progress: Float) {
+        let level = Int(progress * 7)
+        let clampedLevel = min(6, level)
+        self = ProgressStage(rawValue: clampedLevel) ?? .level0
+    }
+    
+    var image: UIImage? {
+        return UIImage(systemName: "\(self.rawValue).circle")
+    }
+}
