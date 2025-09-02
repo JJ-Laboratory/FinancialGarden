@@ -21,8 +21,9 @@ final class RecordFormViewController: UIViewController, View {
     private var actualAmount: Int = 0
     
     // MARK: - UI Components
+    
     private let titleLabel = UILabel().then {
-        $0.text = "어떤 소비를 하셨나요?"
+        $0.text = "어떤 거래 내역을 기록할까요?"
         $0.textColor = .charcoal
         $0.textAlignment = .left
         $0.font = .preferredFont(forTextStyle: .title1).withWeight(.bold)
@@ -46,6 +47,7 @@ final class RecordFormViewController: UIViewController, View {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
+        $0.textAlignment = .right
     }
     
     private let categoryLabel = UILabel().then {
@@ -70,7 +72,7 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
     
-    // FIXME: 키보드 위로 입력창 올리기
+    // TODO: textview
     private let memoTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
@@ -280,7 +282,7 @@ final class RecordFormViewController: UIViewController, View {
         reactor.state.compactMap(\.saveResult)
             .subscribe { [weak self] result in
                 switch result {
-                case .success(let transaction):
+                case .success:
                     self?.coordinator?.popTransactionInput()
                 case .failure(let error):
                     print("저장실패: \(error.localizedDescription)")
@@ -295,9 +297,55 @@ final class RecordFormViewController: UIViewController, View {
                 self?.loadEditingData(transaction)
             }
             .disposed(by: disposeBag)
+        
+        reactor.state.map(\.isEditMode)
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe { [weak self] isEditMode in
+                self?.updateUI(isEditMode: isEditMode)
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.compactMap(\.deleteResult)
+            .observe(on: MainScheduler.instance)
+            .subscribe { [weak self] result in
+                switch result {
+                case .success:
+                    self?.coordinator?.popTransactionInput()
+                case .failure(let error):
+                    self?.showDeleteError(error)
+                }
+            }
+            .disposed(by: disposeBag)
     }
     
     // MARK: - Actions
+    
+    private func updateUI(isEditMode: Bool) {
+        if isEditMode {
+            saveButton.setTitle("수정", for: .normal)
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "삭제", style: .plain, target: self, action: #selector(deleteButtonTapped))
+            navigationItem.rightBarButtonItem?.tintColor = .primary
+        } else {
+            saveButton.setTitle("저장", for: .normal)
+            navigationItem.rightBarButtonItem = nil
+        }
+    }
+    
+    @objc private func deleteButtonTapped() {
+        let alert = UIAlertController(
+            title: "삭제 확인",
+            message: "이 내역을 삭제하시겠습니까?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.reactor?.action.onNext(.delete)
+        })
+        
+        present(alert, animated: true)
+    }
     
     @objc private func amountTextFieldDidChange(_ textField: UITextField) {
         guard let text = textField.text else { return }
@@ -329,13 +377,11 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private func loadEditingData(_ transaction: Transaction) {
+        reactor?.action.onNext(.loadForEdit(transaction))
+        
         setAmount(transaction.amount)
         placeTextField.text = transaction.title
         memoTextField.text = transaction.memo ?? ""
-    }
-    
-    private func getCurrentAmout() -> Int {
-        return actualAmount
     }
     
     private func setAmount(_ amount: Int) {
@@ -380,6 +426,16 @@ final class RecordFormViewController: UIViewController, View {
         }
         
         present(picker, animated: true)
+    }
+    
+    private func showDeleteError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "삭제 실패",
+            message: error.localizedDescription,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 }
 

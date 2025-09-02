@@ -32,11 +32,11 @@ extension DateFormatter {
         return formatter
     }()
     
-    /// 년 월 용 버튼 (2024년 8월) - 올해가 아닌 경우
+    /// 년 월 용 버튼 (24년 8월) - 올해가 아닌 경우
     static let yearMonthButtonDate: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
-        formatter.dateFormat = "yyyy년 M월"
+        formatter.dateFormat = "yy년 M월"
         return formatter
     }()
 }

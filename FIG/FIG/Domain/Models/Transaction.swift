@@ -40,7 +40,7 @@ enum PaymentMethod: String, CaseIterable, Hashable {
     }
 }
 
-struct Transaction {
+struct Transaction: Hashable {
     let id: UUID
     let amount: Int
     let category: Category
