@@ -43,11 +43,11 @@ final class RecordFormViewController: UIViewController, View {
         $0.textColor = .primary
     }
     
-    // TODO: 우측 정렬
     private let placeTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
+        $0.textAlignment = .right
     }
     
     private let categoryLabel = UILabel().then {
