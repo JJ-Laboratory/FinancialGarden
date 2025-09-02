@@ -18,6 +18,11 @@ final class RecordFormViewController: UIViewController, View {
     weak var coordinator: TransactionCoordinator?
     var disposeBag = DisposeBag()
     
+    // MARK: - Action Relay
+    private let categoryActionRelay = PublishRelay<Void>()
+    private let paymentActionRelay = PublishRelay<Void>()
+    private let dateActionRelay = PublishRelay<Void>()
+
     // MARK: - UI Components
     
     private let titleLabel = UILabel().then {
@@ -97,9 +102,7 @@ final class RecordFormViewController: UIViewController, View {
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)
             .trailing { categoryLabel }
-            .action { [weak self] in
-                self?.presentCategoryPicker()
-            }
+            .action(categoryActionRelay)
         
         FormItem("거래처")
             .image(UIImage(systemName: "person.circle"))
@@ -109,17 +112,13 @@ final class RecordFormViewController: UIViewController, View {
             .image(UIImage(systemName: "creditcard"))
             .showsDisclosureIndicator(true)
             .trailing { paymentLabel }
-            .action { [weak self] in
-                self?.presentPaymentPicker()
-            }
+            .action(paymentActionRelay)
         
         FormItem("날짜")
             .image(UIImage(systemName: "calendar"))
             .showsDisclosureIndicator(true)
             .trailing { dateLabel }
-            .action { [weak self] in
-                self?.presentDatePicker()
-            }
+            .action(dateActionRelay)
         
         FormItem("메모")
             .image(UIImage(systemName: "doc.text"))
@@ -277,6 +276,33 @@ final class RecordFormViewController: UIViewController, View {
             .map { Reactor.Action.save }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+        
+        categoryActionRelay
+            .map { ItemPickerController<Category>.allCategoriesPicker() }
+            .withUnretained(self)
+            .do(onNext: { $0.present($1, animated: true) })
+            .flatMap { $1.rx.itemSelected }
+            .map { Reactor.Action.selectCategory($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        paymentActionRelay
+            .map { ItemPickerController<PaymentMethod>.paymentMethodPicker() }
+            .withUnretained(self)
+            .do(onNext: { $0.present($1, animated: true) })
+            .flatMap { $1.rx.itemSelected }
+            .map { Reactor.Action.selectPayment($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        dateActionRelay
+            .map { DatePickerController(title: "날짜 선택", mode: .date) }
+            .withUnretained(self)
+            .do(onNext: { $0.present($1, animated: true) })
+            .flatMap { $1.rx.dateSelected }
+            .map { Reactor.Action.selectDate($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     private func bindState(_ reactor: RecordFormReactor) {
@@ -384,37 +410,6 @@ final class RecordFormViewController: UIViewController, View {
     
     @objc private func backButtonTapped() {
         coordinator?.popTransactionInput()
-    }
-    
-    private func presentCategoryPicker() {
-        let picker = ItemPickerController<Category>.allCategoriesPicker()
-        picker.itemSelected = { [weak self] category in
-            print("선택된 카테고리: \(category.title)")
-            self?.reactor?.action.onNext(.selectCategory(category))
-        }
-        
-        present(picker, animated: true)
-    }
-    
-    private func presentPaymentPicker() {
-        let picker = ItemPickerController<PaymentMethod>.paymentMethodPicker()
-        picker.itemSelected = { [weak self] payment in
-            print("선택된 카테고리: \(payment.title)")
-            self?.reactor?.action.onNext(.selectPayment(payment))
-        }
-        
-        present(picker, animated: true)
-    }
-    
-    private func presentDatePicker() {
-        let picker = DatePickerController(title: "날짜 선택", mode: .date)
-        picker.maximumDate = Date()
-        picker.dateSelected = { [weak self] date in
-            print("선택된 날짜: \(date)")
-            self?.reactor?.action.onNext(.selectDate(date))
-        }
-        
-        present(picker, animated: true)
     }
     
     private func showDeleteError(_ error: Error) {
