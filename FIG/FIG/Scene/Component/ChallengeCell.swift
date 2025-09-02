@@ -76,12 +76,10 @@ class ChallengeCell: UICollectionViewCell {
         $0.contentMode = .scaleAspectFit
     }
     
-    private let progressView = UIProgressView().then {
-        $0.progressViewStyle = .default
-        $0.progressTintColor = .primary
+    private let progressView = ProgressView().then {
+        $0.tintColor = .primary
         $0.trackTintColor = .background
-        $0.layer.cornerRadius = 10
-        $0.clipsToBounds = true
+        $0.thickness = 20
     }
     
     private let messageLabel = UILabel().then {
@@ -221,10 +219,8 @@ class ChallengeCell: UICollectionViewCell {
         amountLabel.attributedText = text
         
         let progressValue = challenge.startDate.progress(to: challenge.endDate)
-        UIView.animate(withDuration: 0.8) {
-            self.progressView.setProgress(progressValue, animated: true)
-        }
-        progressView.progressTintColor = (challenge.status == .failure) ? .gray1 : .primary
+        progressView.progress = progressValue
+        progressView.tintColor = (challenge.status == .failure) ? .gray1 : .primary
         
         let stage = ProgressStage(progress: progressValue)
         stageImageView.image = stage.image
