@@ -36,6 +36,7 @@ final class ChallengeCoordinator: Coordinator {
         navigationController.pushViewController(challengeInputVC, animated: true)
     }
     
+        let challengeDetailVC = createChallengeDetailViewController(challenge: challenge)
     func popChallengeInput() {
         navigationController.popViewController(animated: true)
     }

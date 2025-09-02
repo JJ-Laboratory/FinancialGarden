@@ -98,43 +98,41 @@ class ChallengeCell: UICollectionViewCell {
         $0.addTarget(self, action: #selector(confirmButtonTapped), for: .touchUpInside)
     }
     
-    private lazy var titleStackView = UIStackView(arrangedSubviews: [titleLabel, dDayView]).then {
-        $0.spacing = 8
-        $0.axis = .horizontal
-        $0.alignment = .center
-        $0.distribution = .equalCentering
+    private lazy var titleStackView = UIStackView(axis: .horizontal, distribution: .equalCentering, alignment: .center, spacing: 8) {
+        titleLabel
+        dDayView
     }
     
-    private lazy var dateStackView = UIStackView(arrangedSubviews: [dateIcon, dateLabel]).then {
-        $0.spacing = 8
-        $0.axis = .horizontal
-        $0.alignment = .center
+    private lazy var dateStackView = UIStackView(axis: .horizontal, distribution: .equalCentering, alignment: .center, spacing: 8) {
+        dateIcon
+        dateLabel
     }
     
-    private lazy var amountStackView = UIStackView(arrangedSubviews: [amountIcon, amountLabel]).then {
-        $0.spacing = 8
-        $0.axis = .horizontal
-        $0.alignment = .center
+    private lazy var amountStackView = UIStackView(axis: .horizontal, alignment: .center, spacing: 8) {
+        amountIcon
+        amountLabel
     }
     
-    private lazy var dateAndAmountStackView = UIStackView(arrangedSubviews: [dateStackView, amountStackView]).then {
-        $0.spacing = 8
-        $0.axis = .vertical
-        $0.alignment = .leading
+    private lazy var dateAndAmountStackView = UIStackView(axis: .vertical, alignment: .leading, spacing: 8) {
+        dateStackView
+        amountStackView
     }
     
-    private lazy var contentStackView = UIStackView(arrangedSubviews: [dateAndAmountStackView, statusImageView]).then {
-        $0.spacing = 8
-        $0.axis = .horizontal
-        $0.alignment = .center
-        $0.distribution = .equalCentering
+    private lazy var contentStackView = UIStackView(axis: .horizontal, distribution: .equalCentering, alignment: .center, spacing: 8) {
+        dateAndAmountStackView
+        statusImageView
     }
     
-    private lazy var bottomStackView = UIStackView(arrangedSubviews: [messageLabel, confirmButton]).then {
-        $0.spacing = 8
-        $0.axis = .horizontal
-        $0.alignment = .center
-        $0.distribution = .equalSpacing
+    private lazy var bottomStackView = UIStackView(axis: .horizontal, distribution: .equalSpacing, alignment: .center, spacing: 8) {
+        messageLabel
+        confirmButton
+    }
+    
+    private lazy var totalStackView = UIStackView(axis : .vertical, alignment: .fill, spacing: 16) {
+        titleStackView
+        contentStackView
+        progressView
+        bottomStackView
     }
     
     // MARK: - Initializer
@@ -153,18 +151,10 @@ class ChallengeCell: UICollectionViewCell {
     private func setupUI() {
         contentView.backgroundColor = .white
         contentView.layer.cornerRadius = 16
+        contentView.addSubview(totalStackView)
         
-        [titleStackView, contentStackView, progressView, bottomStackView].forEach {
-            contentView.addSubview($0)
-        }
-        
-        titleStackView.snp.makeConstraints {
-            $0.top.leading.trailing.equalToSuperview().inset(15)
-        }
-        
-        contentStackView.snp.makeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(16)
-            $0.leading.trailing.equalToSuperview().inset(15)
+        totalStackView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(15)
         }
         
         dDayLabel.snp.makeConstraints {
@@ -173,14 +163,7 @@ class ChallengeCell: UICollectionViewCell {
         }
         
         progressView.snp.makeConstraints {
-            $0.top.equalTo(contentStackView.snp.bottom).offset(16)
-            $0.leading.trailing.equalToSuperview().inset(15)
             $0.height.equalTo(20)
-        }
-        
-        bottomStackView.snp.makeConstraints {
-            $0.top.equalTo(progressView.snp.bottom).offset(16)
-            $0.leading.trailing.bottom.equalToSuperview().inset(15)
         }
         
         updateLayoutForContentSize()
@@ -198,12 +181,12 @@ class ChallengeCell: UICollectionViewCell {
         contentStackView.axis = isAccessibilityCategory ? .vertical: .horizontal
         
         if isAccessibilityCategory {
-            statusImageView.snp.makeConstraints {
+            statusImageView.snp.remakeConstraints {
                 $0.width.height.equalTo(80).priority(999)
             }
             contentStackView.alignment = .fill
         } else {
-            statusImageView.snp.makeConstraints {
+            statusImageView.snp.remakeConstraints {
                 $0.width.height.equalTo(50).priority(999)
             }
             contentStackView.alignment = .center
@@ -217,8 +200,8 @@ class ChallengeCell: UICollectionViewCell {
         currentStatus = challenge.status
         
         titleLabel.text = challenge.category.title
-        dDayLabel.text = "D-3"
-        dateLabel.text = "2025.8.27 ~ 8.30"
+        dDayLabel.text = challenge.endDate.dDayString
+        dateLabel.text = challenge.startDate.toFormattedRange(to: challenge.endDate)
         
         let text = NSMutableAttributedString(
             string: "1,200,793원",
@@ -240,18 +223,25 @@ class ChallengeCell: UICollectionViewCell {
         
         let progress = Float(4) / Float(challenge.duration.rawValue)
         progressView.setProgress(progress, animated: true)
+        progressView.progressTintColor = (challenge.status == .failure) ? .gray1 : .primary
         
-        switch challenge.status {
-        case .progress:
-            bottomStackView.isHidden = true
-        case .success:
-            bottomStackView.isHidden = false
-            messageLabel.text = "목표 소비 금액보다 123원 절약했네요🎉\n열매를 수확해보세요!"
-            confirmButton.setTitle("수확", for: .normal)
-        case .failure:
-            bottomStackView.isHidden = false
-            messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
-            confirmButton.setTitle("확인", for: .normal)
+        bottomStackView.isHidden = true
+        
+        if !challenge.isCompleted {
+            switch challenge.status {
+            case .progress:
+                break
+            case .success:
+                titleLabel.text = challenge.status.title
+                bottomStackView.isHidden = false
+                messageLabel.text = "목표 소비 금액보다 123원 절약했네요🎉\n열매를 수확해보세요!"
+                confirmButton.setTitle("수확", for: .normal)
+            case .failure:
+                titleLabel.text = challenge.status.title
+                bottomStackView.isHidden = false
+                messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
+                confirmButton.setTitle("확인", for: .normal)
+            }
         }
     }
     
@@ -260,4 +250,3 @@ class ChallengeCell: UICollectionViewCell {
         onConfirmButtonTapped?(status)
     }
 }
-
