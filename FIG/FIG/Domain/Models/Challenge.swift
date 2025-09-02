@@ -39,7 +39,7 @@ struct Challenge: Hashable {
     let spendingLimit: Int
     let requiredSeedCount: Int
     let targetFruitsCount: Int
-    let isCompleted: Bool
+    var isCompleted: Bool
     let status: ChallengeStatus
     
     init(
@@ -83,8 +83,8 @@ enum ChallengeStatus: String {
     var message: String {
         switch self {
         case .progress: return ""
-        case .success: return "개의 열매를 수확했어요"
-        case .failure: return "개의 씨앗이 소멸되었어요"
+        case .success: return "개의 열매를 수확했어요\n새로운 챌린지에 도전해보세요!"
+        case .failure: return "개의 씨앗이 소멸되었어요\n챌린지를 다시 도전해 보세요!"
         }
     }
     
