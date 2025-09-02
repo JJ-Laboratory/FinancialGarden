@@ -37,11 +37,15 @@ final class ChallengeListViewController: UIViewController, View {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        reactor?.action.onNext(.viewDidLoad)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         configureDataSource()
-        reactor?.action.onNext(.viewDidLoad)
     }
     
     private func setupUI() {
@@ -74,6 +78,32 @@ final class ChallengeListViewController: UIViewController, View {
                 self?.applySnapshot(gardenInfo: gardenInfo, challenges: displayedChallenges)
             })
             .disposed(by: disposeBag)
+        
+        collectionView.rx.itemSelected
+            .subscribe(onNext: { [weak self] indexPath in
+                let item = self?.dataSource.itemIdentifier(for: indexPath)
+                guard case .challenge(let challenge) = item else { return }
+                self?.coordinator?.pushChallengeDetail(challenge: challenge)
+            })
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$animation)
+            .compactMap { $0 }
+            .subscribe(onNext: { [weak self] animation in
+                guard let self = self, let reactor = self.reactor else { return }
+                if let gardenCell = self.collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? GardenInfoCell {
+                    gardenCell.configure(with: GardenRecord(totalSeeds: reactor.currentState.gardenInfo?.totalSeeds ?? 0, totalFruits: animation.to), animated: true, completion: { reactor.action.onNext(.animationFinished)})
+                }
+            })
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$challengeForPopup)
+            .compactMap { $0 }
+            .subscribe(onNext: { [weak self] challenge in
+                let count = (challenge.status == .success) ? challenge.targetFruitsCount : challenge.requiredSeedCount
+                self?.presentPopup(status: challenge.status, count: count)
+            })
+            .disposed(by: disposeBag)
     }
     
     private func configureDataSource() {
@@ -90,11 +120,10 @@ final class ChallengeListViewController: UIViewController, View {
                 return collectionView.dequeueConfiguredReusableCell(using: gardenRegistration, for: indexPath, item: countData)
             case .challenge(let challengeData):
                 let cell = collectionView.dequeueConfiguredReusableCell(using: challengeRegistration, for: indexPath, item: challengeData)
-                cell.onConfirmButtonTapped = { [weak self] status in
-                    let count = (status == .success) ? challengeData.targetFruitsCount : challengeData.requiredSeedCount
-                    self?.presentPopup(status: status, count: count)
-                }
                 
+                cell.onConfirmButtonTapped = { [weak self] _ in
+                    self?.reactor?.action.onNext(.confirmButtonTapped(challengeData))
+                }
                 return cell
             }
         }
@@ -187,6 +216,10 @@ final class ChallengeListViewController: UIViewController, View {
     
     private func presentPopup(status: ChallengeStatus, count: Int) {
         let popupVC = PopupViewController(type: status, count: count)
+        
+        popupVC.onDismiss = { [weak self] in
+            self?.reactor?.action.onNext(.viewDidLoad)
+        }
         present(popupVC, animated: true)
     }
 }
