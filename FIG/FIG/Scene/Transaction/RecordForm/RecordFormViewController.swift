@@ -21,8 +21,9 @@ final class RecordFormViewController: UIViewController, View {
     private var actualAmount: Int = 0
     
     // MARK: - UI Components
+    
     private let titleLabel = UILabel().then {
-        $0.text = "어떤 소비를 하셨나요?"
+        $0.text = "어떤 거래 내역을 기록할까요?"
         $0.textColor = .charcoal
         $0.textAlignment = .left
         $0.font = .preferredFont(forTextStyle: .title1).withWeight(.bold)
@@ -42,6 +43,7 @@ final class RecordFormViewController: UIViewController, View {
         $0.textColor = .primary
     }
     
+    // TODO: 우측 정렬
     private let placeTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
@@ -70,7 +72,7 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
     
-    // FIXME: 키보드 위로 입력창 올리기
+    // TODO: textview
     private let memoTextField = UITextField().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
@@ -90,7 +92,7 @@ final class RecordFormViewController: UIViewController, View {
     
     private let amountInputView = UIView()
     
-    private lazy var formView = FormView(titleSize: .fixed(100)) {
+    private lazy var formView = FormView(titleSize: .fixed(120)) {
         FormItem("카테고리")
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)
