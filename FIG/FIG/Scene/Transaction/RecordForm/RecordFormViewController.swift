@@ -18,8 +18,6 @@ final class RecordFormViewController: UIViewController, View {
     weak var coordinator: TransactionCoordinator?
     var disposeBag = DisposeBag()
     
-    private var actualAmount: Int = 0
-    
     // MARK: - UI Components
     
     private let titleLabel = UILabel().then {
@@ -149,7 +147,6 @@ final class RecordFormViewController: UIViewController, View {
         super.viewDidLoad()
         setupUI()
         setupNavigationBar()
-        setupTextFieldDelegates()
     }
     
     // MARK: - Setup UI
@@ -227,18 +224,6 @@ final class RecordFormViewController: UIViewController, View {
         memoTextField.inputAccessoryView = toolbar
     }
     
-    private func setupTextFieldDelegates() {
-        amountTextField.delegate = self
-        placeTextField.delegate = self
-        memoTextField.delegate = self
-        
-        amountTextField.addTarget(
-            self,
-            action: #selector(amountTextFieldDidChange(_:)),
-            for: .editingChanged
-        )
-    }
-    
     // MARK: - Bind
     func bind(reactor: RecordFormReactor) {
         bindAction(reactor)
@@ -267,6 +252,15 @@ final class RecordFormViewController: UIViewController, View {
             }
             .disposed(by: disposeBag)
 
+        amountTextField.rx.text.orEmpty
+            .map {
+                $0.components(separatedBy: CharacterSet.decimalDigits.inverted).joined().prefix(10)
+            }
+            .map { Int($0) ?? 0 }
+            .map { Reactor.Action.setAmount($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+
         placeTextField.rx.text.orEmpty
             .distinctUntilChanged()
             .map(Reactor.Action.setPlace)
@@ -291,6 +285,11 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: saveButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
+        reactor.state.map(\.amount)
+            .map { $0 == .zero ? "" : $0.formattedWithComma }
+            .bind(to: amountTextField.rx.text)
+            .disposed(by: disposeBag)
+
         reactor.state.map(\.selectedCategory)
             .distinctUntilChanged { $0?.id == $1?.id }
             .map { $0?.title ?? "" }
@@ -376,51 +375,11 @@ final class RecordFormViewController: UIViewController, View {
         
         present(alert, animated: true)
     }
-    
-    @objc private func amountTextFieldDidChange(_ textField: UITextField) {
-        guard let text = textField.text else { return }
         
-        let numbersOnly = text.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
-        
-        if numbersOnly.isEmpty {
-            actualAmount = 0
-            textField.text = ""
-            reactor?.action.onNext(.setAmount(0))
-            return
-        }
-        
-        if numbersOnly.count >= 10 {
-            let limitedNumbers = String(numbersOnly.prefix(10))
-            actualAmount = Int(limitedNumbers) ?? 0
-        } else {
-            actualAmount = Int(numbersOnly) ?? 0
-        }
-        
-        if actualAmount == 0 {
-            textField.text = ""
-            reactor?.action.onNext(.setAmount(0))
-            return
-        }
-        
-        textField.text = actualAmount.formattedWithComma
-        reactor?.action.onNext(.setAmount(actualAmount))
-    }
-    
     private func loadEditingData(_ transaction: Transaction) {
         reactor?.action.onNext(.loadForEdit(transaction))
-        
-        setAmount(transaction.amount)
         placeTextField.text = transaction.title
         memoTextField.text = transaction.memo ?? ""
-    }
-    
-    private func setAmount(_ amount: Int) {
-        actualAmount = amount
-        if amount == 0 {
-            amountTextField.text = ""
-        } else {
-            amountTextField.text = amount.formattedWithComma
-        }
     }
     
     @objc private func backButtonTapped() {
@@ -466,42 +425,6 @@ final class RecordFormViewController: UIViewController, View {
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
-    }
-}
-
-extension RecordFormViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == amountTextField {
-            placeTextField.becomeFirstResponder()
-        } else if textField == placeTextField {
-            memoTextField.becomeFirstResponder()
-        } else if textField == memoTextField {
-            textField.resignFirstResponder()
-        }
-        return true
-    }
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        if textField == amountTextField {
-            // 숫자와 백스페이스만 허용
-            let allowedCharacters = CharacterSet.decimalDigits
-            let characterSet = CharacterSet(charactersIn: string)
-            
-            // 백스페이스 허용
-            if string.isEmpty {
-                return true
-            }
-            return allowedCharacters.isSuperset(of: characterSet)
-        }
-        return true
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField == amountTextField {
-            if actualAmount == 0 {
-                textField.text = ""
-            }
-        }
     }
 }
 
