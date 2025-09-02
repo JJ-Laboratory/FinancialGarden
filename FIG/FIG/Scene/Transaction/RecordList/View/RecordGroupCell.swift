@@ -47,6 +47,8 @@ final class RecordGroupCell: UICollectionViewCell {
         $0.backgroundColor = .clear
     }
     
+    var onRecordTap: ((Transaction) -> Void)?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -93,6 +95,10 @@ final class RecordGroupCell: UICollectionViewCell {
         for record in recordGroup.transactions {
             let recordView = RecordItemView()
             recordView.configure(with: record)
+            
+            recordView.onTap = { [weak self] transaction in
+                self?.onRecordTap?(transaction)
+            }
             
             stackView.addArrangedSubview(recordView)
         }

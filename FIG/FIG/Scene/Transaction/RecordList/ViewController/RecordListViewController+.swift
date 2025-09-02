@@ -19,14 +19,15 @@ extension RecordListViewController: UICollectionViewDataSource {
         case .summary:
             return 1
         case .sectionHeader:
-            return 1
+            return reactor?.currentState.recordGroups.isEmpty == false ? 1 : 0
         case .records:
-            return recordGroups.count
+            return reactor?.currentState.recordGroups.count ?? 0
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let section = Section(rawValue: indexPath.section) else {
+        guard let section = Section(rawValue: indexPath.section),
+              let reactor = reactor else {
             return UICollectionViewCell()
         }
         
@@ -38,7 +39,8 @@ extension RecordListViewController: UICollectionViewDataSource {
             ) as? MonthlySummaryCell else {
                 return UICollectionViewCell()
             }
-            cell.configure(expense: 345678, income: 1234567)
+            let state = reactor.currentState
+            cell.configure(expense: state.monthlyExpense, income: state.monthlyIncome)
             return cell
             
         case .sectionHeader:
@@ -57,8 +59,14 @@ extension RecordListViewController: UICollectionViewDataSource {
             ) as? RecordGroupCell else {
                 return UICollectionViewCell()
             }
+            
+            let recordGroups = reactor.currentState.recordGroups
             let recordGroup = recordGroups[indexPath.item]
             cell.configure(with: recordGroup)
+            
+            cell.onRecordTap = { [weak self] transaction in
+                self?.coordinator?.pushTransactionEdit(transaction: transaction)
+            }
             return cell
         }
     }

@@ -12,9 +12,7 @@ final class TabBarCoordinator: Coordinator {
     weak var parentCoordinator: Coordinator?
     
     let tabBarController = UITabBarController()
-    
-    // navigationController 프로퍼티 제거
-    
+        
     func start() {
         setupTabs()
     }
@@ -33,11 +31,11 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 가계부 탭
-        let transactionVC = RecordListViewController()
-        let transactionNavController = UINavigationController(rootViewController: transactionVC)
+        let transactionNavController = UINavigationController()
         let transactionCoordinator = TransactionCoordinator(navigationController: transactionNavController)
-        transactionVC.coordinator = transactionCoordinator
         addChildCoordinator(transactionCoordinator)
+        
+        transactionCoordinator.start()
         
         transactionNavController.tabBarItem = UITabBarItem(
             title: "가계부",
