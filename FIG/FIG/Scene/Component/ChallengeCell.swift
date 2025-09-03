@@ -197,6 +197,7 @@ class ChallengeCell: UICollectionViewCell {
     
     func configure(with challenge: Challenge, isHomeMode: Bool = false) {
         currentStatus = challenge.status
+        self.isHomeMode = isHomeMode
         
         titleLabel.text = challenge.category.title
         dDayLabel.text = challenge.endDate.dDayString
@@ -239,10 +240,12 @@ class ChallengeCell: UICollectionViewCell {
             
             if !challenge.isCompleted {
                 titleLabel.text = challenge.status.title
-                bottomStackView.isHidden = false
-                let amount = (challenge.spendingLimit - challenge.currentSpending).formattedWithComma
-                messageLabel.text = "목표 소비 금액보다 \(amount)원 절약했네요🎉\n열매를 수확해보세요!"
-                confirmButton.setTitle("수확", for: .normal)
+                if !isHomeMode {
+                    bottomStackView.isHidden = false
+                    let amount = (challenge.spendingLimit - challenge.currentSpending).formattedWithComma
+                    messageLabel.text = "목표 소비 금액보다 \(amount)원 절약했네요🎉\n열매를 수확해보세요!"
+                    confirmButton.setTitle("수확", for: .normal)
+                }
             }
             
         case .failure:
@@ -250,9 +253,11 @@ class ChallengeCell: UICollectionViewCell {
             
             if !challenge.isCompleted {
                 titleLabel.text = challenge.status.title
-                bottomStackView.isHidden = false
-                messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
-                confirmButton.setTitle("확인", for: .normal)
+                if !isHomeMode {
+                    bottomStackView.isHidden = false
+                    messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
+                    confirmButton.setTitle("확인", for: .normal)
+                }
             }
         }
     }
@@ -260,6 +265,7 @@ class ChallengeCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         progressView.progress = 0
+        isHomeMode = false
     }
     
     @objc private func confirmButtonTapped() {
