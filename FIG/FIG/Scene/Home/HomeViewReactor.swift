@@ -45,8 +45,8 @@ final class HomeViewReactor: Reactor {
     let initialState = State()
     
     init(
-        transactionRepository: TransactionRepositoryInterface = TransactionRepository(),
-        challengeRepository: ChallengeRepositoryInterface = ChallengeRepository()
+        transactionRepository: TransactionRepositoryInterface,
+        challengeRepository: ChallengeRepositoryInterface
     ) {
         self.transactionRepository = transactionRepository
         self.challengeRepository = challengeRepository

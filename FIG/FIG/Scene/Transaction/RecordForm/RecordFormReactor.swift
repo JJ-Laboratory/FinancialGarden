@@ -58,8 +58,8 @@ final class RecordFormReactor: Reactor {
     private let logger = Logger.transaction
     
     init(
-        transactionRepository: TransactionRepositoryInterface = TransactionRepository(),
-        gardenRepository: GardenRepositoryInterface = GardenRepository(),
+        transactionRepository: TransactionRepositoryInterface,
+        gardenRepository: GardenRepositoryInterface,
         editingRecord: Transaction? = nil
     ) {
         self.transactionRepository = transactionRepository
