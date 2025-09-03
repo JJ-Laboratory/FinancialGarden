@@ -30,6 +30,8 @@ enum GardenItemType {
 
 class GardenItemView: UIStackView {
     
+    private var currentCount: Int = 0
+    
     private let iconView = UIImageView().then {
         $0.contentMode = .scaleAspectFit
     }
@@ -67,8 +69,38 @@ class GardenItemView: UIStackView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(count: Int) {
-        countLabel.text = "\(count)개"
+    func configure(count: Int, animated: Bool = false, completion: (() -> Void)? = nil) {
+        if animated && count > currentCount {
+            animateCount(from: currentCount, to: count, completion: completion)
+        } else {
+            countLabel.text = "\(count)개"
+            completion?()
+        }
+        currentCount = count
+    }
+    
+    // 숫자 카운트 애니메이션
+    private func animateCount(from startValue: Int, to endValue: Int, completion: (() -> Void)?) {
+        let duration: TimeInterval = 1
+        let steps = endValue - startValue
+        guard steps > 0 else {
+            completion?()
+            return
+        }
+        
+        let stepDuration = duration / Double(steps)
+        var currentValue = startValue
+        
+        Timer.scheduledTimer(withTimeInterval: stepDuration, repeats: true) { [weak self] timer in
+            currentValue += 1
+            if currentValue >= endValue {
+                self?.countLabel.text = "\(endValue)개"
+                timer.invalidate()
+                completion?()
+            } else {
+                self?.countLabel.text = "\(currentValue)개"
+            }
+        }
     }
     
     func setAxis(_ axis: NSLayoutConstraint.Axis, alignment: UIStackView.Alignment) {

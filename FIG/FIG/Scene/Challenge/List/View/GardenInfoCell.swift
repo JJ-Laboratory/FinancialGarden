@@ -103,8 +103,8 @@ class GardenInfoCell: UICollectionViewCell{
         }
     }
     
-    func configure(with record: GardenRecord) {
+    func configure(with record: GardenRecord, animated: Bool = false, completion: (() -> Void)? = nil) {
         seedItem.configure(count: record.totalSeeds)
-        fruitItem.configure(count: record.totalFruits)
+        fruitItem.configure(count: record.totalFruits, animated: animated, completion: completion)
     }
 }

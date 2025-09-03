@@ -36,11 +36,12 @@ struct Challenge: Hashable {
     let startDate: Date
     let endDate: Date
     let duration: ChallengeDuration
+    var currentSpending: Int
     let spendingLimit: Int
     let requiredSeedCount: Int
     let targetFruitsCount: Int
-    let isCompleted: Bool
-    let status: ChallengeStatus
+    var isCompleted: Bool
+    var status: ChallengeStatus
     
     init(
         id: UUID = UUID(),
@@ -48,6 +49,7 @@ struct Challenge: Hashable {
         startDate: Date = Date(),
         endDate: Date,
         duration: ChallengeDuration,
+        currentSpending: Int = 0,
         spendingLimit: Int,
         requiredSeedCount: Int,
         targetFruitsCount: Int = 1,
@@ -59,6 +61,7 @@ struct Challenge: Hashable {
         self.startDate = startDate
         self.endDate = endDate
         self.duration = duration
+        self.currentSpending = currentSpending
         self.spendingLimit = spendingLimit
         self.requiredSeedCount = requiredSeedCount
         self.targetFruitsCount = targetFruitsCount
@@ -83,8 +86,8 @@ enum ChallengeStatus: String {
     var message: String {
         switch self {
         case .progress: return ""
-        case .success: return "개의 열매를 수확했어요"
-        case .failure: return "개의 씨앗이 소멸되었어요"
+        case .success: return "개의 열매를 수확했어요\n새로운 챌린지에 도전해보세요!"
+        case .failure: return "개의 씨앗이 소멸되었어요\n챌린지를 다시 도전해 보세요!"
         }
     }
     
@@ -110,4 +113,20 @@ enum ChallengeSection: Int {
 enum ChallengeItem: Hashable {
     case gardenInfo(GardenRecord)
     case challenge(Challenge)
+}
+
+import UIKit
+
+enum ProgressStage: Int {
+    case level0, level1, level2, level3, level4, level5, level6
+    
+    init(progress: Float) {
+        let level = Int(progress * 7)
+        let clampedLevel = min(6, level)
+        self = ProgressStage(rawValue: clampedLevel) ?? .level0
+    }
+    
+    var image: UIImage? {
+        return UIImage(systemName: "\(self.rawValue).circle")
+    }
 }
