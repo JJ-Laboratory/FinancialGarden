@@ -22,7 +22,12 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeVC = createHomeViewController()
+        let homeReactor = HomeViewReactor(
+            transactionRepository: TransactionRepository(),
+            challengeRepository: ChallengeRepository()
+        )
+        homeReactor.coordinator = self
+        let homeVC = HomeViewController(reactor: homeReactor)
         let homeNavController = UINavigationController(rootViewController: homeVC)
         homeNavController.tabBarItem = UITabBarItem(
             title: "홈",
@@ -58,7 +63,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 차트 탭
-        let chartVC = createChartViewController()
+        let chartVC = ChartViewController()
         let chartNavController = UINavigationController(rootViewController: chartVC)
         chartNavController.tabBarItem = UITabBarItem(
             title: "차트",
@@ -69,17 +74,41 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.viewControllers = [homeNavController, transactionNavController, challengeNavController, chartNavController]
     }
     
-    private func createHomeViewController() -> UIViewController {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .lightPink
-        vc.title = "홈"
-        return vc
+    func selectTab(for section: HomeSection) {
+        selectTab(at: section.tabIndex)
     }
     
-    private func createChartViewController() -> UIViewController {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .lightBlue
-        vc.title = "차트"
-        return vc
+    private func selectTab(at index: Int) {
+        guard index >= 0 && index < tabBarController.viewControllers?.count ?? 0 else {
+            print("Invalid tab index: \(index)")
+            return
+        }
+        
+        tabBarController.selectedIndex = index
+    }
+    
+    func navigateToFormScreen(type: EmptyStateType) {
+        switch type {
+        case .transaction:
+            navigateToRecordForm()
+        case .challenge:
+            navigateToChallengeForm()
+        }
+    }
+    
+    private func navigateToRecordForm() {
+        selectTab(at: 1)
+        
+        if let transactionCoordinator = childCoordinators.first(where: { $0 is TransactionCoordinator }) as? TransactionCoordinator {
+            transactionCoordinator.pushTransactionInput()
+        }
+    }
+    
+    private func navigateToChallengeForm() {
+        selectTab(at: 2)
+        
+        if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
+            challengeCoordinator.pushChallengeInput()
+        }
     }
 }
