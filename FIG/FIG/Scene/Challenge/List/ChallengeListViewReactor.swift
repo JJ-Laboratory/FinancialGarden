@@ -46,12 +46,14 @@ class ChallengeListViewReactor: Reactor {
     
     private let challengeRepository: ChallengeRepositoryInterface
     private let gardenRepository: GardenRepositoryInterface
+    private let transactionRepository: TransactionRepositoryInterface
     
     let initialState: State
     
-    init(challengeRepository: ChallengeRepositoryInterface, gardenRepository: GardenRepositoryInterface) {
+    init(challengeRepository: ChallengeRepositoryInterface, gardenRepository: GardenRepositoryInterface, transactionRepository: TransactionRepositoryInterface) {
         self.challengeRepository = challengeRepository
         self.gardenRepository = gardenRepository
+        self.transactionRepository = transactionRepository
         self.initialState = State()
     }
     
@@ -59,10 +61,15 @@ class ChallengeListViewReactor: Reactor {
         switch action {
         case .viewDidLoad:
             //let challengesObservable = loadDummyData()
-            let challengesObservable = challengeRepository.fetchAllChallenges()
+            let challengesWithSpending = fetchChallengesWithSpending()
+            let updatedChallenges = challengesWithSpending
+                .flatMap { [weak self] challenges -> Observable<[Challenge]> in
+                    guard let self else { return .just([]) }
+                    return updateStatus(challenges)
+                }
             let gardenInfoObservable = gardenRepository.fetchGardenRecord()
             
-            return Observable.zip(challengesObservable, gardenInfoObservable)
+            return Observable.zip(updatedChallenges, gardenInfoObservable)
                 .flatMap { challenges, gardenInfo -> Observable<Mutation> in
                     return .concat([
                         .just(.setChallenges(challenges)),
@@ -110,6 +117,62 @@ class ChallengeListViewReactor: Reactor {
         return newState
     }
     
+    private func fetchChallengesWithSpending() -> Observable<[Challenge]> {
+        return challengeRepository.fetchAllChallenges()
+            .flatMap { [weak self] challenges -> Observable<[Challenge]> in
+                guard let self, !challenges.isEmpty else { return .just([]) }
+                
+                let amountObservables = challenges.map { challenge in
+                    self.transactionRepository.fetchTotalAmount(categoryId: challenge.category.id, startDate: challenge.startDate, endDate: challenge.endDate)
+                }
+                
+                return Observable.zip(amountObservables)
+                    .map { amounts in
+                        var updatedChallenges: [Challenge] = []
+                        for (var challenge, amount) in zip(challenges, amounts) {
+                            challenge.currentSpending = amount
+                            updatedChallenges.append(challenge)
+                        }
+                        return updatedChallenges
+                    }
+            }
+    }
+    
+    private func updateStatus(_ challenges: [Challenge]) -> Observable<[Challenge]> {
+        var editedChallenge: [Challenge] = []
+        var finalChallenges = challenges
+        
+        for (index, challenge) in challenges.enumerated() {
+            var updatedChallenge = challenge
+            let progressValue = challenge.startDate.progress(to: challenge.endDate)
+            
+            if progressValue >= 1 {
+                if challenge.currentSpending <= challenge.spendingLimit {
+                    updatedChallenge.status = .success
+                } else {
+                    updatedChallenge.status = .failure
+                }
+                editedChallenge.append(updatedChallenge)
+                finalChallenges[index] = updatedChallenge
+            } else if challenge.currentSpending > challenge.spendingLimit {
+                updatedChallenge.status = .failure
+                editedChallenge.append(updatedChallenge)
+                finalChallenges[index] = updatedChallenge
+            }
+        }
+        
+        if editedChallenge.isEmpty {
+            return .just(challenges)
+        }
+        
+        let editObservables = editedChallenge.map { updatedChallenge in
+            self.challengeRepository.editChallenge(updatedChallenge)
+        }
+        
+        return Observable.zip(editObservables)
+            .map { _ in finalChallenges }
+    }
+    
     private func handleConfirm(_ challenge: Challenge) -> Observable<Mutation> {
         var updatedChallenge = challenge
         updatedChallenge.isCompleted = true
@@ -118,7 +181,6 @@ class ChallengeListViewReactor: Reactor {
         case .success:
             let editChallengeObservable = challengeRepository.editChallenge(updatedChallenge)
             let addedFruitsObservable = gardenRepository.add(seeds: 0, fruits: challenge.targetFruitsCount)
-            
             return Observable.zip(editChallengeObservable, addedFruitsObservable)
                 .flatMap { (editChallenge, updatedRecord) -> Observable<Mutation> in
                     let currentFruitCount = self.currentState.gardenInfo?.totalFruits ?? 0

@@ -49,7 +49,7 @@ final class ChallengeCoordinator: Coordinator {
     // MARK: - ViewController Factory Methods
     
     private func createChallengeViewController() -> ChallengeListViewController {
-        let reator = ChallengeListViewReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository())
+        let reator = ChallengeListViewReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository(), transactionRepository: TransactionRepository())
         let viewController = ChallengeListViewController(reactor: reator)
         viewController.coordinator = self
         return viewController

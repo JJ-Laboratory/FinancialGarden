@@ -12,11 +12,11 @@ final class TabBarCoordinator: Coordinator {
     weak var parentCoordinator: Coordinator?
     
     let tabBarController = UITabBarController()
-        
+    
     func start() {
         setupTabs()
     }
-
+    
     private func setupTabs() {
         tabBarController.tabBar.backgroundColor = .systemBackground
         tabBarController.tabBar.tintColor = .primary
@@ -44,7 +44,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 챌린지 탭
-        let reactor = ChallengeListViewReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository())
+        let reactor = ChallengeListViewReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository(), transactionRepository: TransactionRepository())
         let challengeVC = ChallengeListViewController(reactor: reactor)
         let challengeNavController = UINavigationController(rootViewController: challengeVC)
         let challengeCoordinator = ChallengeCoordinator(navigationController: challengeNavController)
