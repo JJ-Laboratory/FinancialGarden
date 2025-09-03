@@ -12,6 +12,8 @@ import RxSwift
 final class HomeViewReactor: Reactor {
     
     weak var coordinator: TabBarCoordinator?
+    private let transactionRepository: TransactionRepositoryInterface
+    private let challengeRepository: ChallengeRepositoryInterface
     
     enum Action {
         case viewDidLoad
@@ -41,6 +43,14 @@ final class HomeViewReactor: Reactor {
     }
     
     let initialState = State()
+    
+    init(
+        transactionRepository: TransactionRepositoryInterface = TransactionRepository(),
+        challengeRepository: ChallengeRepositoryInterface = ChallengeRepository()
+    ) {
+        self.transactionRepository = transactionRepository
+        self.challengeRepository = challengeRepository
+    }
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
@@ -96,7 +106,27 @@ extension HomeViewReactor {
     }
     
     private func loadMonthlySummary(_ date: Date) -> Observable<Mutation> {
-        return .just(.setMonthlySummary(expense: 1234, income: 5678))
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        
+        return transactionRepository.fetchTransactionByMonth(year, month)
+            .map { transactions -> (expense: Int, income: Int) in
+                let expense = transactions
+                    .filter { $0.category.transactionType == .expense }
+                    .reduce(0) { $0 + $1.amount }
+                
+                let income = transactions
+                    .filter { $0.category.transactionType == .income }
+                    .reduce(0) { $0 + $1.amount }
+                
+                return (expense: expense, income: income)
+            }
+            .map { .setMonthlySummary(expense: $0.expense, income: $0.income) }
+            .catch { error in
+                print("❌ Failed to load monthly summary: \(error)")
+                return .just(.setMonthlySummary(expense: 0, income: 0))
+            }
     }
     
     private func loadCurrentChallenges() -> Observable<Mutation> {

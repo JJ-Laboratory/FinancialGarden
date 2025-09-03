@@ -22,7 +22,10 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeReactor = HomeViewReactor()
+        let homeReactor = HomeViewReactor(
+            transactionRepository: TransactionRepository(),
+            challengeRepository: ChallengeRepository()
+        )
         homeReactor.coordinator = self
         let homeVC = HomeViewController(reactor: homeReactor)
         let homeNavController = UINavigationController(rootViewController: homeVC)
