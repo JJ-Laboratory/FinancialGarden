@@ -91,6 +91,29 @@ final class TransactionRepository: TransactionRepositoryInterface {
         }
     }
     
+    func fetchTotalAmount(categoryId: UUID, startDate: Date, endDate: Date) -> Observable<Int> {
+        let beginningOfStartDay = Calendar.current.startOfDay(for: startDate)
+        
+        guard let nextDayOfEndDate = Calendar.current.date(byAdding: .day, value: 1, to: endDate) else {
+            return .error(CoreDataError.invalidDate)
+        }
+        let endOfEndDay = Calendar.current.startOfDay(for: nextDayOfEndDate)
+        
+        let predicate = NSPredicate(
+            format: "(date >= %@) AND (date < %@) AND (categoryID == %@)",
+            beginningOfStartDay as NSDate,
+            endOfEndDay as NSDate,
+            categoryId as CVarArg
+        )
+        
+        return coreDataService.fetch(TransactionEntity.self, predicate: predicate)
+            .map { entities in
+                let total = entities.reduce(0) { $0 + Int($1.amount) }
+                self.logger.info("✅ \(categoryId) 카테고리: 총 \(total)원")
+                return total
+            }
+    }
+    
     func editTransaction(_ transaction: Transaction) -> Observable<Transaction> {
         let predicate = NSPredicate(format: "id == %@", transaction.id as CVarArg)
         
