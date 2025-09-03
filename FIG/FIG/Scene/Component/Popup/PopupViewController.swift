@@ -13,7 +13,8 @@ class PopupViewController: UIViewController {
     private let popupView: PopupView
     private let popupTransitioningDelegate = PopupTransitioningDelegate()
     
-    var onDismiss: (() -> Void)?
+    var onChallengeButtonTapped: (() -> Void)?
+    var onCloseButtonTapped: (() -> Void)?
     
     init(type: ChallengeStatus, count: Int) {
         self.popupView = PopupView(type: type, count: count)
@@ -37,16 +38,11 @@ class PopupViewController: UIViewController {
         }
         
         popupView.onChallengeTapped = { [weak self] in
-            self?.dismiss(animated: true)
+            self?.onChallengeButtonTapped?()
         }
         
         popupView.onCloseTapped = { [weak self] in
-            self?.dismiss(animated: true)
+            self?.onCloseButtonTapped?()
         }
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        onDismiss?()
     }
 }

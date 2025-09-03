@@ -37,8 +37,8 @@ final class ChallengeListViewController: UIViewController, View {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         reactor?.action.onNext(.viewDidLoad)
     }
     
@@ -46,6 +46,7 @@ final class ChallengeListViewController: UIViewController, View {
         super.viewDidLoad()
         setupUI()
         configureDataSource()
+        reactor?.action.onNext(.viewDidLoad)
     }
     
     private func setupUI() {
@@ -217,8 +218,15 @@ final class ChallengeListViewController: UIViewController, View {
     private func presentPopup(status: ChallengeStatus, count: Int) {
         let popupVC = PopupViewController(type: status, count: count)
         
-        popupVC.onDismiss = { [weak self] in
-            self?.reactor?.action.onNext(.viewDidLoad)
+        popupVC.onChallengeButtonTapped = { [weak self] in
+            self?.dismiss(animated: true, completion: {
+                self?.coordinator?.pushChallengeInput()
+            })
+        }
+        popupVC.onCloseButtonTapped = { [weak self] in
+            self?.dismiss(animated: true, completion: {
+                self?.reactor?.action.onNext(.viewDidLoad)
+            })
         }
         present(popupVC, animated: true)
     }
