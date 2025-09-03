@@ -6,8 +6,14 @@
 //
 
 import ReactorKit
+import Foundation
 
 class ChallengeFormViewReactor: Reactor {
+    
+    enum Mode: Equatable {
+        case create
+        case detail(Challenge)
+    }
     
     enum Action {
         case viewDidLoad
@@ -16,6 +22,7 @@ class ChallengeFormViewReactor: Reactor {
         case selectAmount(ChallengeSpendingLimit)
         case selectFruitCount(Int)
         case createButtonTapped
+        case deleteButtonTapped
     }
     
     enum Mutation {
@@ -24,47 +31,88 @@ class ChallengeFormViewReactor: Reactor {
         case setPeriod(ChallengeDuration)
         case setAmount(Int)
         case setFruitCount(Int)
-        case setCreate(Bool)
+        case close
+        case error(String)
     }
     
     struct State {
+        let mode: Mode
         var currentSeedCount: Int = 0
         var selectedCategory: Category?
         var selectedPeriod: ChallengeDuration = .week
         var amount: Int = 0
         var fruitCount: Int = 0
-        var availableSeeds: Int = 0
-        var isEnabled: Bool = false
-        var isCreating: Bool = false
+        @Pulse var isClose: Bool = false
+        @Pulse var errorMessage: String?
+        var isEnabled: Bool {
+            selectedCategory != nil && fruitCount > 0
+        }
+        
+        init(mode: Mode) {
+            self.mode = mode
+            switch mode {
+            case .create: break
+            case .detail(let challenge):
+                self.selectedCategory = challenge.category
+                self.selectedPeriod = challenge.duration
+                self.amount = challenge.spendingLimit
+                self.fruitCount = challenge.targetFruitsCount
+            }
+        }
     }
     
-    let initialState = State()
+    private let challengeRepository: ChallengeRepositoryInterface
+    private let gardenRepository: GardenRepositoryInterface
+    
+    let initialState: State
+    
+    init(mode: Mode, challengeRepository: ChallengeRepositoryInterface, gardenRepository: GardenRepositoryInterface) {
+        self.challengeRepository = challengeRepository
+        self.gardenRepository = gardenRepository
+        self.initialState = State(mode: mode)
+    }
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .viewDidLoad:
-            // 씨앗 개수 로드
-            return .just(.setCurrentSeedCount(100))
+            return gardenRepository.fetchGardenRecord()
+                .map { .setCurrentSeedCount($0.totalSeeds) }
+            
         case .selectCategory(let category):
             return .just(.setCategory(category))
+            
         case .selectPeriod(let period):
             return Observable.concat([
                 .just(.setPeriod(period)),
                 .just(.setFruitCount(0))
             ])
+            
         case .selectAmount(let amount):
             if amount == .zero {
                 return .just(.setAmount(0))
             } else {
                 return .just(.setAmount(currentState.amount + amount.rawValue))
             }
+            
         case .selectFruitCount(let fruitCount):
             let maximum = max(0, currentState.currentSeedCount / currentState.selectedPeriod.requiredSeed)
             let newCount = min(max(0, currentState.fruitCount + fruitCount), maximum)
             return .just(.setFruitCount(newCount))
+            
         case .createButtonTapped:
-            // 챌린지 생성
-            return .just(.setCreate(true))
+            guard let newChallenge = createChallenge() else {return .empty()}
+            let saveChallenge = challengeRepository.saveChallenge(newChallenge)
+            let deductSeeds = gardenRepository.add(seeds: -newChallenge.requiredSeedCount, fruits: 0)
+            
+            return Observable.zip(saveChallenge, deductSeeds)
+                .map { _ in .close }
+                .catch { error in return .just(.error(error.localizedDescription)) }
+            
+        case .deleteButtonTapped:
+            guard case .detail(let challenge) = currentState.mode else { return .empty() }
+            return challengeRepository.deleteChallenge(id: challenge.id)
+                .map { _ in .close }
+                .catch { error in return .just(.error(error.localizedDescription)) }
         }
     }
     
@@ -81,10 +129,28 @@ class ChallengeFormViewReactor: Reactor {
             newState.amount = amount
         case .setFruitCount(let fruitCount):
             newState.fruitCount = fruitCount
-        case .setCreate(let isCreating):
-            newState.isCreating = isCreating
+        case .close:
+            newState.isClose = true
+        case .error(let message):
+            newState.errorMessage = message
         }
-        newState.isEnabled = newState.selectedCategory != nil && newState.fruitCount > 0 && !newState.isCreating
         return newState
+    }
+    
+    private func createChallenge() -> Challenge? {
+        guard let category = currentState.selectedCategory else { return nil }
+        
+        let startDate = Date()
+        let endDate: Date
+        let requiredSeedCount: Int
+        if currentState.selectedPeriod == .week {
+            endDate = Calendar.current.date(byAdding: .day, value: 7, to: startDate) ?? startDate
+            requiredSeedCount = currentState.fruitCount * 5
+        } else {
+            endDate = Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
+            requiredSeedCount = currentState.fruitCount * 3
+        }
+        
+        return Challenge(category: category, endDate: endDate, duration: currentState.selectedPeriod, spendingLimit: currentState.amount, requiredSeedCount: requiredSeedCount, targetFruitsCount: currentState.fruitCount)
     }
 }
