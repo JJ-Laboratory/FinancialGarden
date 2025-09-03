@@ -1,5 +1,5 @@
 //
-//  UITableViewCell+.swift
+//  UICollectionViewCell+.swift
 //  FIG
 //
 //  Created by Milou on 8/27/25.
@@ -12,3 +12,4 @@ extension UICollectionViewCell {
         String(describing: self)
     }
 }
+
