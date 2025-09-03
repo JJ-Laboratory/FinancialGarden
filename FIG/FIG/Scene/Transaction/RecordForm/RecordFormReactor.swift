@@ -54,13 +54,16 @@ final class RecordFormReactor: Reactor {
     
     let initialState: State
     private let transactionRepository: TransactionRepositoryInterface
+    private let gardenRepository: GardenRepositoryInterface
     private let logger = Logger.transaction
     
     init(
         transactionRepository: TransactionRepositoryInterface = TransactionRepository(),
+        gardenRepository: GardenRepositoryInterface = GardenRepository(),
         editingRecord: Transaction? = nil
     ) {
         self.transactionRepository = transactionRepository
+        self.gardenRepository = gardenRepository
         self.initialState = .init(
             selectedDate: Date(),
             editingRecord: editingRecord
@@ -156,6 +159,11 @@ extension RecordFormReactor {
             saveObservable = transactionRepository.editTransaction(transaction)
         } else {
             saveObservable = transactionRepository.saveTransaction(transaction)
+                .flatMap { [weak self] savedTransaction -> Observable<Transaction> in
+                    guard let self else { return .empty() }
+                    return self.gardenRepository.add(seeds: 1, fruits: 0)
+                        .map { _ in savedTransaction }
+                }
         }
         
         return Observable.concat([
@@ -243,6 +251,11 @@ extension RecordFormReactor {
         }
         
         return transactionRepository.deleteTransaction(id: editingRecord.id)
+            .flatMap { [weak self] _ -> Observable<Void> in
+                guard let self else { return .empty() }
+                return self.gardenRepository.add(seeds: -1, fruits: 0)
+                    .map { _ in () }
+            }
             .map { _ in .setDeleteResult(.success(())) }
             .catch { error in
                 Observable.just(.setDeleteResult(.failure(error)))
