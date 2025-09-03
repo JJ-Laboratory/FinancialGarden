@@ -18,9 +18,9 @@ enum EmptyStateType: Hashable {
     var title: String {
         switch self {
         case .transaction:
-            return "아직 거래 내역이 없어요\n거래내역을 등록해 효율적인 재무 관리를 시작해보세요"
+            return "아직 거래 내역이 없어요\n거래내역을 등록하고 효율적인 재무 관리를 해보세요"
         case .challenge:
-            return "아직 진행중인 챌린지가 없어요\n챌린지를 등록해 효율적인 금융 생활을 시작해보세요"
+            return "아직 진행중인 챌린지가 없어요\n챌린지를 등록하고 효율적인 금융 생활을 해보세요"
         }
     }
     
@@ -92,7 +92,7 @@ final class EmptyStateCell: UICollectionViewCell {
         }
         
         vStackView.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(16)
+            $0.top.equalToSuperview().inset(24)
             $0.horizontalEdges.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview().inset(24)
         }

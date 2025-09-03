@@ -16,6 +16,8 @@ final class HomeViewController: UIViewController, View {
     
     var disposeBag = DisposeBag()
     
+    var currentChallengeCount = 0
+    
     private let monthButton = UIButton(configuration: .plain()).then {
         $0.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var outgoing = incoming
@@ -210,7 +212,19 @@ final class HomeViewController: UIViewController, View {
     // MARK: - Snapshot Update
     
     private func updateSnapshot(with state: HomeViewReactor.State) {
-        guard let dataSource = dataSource else { return }  // dataSource 확인
+        guard let dataSource = dataSource else { return }
+        
+        let newChallengesCount = state.currentChallenges.count
+        
+        if shouldUpdateLayout(previousCount: currentChallengeCount, currentCount: newChallengesCount) {
+            currentChallengeCount = newChallengesCount
+            
+            let newLayout = createCompositionalLayout()
+            collectionView.setCollectionViewLayout(newLayout, animated: true)
+        } else {
+            // 레이아웃 변경 필요없으면 개수만 업뎃
+            currentChallengeCount = newChallengesCount
+        }
         
         var snapshot = NSDiffableDataSourceSnapshot<HomeSection, HomeItem>()
         
@@ -236,6 +250,14 @@ final class HomeViewController: UIViewController, View {
         }
         
         dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
+    // 챌린지 갯수에 따라서 레이아웃 업뎃 필요한지 판단
+    private func shouldUpdateLayout(previousCount: Int, currentCount: Int) -> Bool {
+        let previous = previousCount > 1
+        let current = currentCount > 1
+        
+        return previous != current
     }
     
     private func updateMonthButton(with date: Date) {

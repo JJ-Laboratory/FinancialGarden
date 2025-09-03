@@ -60,7 +60,13 @@ extension HomeViewController {
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 24, trailing: 20)
         section.interGroupSpacing = 8
-        section.orthogonalScrollingBehavior = .groupPaging
+        
+        if currentChallengeCount > 1 {
+            section.orthogonalScrollingBehavior = .groupPaging
+        } else {
+            section.orthogonalScrollingBehavior = .none
+        }
+        
         section.boundarySupplementaryItems = [createSectionHeader()]
 
         return section
