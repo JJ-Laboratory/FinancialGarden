@@ -17,6 +17,7 @@ final class HomeHeaderView: UICollectionReusableView {
     
     private let containerView = UIView().then {
         $0.backgroundColor = .clear
+        $0.isUserInteractionEnabled = true
     }
     
     private let titleLabel = UILabel().then {
@@ -53,6 +54,8 @@ final class HomeHeaderView: UICollectionReusableView {
     }
     
     private func setupUI() {
+        isUserInteractionEnabled = true
+        
         addSubview(containerView)
         containerView.addSubview(titleLabel)
         containerView.addSubview(chevronImageView)

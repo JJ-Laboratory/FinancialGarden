@@ -23,6 +23,7 @@ final class TabBarCoordinator: Coordinator {
         
         // 홈 탭
         let homeReactor = HomeViewReactor()
+        homeReactor.coordinator = self
         let homeVC = HomeViewController(reactor: homeReactor)
         let homeNavController = UINavigationController(rootViewController: homeVC)
         homeNavController.tabBarItem = UITabBarItem(
@@ -59,7 +60,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 차트 탭
-        let chartVC = createChartViewController()
+        let chartVC = ChartViewController()
         let chartNavController = UINavigationController(rootViewController: chartVC)
         chartNavController.tabBarItem = UITabBarItem(
             title: "차트",
@@ -70,10 +71,14 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.viewControllers = [homeNavController, transactionNavController, challengeNavController, chartNavController]
     }
     
-    private func createChartViewController() -> UIViewController {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .lightBlue
-        vc.title = "차트"
-        return vc
+    func selectTab(for section: HomeSection) {
+        let index = section.tabIndex
+        
+        guard index >= 0 && index < tabBarController.viewControllers?.count ?? 0 else {
+            print("Invalid tab index: \(index)")
+            return
+        }
+        
+        tabBarController.selectedIndex = index
     }
 }

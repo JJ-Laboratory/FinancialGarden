@@ -19,6 +19,10 @@ enum HomeSection: Int, CaseIterable, Hashable {
         case .chart: return "차트"
         }
     }
+    
+    var tabIndex: Int {
+        return self.rawValue + 1
+    }
 }
 
 enum HomeItem: Hashable {

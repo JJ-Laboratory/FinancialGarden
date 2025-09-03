@@ -11,6 +11,8 @@ import RxSwift
 
 final class HomeViewReactor: Reactor {
     
+    weak var coordinator: TabBarCoordinator?
+    
     enum Action {
         case viewDidLoad
         case refresh
@@ -50,7 +52,7 @@ final class HomeViewReactor: Reactor {
                 loadMonthlySummary(date)
             ])
         case .headerTapped(let homeSection):
-            // TODO: 각 탭으로 이동
+            coordinator?.selectTab(for: homeSection)
             return .empty()
         case .emptyStateButtonTapped(let emptyStateType):
             // TODO: 각 추가화면으로 이동
