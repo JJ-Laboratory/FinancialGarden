@@ -75,8 +75,10 @@ final class TabBarCoordinator: Coordinator {
     }
     
     func selectTab(for section: HomeSection) {
-        let index = section.tabIndex
-        
+        selectTab(at: section.tabIndex)
+    }
+    
+    private func selectTab(at index: Int) {
         guard index >= 0 && index < tabBarController.viewControllers?.count ?? 0 else {
             print("Invalid tab index: \(index)")
             return
@@ -84,4 +86,30 @@ final class TabBarCoordinator: Coordinator {
         
         tabBarController.selectedIndex = index
     }
+    
+    func navigateToFormScreen(type: EmptyStateType) {
+        switch type {
+        case .transaction:
+            navigateToRecordForm()
+        case .challenge:
+            navigateToChallengeForm()
+        }
+    }
+    
+    private func navigateToRecordForm() {
+        selectTab(at: 1)
+        
+        if let transactionCoordinator = childCoordinators.first(where: {$0 is TransactionCoordinator}) as? TransactionCoordinator {
+            transactionCoordinator.pushTransactionInput()
+        }
+    }
+    
+    private func navigateToChallengeForm() {
+        selectTab(at: 2)
+        
+        if let challengeCoordinator = childCoordinators.first(where: {$0 is ChallengeCoordinator}) as? ChallengeCoordinator {
+            challengeCoordinator.pushChallengeInput()
+        }
+    }
+    
 }

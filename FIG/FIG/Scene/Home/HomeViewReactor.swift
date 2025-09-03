@@ -65,9 +65,8 @@ final class HomeViewReactor: Reactor {
             coordinator?.selectTab(for: homeSection)
             return .empty()
         case .emptyStateButtonTapped(let emptyStateType):
-            // TODO: 각 추가화면으로 이동
+            coordinator?.navigateToFormScreen(type: emptyStateType)
             return .empty()
-            
         }
     }
     
