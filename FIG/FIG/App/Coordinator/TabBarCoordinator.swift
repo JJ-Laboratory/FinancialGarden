@@ -22,7 +22,8 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeVC = createHomeViewController()
+        let homeReactor = HomeViewReactor()
+        let homeVC = HomeViewController(reactor: homeReactor)
         let homeNavController = UINavigationController(rootViewController: homeVC)
         homeNavController.tabBarItem = UITabBarItem(
             title: "홈",
@@ -67,13 +68,6 @@ final class TabBarCoordinator: Coordinator {
         )
         
         tabBarController.viewControllers = [homeNavController, transactionNavController, challengeNavController, chartNavController]
-    }
-    
-    private func createHomeViewController() -> UIViewController {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .lightPink
-        vc.title = "홈"
-        return vc
     }
     
     private func createChartViewController() -> UIViewController {

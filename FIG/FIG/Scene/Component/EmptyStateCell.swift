@@ -11,7 +11,7 @@ import Then
 import RxSwift
 import RxCocoa
 
-enum EmptyStateType {
+enum EmptyStateType: Hashable {
     case transaction
     case challenge
     

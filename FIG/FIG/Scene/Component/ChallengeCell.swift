@@ -13,6 +13,7 @@ class ChallengeCell: UICollectionViewCell {
     
     var onConfirmButtonTapped: ((ChallengeStatus) -> Void)?
     private var currentStatus: ChallengeStatus?
+    private var isHomeMode: Bool = false
     
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
@@ -194,7 +195,7 @@ class ChallengeCell: UICollectionViewCell {
     
     // MARK: - Configuration
     
-    func configure(with challenge: Challenge) {
+    func configure(with challenge: Challenge, isHomeMode: Bool = false) {
         currentStatus = challenge.status
         
         titleLabel.text = challenge.category.title
