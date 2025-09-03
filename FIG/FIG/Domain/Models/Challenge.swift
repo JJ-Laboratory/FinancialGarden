@@ -36,11 +36,12 @@ struct Challenge: Hashable {
     let startDate: Date
     let endDate: Date
     let duration: ChallengeDuration
+    var currentSpending: Int
     let spendingLimit: Int
     let requiredSeedCount: Int
     let targetFruitsCount: Int
     var isCompleted: Bool
-    let status: ChallengeStatus
+    var status: ChallengeStatus
     
     init(
         id: UUID = UUID(),
@@ -48,6 +49,7 @@ struct Challenge: Hashable {
         startDate: Date = Date(),
         endDate: Date,
         duration: ChallengeDuration,
+        currentSpending: Int = 0,
         spendingLimit: Int,
         requiredSeedCount: Int,
         targetFruitsCount: Int = 1,
@@ -59,6 +61,7 @@ struct Challenge: Hashable {
         self.startDate = startDate
         self.endDate = endDate
         self.duration = duration
+        self.currentSpending = currentSpending
         self.spendingLimit = spendingLimit
         self.requiredSeedCount = requiredSeedCount
         self.targetFruitsCount = targetFruitsCount

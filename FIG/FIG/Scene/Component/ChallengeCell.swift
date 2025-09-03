@@ -87,7 +87,7 @@ class ChallengeCell: UICollectionViewCell {
         $0.numberOfLines = 0
         $0.font = .preferredFont(forTextStyle: .footnote)
         $0.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        $0.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
     
     private lazy var confirmButton = CustomButton(style: .filledSmall).then {
@@ -203,7 +203,7 @@ class ChallengeCell: UICollectionViewCell {
         dateLabel.text = challenge.startDate.toFormattedRange(to: challenge.endDate)
         
         let text = NSMutableAttributedString(
-            string: "1,200,793원",
+            string: "\(challenge.currentSpending.formattedWithComma)원",
             attributes: [
                 .font: UIFont.preferredFont(forTextStyle: .body).withWeight(.semibold),
                 .foregroundColor: UIColor.secondary
@@ -219,7 +219,9 @@ class ChallengeCell: UICollectionViewCell {
         amountLabel.attributedText = text
         
         let progressValue = challenge.startDate.progress(to: challenge.endDate)
-        progressView.progress = progressValue
+        DispatchQueue.main.async {
+            self.progressView.setProgress(progressValue, animated: true)
+        }
         progressView.tintColor = (challenge.status == .failure) ? .gray1 : .primary
         
         let stage = ProgressStage(progress: progressValue)
@@ -237,7 +239,8 @@ class ChallengeCell: UICollectionViewCell {
             if !challenge.isCompleted {
                 titleLabel.text = challenge.status.title
                 bottomStackView.isHidden = false
-                messageLabel.text = "목표 소비 금액보다 123원 절약했네요🎉\n열매를 수확해보세요!"
+                let amount = (challenge.spendingLimit - challenge.currentSpending).formattedWithComma
+                messageLabel.text = "목표 소비 금액보다 \(amount)원 절약했네요🎉\n열매를 수확해보세요!"
                 confirmButton.setTitle("수확", for: .normal)
             }
             

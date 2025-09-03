@@ -58,6 +58,19 @@ class ProgressView: UIView {
         )
         layer.cornerRadius = min(bounds.width, bounds.height) * 0.5
     }
+    
+    func setProgress(_ progress: Float, animated: Bool = false, duration: TimeInterval = 0.8) {
+        self.progress = min(max(progress, 0), 1)
+        
+        if animated {
+            UIView.animate(withDuration: duration) {
+                self.layoutIfNeeded()
+            }
+        } else {
+            setNeedsLayout()
+            layoutIfNeeded()
+        }
+    }
 }
 
 // MARK: - ProgressView (Private)
