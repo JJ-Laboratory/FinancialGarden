@@ -60,7 +60,6 @@ class ChallengeListViewReactor: Reactor {
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
         case .viewDidLoad:
-            //let challengesObservable = loadDummyData()
             let challengesWithSpending = fetchChallengesWithSpending()
             let updatedChallenges = challengesWithSpending
                 .flatMap { [weak self] challenges -> Observable<[Challenge]> in
@@ -198,20 +197,5 @@ class ChallengeListViewReactor: Reactor {
         case .progress:
             return .empty()
         }
-    }
-    
-    private func loadDummyData() -> Observable<[Challenge]> {
-        let allChallenges = [
-            // 일주일 챌린지 데이터
-            Challenge(category: Category(id: UUID(), title: "의료・건강・피트니스", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 2), endDate: Date().addingTimeInterval(86400 * 5), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5),
-            Challenge(category: Category(id: UUID(), title: "일주일 실패", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 4), endDate: Date().addingTimeInterval(86400 * 3), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, status: .failure),
-            Challenge(category: Category(id: UUID(), title: "일주일 성공", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 7), endDate: Date(), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, status: .success),
-            Challenge(category: Category(id: UUID(), title: "일주일 챌린지 완료", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 10), endDate: Date().addingTimeInterval(-86400 * 3), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, isCompleted: true, status: .failure),
-            Challenge(category: Category(id: UUID(), title: "일주일 챌린지 완료", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 10), endDate: Date().addingTimeInterval(-86400 * 3), duration: .week, spendingLimit: 7897890, requiredSeedCount: 5, isCompleted: true, status: .success),
-            // 한달 챌린지 데이터
-            Challenge(category: Category(id: UUID(), title: "한달", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 2), endDate: Date().addingTimeInterval(86400 * 28), duration: .month, spendingLimit: 7897890, requiredSeedCount: 5),
-            Challenge(category: Category(id: UUID(), title: "한달 챌린지 완료", iconName: "ll", transactionType: .expense), startDate: Date().addingTimeInterval(-86400 * 33), endDate: Date().addingTimeInterval(-86400 * 3), duration: .month, spendingLimit: 7897890, requiredSeedCount: 5, isCompleted: true),
-        ]
-        return .just(allChallenges)
     }
 }
