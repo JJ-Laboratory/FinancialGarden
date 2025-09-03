@@ -99,7 +99,7 @@ final class TabBarCoordinator: Coordinator {
     private func navigateToRecordForm() {
         selectTab(at: 1)
         
-        if let transactionCoordinator = childCoordinators.first(where: {$0 is TransactionCoordinator}) as? TransactionCoordinator {
+        if let transactionCoordinator = childCoordinators.first(where: { $0 is TransactionCoordinator }) as? TransactionCoordinator {
             transactionCoordinator.pushTransactionInput()
         }
     }
@@ -107,9 +107,8 @@ final class TabBarCoordinator: Coordinator {
     private func navigateToChallengeForm() {
         selectTab(at: 2)
         
-        if let challengeCoordinator = childCoordinators.first(where: {$0 is ChallengeCoordinator}) as? ChallengeCoordinator {
+        if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
             challengeCoordinator.pushChallengeInput()
         }
     }
-    
 }
