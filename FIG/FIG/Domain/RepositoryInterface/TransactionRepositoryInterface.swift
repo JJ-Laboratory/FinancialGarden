@@ -21,6 +21,8 @@ protocol TransactionRepositoryInterface {
     func fetchAllTransaction() -> Observable<[Transaction]>
     /// 해당 월에 대한 거래 내역을 불러옵니다
     func fetchTransactionByMonth(_ year: Int, _ month: Int) -> Observable<[Transaction]>
+    /// 해당 기간, 카테고리에 해당하는 거래 총금액을 불러옵니다
+    func fetchTotalAmount(categoryId: UUID, startDate: Date, endDate: Date) -> Observable<Int>
     
     // MARK: - UPDATE
     

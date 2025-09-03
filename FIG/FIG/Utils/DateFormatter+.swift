@@ -39,6 +39,20 @@ extension DateFormatter {
         formatter.dateFormat = "yy년 M월"
         return formatter
     }()
+    
+    static let fullDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "yyyy.M.d"
+        return formatter
+    }()
+    
+    static let monthDayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "ko_KR")
+        formatter.dateFormat = "M.d"
+        return formatter
+    }()
 }
 
 extension Date {
@@ -61,4 +75,58 @@ extension Date {
             return DateFormatter.yearMonthButtonDate.string(from: self)
         }
     }
+    
+    func toFormattedRange(to endDate: Date) -> String {
+        let startDate = self
+        
+        let startYear = Calendar.current.component(.year, from: startDate)
+        let endYear = Calendar.current.component(.year, from: endDate)
+        
+        let startDateString = DateFormatter.fullDateFormatter.string(from: startDate)
+        
+        let endDateString: String
+        if startYear == endYear {
+            endDateString = DateFormatter.monthDayFormatter.string(from: endDate)
+        } else {
+            endDateString = DateFormatter.fullDateFormatter.string(from: endDate)
+        }
+        
+        return "\(startDateString) ~ \(endDateString)"
+    }
+    
+    var dDayString: String {
+        let today = Calendar.current.startOfDay(for: Date())
+        let targetDay = Calendar.current.startOfDay(for: self)
+        
+        guard let days = Calendar.current.dateComponents([.day], from: today, to: targetDay).day else {
+            return ""
+        }
+        
+        if days == 0 {
+            return "D-day"
+        } else if days > 0 {
+            return "D-\(days)"
+        } else {
+            return "D+\(abs(days))"
+        }
+    }
+    
+    func progress(to endDate: Date, now: Date = Date()) -> Float {
+        let startDate = self
+        let totalDuration = endDate.timeIntervalSince(startDate)
+        guard totalDuration > 0 else {
+            return 1.0
+        }
+        
+        let elapsedTime = now.timeIntervalSince(startDate)
+        guard elapsedTime > 0 else {
+            return 0.0
+        }
+        
+        let rawProgress = elapsedTime / totalDuration
+        let progress = min(1.0, max(0.0, rawProgress))
+        
+        return Float(progress)
+    }
 }
+
