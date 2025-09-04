@@ -55,7 +55,7 @@ class CustomButton: UIButton {
             paragraphStyle.alignment = .center
             
             var attributes: [NSAttributedString.Key: Any] = [
-                .font: UIFont.preferredFont(forTextStyle: (style == .outline) ? .body : .headline),
+                .font: UIFont.preferredFont(forTextStyle: (style == .outline) ? .callout : .headline),
                 .paragraphStyle: paragraphStyle
             ]
             

@@ -99,9 +99,9 @@ final class ChallengeFormViewController: UIViewController, View {
         $0.image = UIImage(systemName: "info.circle",withConfiguration: config)
         $0.adjustsImageSizeForAccessibilityContentSizeCategory = true
     }
-    private lazy var infoStackView = UIStackView(axis: .horizontal, alignment: .center, spacing: 8) {
-        infoLabel
+    private lazy var infoStackView = UIStackView(axis: .horizontal, alignment: .top, spacing: 8) {
         infoImageView
+        infoLabel
     }
     
     private let createButton = CustomButton(style: .filled).then {
@@ -124,12 +124,16 @@ final class ChallengeFormViewController: UIViewController, View {
             .trailing { amountLabel }
             .bottom(alignment: .center) {
                 .adaptiveStack {
-                    amount1
-                    amount2
-                    amount3
-                    amount4
+                    UIStackView(axis: .horizontal, spacing: 10) {
+                        amount1
+                        amount2
+                    }
+                    UIStackView(axis: .horizontal, spacing: 10) {
+                        amount3
+                        amount4
+                    }
                 } contentSizeChanges: { contentSize, stackView in
-                    if contentSize >= .extraExtraExtraLarge {
+                    if contentSize >= .extraLarge {
                         stackView.axis = .vertical
                     } else {
                         stackView.axis = .horizontal
@@ -282,10 +286,10 @@ final class ChallengeFormViewController: UIViewController, View {
             .map(\.selectedPeriod)
             .distinctUntilChanged()
             .asDriver(onErrorJustReturn: .week)
-            .drive(onNext: { [weak self] period in
+            .drive { [weak self] period in
                 self?.weekButton.isSelected = (period == .week)
                 self?.monthButton.isSelected = (period == .month)
-            })
+            }
             .disposed(by: disposeBag)
         
         reactor.state
@@ -305,11 +309,18 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.state
-            .map(\.currentSeedCount)
+            .map(\.infoLabelText)
             .distinctUntilChanged()
-            .map { "현재 사용 가능 씨앗 \($0)개" }
             .asDriver(onErrorJustReturn: "")
             .drive(infoLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state
+            .map(\.isSeedInsufficient)
+            .map { $0 ? .primary : .gray2 }
+            .distinctUntilChanged()
+            .asDriver(onErrorJustReturn: .gray2)
+            .drive(infoLabel.rx.textColor)
             .disposed(by: disposeBag)
         
         reactor.state
@@ -320,18 +331,18 @@ final class ChallengeFormViewController: UIViewController, View {
         
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
-            .subscribe(onNext: { [weak self] isClose in
+            .subscribe { [weak self] isClose in
                 if isClose == true {
                     self?.coordinator?.popChallengeInput()
                 }
-            })
+            }
             .disposed(by: disposeBag)
         
-        reactor.pulse(\.$errorMessage)
+        reactor.pulse(\.$alertMessage)
             .compactMap { $0 }
-            .subscribe(onNext: { message in
-                print("error: \(message)")
-            })
+            .subscribe { [weak self] message in
+                self?.showAlert(message: message)
+            }
             .disposed(by: disposeBag)
     }
     
@@ -361,5 +372,12 @@ final class ChallengeFormViewController: UIViewController, View {
         
         present(picker, animated: true)
     }
+    
+    private func showAlert(message: String) {
+            let alert = UIAlertController(title: "알림", message: message, preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "확인", style: .default)
+            alert.addAction(okAction)
+            present(alert, animated: true)
+        }
 }
 
