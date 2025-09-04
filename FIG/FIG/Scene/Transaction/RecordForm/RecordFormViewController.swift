@@ -474,8 +474,3 @@ extension RecordFormViewController: UITextFieldDelegate {
         }
     }
 }
-
-@available(iOS 17.0, *)
-#Preview {
-    RecordFormViewController(reactor: RecordFormReactor())
-}

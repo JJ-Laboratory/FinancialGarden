@@ -285,8 +285,3 @@ final class GroupBackgroundView: UICollectionReusableView {
         clipsToBounds = true
     }
 }
-
-@available(iOS 17.0, *)
-#Preview {
-    RecordListViewController(reactor: RecordListReactor())
-}
