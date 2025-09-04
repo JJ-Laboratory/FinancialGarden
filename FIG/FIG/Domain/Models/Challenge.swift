@@ -75,6 +75,15 @@ enum ChallengeStatus: String {
     case success
     case failure
     
+    var image: UIImage? {
+        switch self {
+        case .progress: return UIImage(named: "level0")
+        case .success: return UIImage(named: "success_popup")
+        case .failure: return UIImage(named: "failure_popup")
+        }
+        
+    }
+    
     var title: String {
         switch self {
         case .progress: return "진행 중"
@@ -128,6 +137,6 @@ enum ProgressStage: Int {
     }
     
     var image: UIImage? {
-        return UIImage(systemName: "\(self.rawValue).circle")
+        return UIImage(named: "level\(self.rawValue)")
     }
 }
