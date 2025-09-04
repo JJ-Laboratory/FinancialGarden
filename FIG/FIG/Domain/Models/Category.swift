@@ -42,7 +42,7 @@ extension Category {
         case .income:
             return .primary
         case .expense:
-            return .secondary 
+            return .secondary
         }
     }
     
@@ -53,5 +53,14 @@ extension Category {
         case .expense:
             return .lightBlue
         }
+    }
+    
+    static var othersCategory: Category {
+        return Category(
+            id: UUID(),
+            title: "그 외",
+            iconName: "ellipsis.circle",
+            transactionType: .expense
+        )
     }
 }

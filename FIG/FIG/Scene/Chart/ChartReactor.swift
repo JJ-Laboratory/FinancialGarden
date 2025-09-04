@@ -97,10 +97,8 @@ class ChartReactor: Reactor {
         let othersChanged = items.reduce(0) { $0 + $1.changed }
         let othersPercentage = total > 0 ? (Double(othersAmount) / Double(total)) * 100 : 0
         
-        let category = categoryService.fetchCategoryByID(UUID(uuidString: "00000000-0000-0000-0000-000000000016")!)!
-        
         return CategoryChartItem(
-            category: category,
+            category: Category.othersCategory,
             amount: othersAmount,
             percentage: othersPercentage.rounded(to: 2),
             changed: othersChanged,
