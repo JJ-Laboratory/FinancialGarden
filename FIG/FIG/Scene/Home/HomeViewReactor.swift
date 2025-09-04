@@ -45,8 +45,8 @@ final class HomeViewReactor: Reactor {
     let initialState = State()
     
     init(
-        transactionRepository: TransactionRepositoryInterface = TransactionRepository(),
-        challengeRepository: ChallengeRepositoryInterface = ChallengeRepository()
+        transactionRepository: TransactionRepositoryInterface,
+        challengeRepository: ChallengeRepositoryInterface
     ) {
         self.transactionRepository = transactionRepository
         self.challengeRepository = challengeRepository
@@ -129,6 +129,43 @@ extension HomeViewReactor {
     }
     
     private func loadCurrentChallenges() -> Observable<Mutation> {
-        return .just(.setCurrentChallenges([]))
+        return fetchChallengesWithSpending()
+            .map { allChallenges -> [Challenge] in
+                let progressChallenges = allChallenges.filter { challenge in
+                    !challenge.isCompleted
+                }
+                
+                return progressChallenges
+            }
+            .map { .setCurrentChallenges($0) }
+            .catch { error in
+                print("❌ Failed to load current challenges: \(error)")
+                return .just(.setCurrentChallenges([]))
+            }
+    }
+    
+    private func fetchChallengesWithSpending() -> Observable<[Challenge]> {
+        return challengeRepository.fetchAllChallenges()
+            .flatMap { [weak self] challenges -> Observable<[Challenge]> in
+                guard let self, !challenges.isEmpty else { return .just([]) }
+                
+                let amountObservables = challenges.map { challenge in
+                    self.transactionRepository.fetchTotalAmount(
+                        categoryId: challenge.category.id,
+                        startDate: challenge.startDate,
+                        endDate: challenge.endDate
+                    )
+                }
+                
+                return Observable.zip(amountObservables)
+                    .map { amounts in
+                        var updatedChallenges: [Challenge] = []
+                        for (var challenge, amount) in zip(challenges, amounts) {
+                            challenge.currentSpending = amount
+                            updatedChallenges.append(challenge)
+                        }
+                        return updatedChallenges
+                    }
+            }
     }
 }

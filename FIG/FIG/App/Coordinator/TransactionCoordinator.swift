@@ -50,14 +50,14 @@ final class TransactionCoordinator: Coordinator {
     // MARK: - ViewController Factory Methods
     
     private func createRecordListViewController() -> RecordListViewController {
-        let reactor = RecordListReactor()
+        let reactor = RecordListReactor(transactionRepository: TransactionRepository())
         let viewController = RecordListViewController(reactor: reactor)
         viewController.coordinator = self
         return viewController
     }
     
     private func createRecordFormViewController(editingTransaction: Transaction? = nil) -> RecordFormViewController {
-        let reactor = RecordFormReactor(editingRecord: editingTransaction)
+        let reactor = RecordFormReactor(transactionRepository: TransactionRepository(), gardenRepository: GardenRepository(), editingRecord: editingTransaction)
         let viewController = RecordFormViewController(reactor: reactor)
         viewController.coordinator = self
         return viewController

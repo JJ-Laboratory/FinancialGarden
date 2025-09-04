@@ -54,7 +54,7 @@ final class RecordListReactor: Reactor {
     private let transactionRepository: TransactionRepositoryInterface
     private let logger = Logger.transaction
     
-    init(transactionRepository: TransactionRepositoryInterface = TransactionRepository()) {
+    init(transactionRepository: TransactionRepositoryInterface) {
         self.transactionRepository = transactionRepository
         self.initialState = State()
     }

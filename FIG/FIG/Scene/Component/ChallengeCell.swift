@@ -197,37 +197,56 @@ class ChallengeCell: UICollectionViewCell {
     
     func configure(with challenge: Challenge, isHomeMode: Bool = false) {
         currentStatus = challenge.status
+        self.isHomeMode = isHomeMode
         
         titleLabel.text = challenge.category.title
         dDayLabel.text = challenge.endDate.dDayString
         dDayView.isHidden = challenge.isCompleted ? true : false
         dateLabel.text = challenge.startDate.toFormattedRange(to: challenge.endDate)
         
-        let text = NSMutableAttributedString(
+        configureAmount(with: challenge)
+        configureProgress(with: challenge)
+        configureStatusUI(with: challenge)
+    }
+    
+    /// 금액 정보 설정
+    private func configureAmount(with challenge: Challenge) {
+        let currentSpendingText = NSMutableAttributedString(
             string: "\(challenge.currentSpending.formattedWithComma)원",
             attributes: [
                 .font: UIFont.preferredFont(forTextStyle: .body).withWeight(.semibold),
                 .foregroundColor: UIColor.secondary
             ]
         )
-        text.append(NSAttributedString(
+        
+        let limitText = NSAttributedString(
             string: " / \(challenge.spendingLimit.formattedWithComma)원",
             attributes: [
                 .font: UIFont.preferredFont(forTextStyle: .subheadline),
                 .foregroundColor: UIColor.gray1
             ]
-        ))
-        amountLabel.attributedText = text
+        )
         
+        currentSpendingText.append(limitText)
+        amountLabel.attributedText = currentSpendingText
+    }
+    
+    /// 진행률과 단계 이미지 설정
+    private func configureProgress(with challenge: Challenge) {
         let progressValue = challenge.startDate.progress(to: challenge.endDate)
+        
         DispatchQueue.main.async {
             self.progressView.setProgress(progressValue, animated: true)
         }
+        
         progressView.tintColor = (challenge.status == .failure) ? .gray1 : .primary
         
         let stage = ProgressStage(progress: progressValue)
         stageImageView.image = stage.image
-        
+    }
+    
+    /// 상태별 UI 설정 (제목, 이미지, 버튼)
+    private func configureStatusUI(with challenge: Challenge) {
         bottomStackView.isHidden = true
         
         switch challenge.status {
@@ -235,31 +254,48 @@ class ChallengeCell: UICollectionViewCell {
             break
             
         case .success:
-            stageImageView.image = UIImage(systemName: "apple.meditate")
-            
-            if !challenge.isCompleted {
-                titleLabel.text = challenge.status.title
-                bottomStackView.isHidden = false
-                let amount = (challenge.spendingLimit - challenge.currentSpending).formattedWithComma
-                messageLabel.text = "목표 소비 금액보다 \(amount)원 절약했네요🎉\n열매를 수확해보세요!"
-                confirmButton.setTitle("수확", for: .normal)
-            }
+            configureSuccessStatus(with: challenge)
             
         case .failure:
-            stageImageView.image = UIImage(systemName: "x.circle")
-            
-            if !challenge.isCompleted {
-                titleLabel.text = challenge.status.title
-                bottomStackView.isHidden = false
-                messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
-                confirmButton.setTitle("확인", for: .normal)
-            }
+            configureFailureStatus(with: challenge)
         }
+    }
+    
+    /// 성공 상태 UI 설정
+    private func configureSuccessStatus(with challenge: Challenge) {
+        stageImageView.image = UIImage(systemName: "apple.meditate")
+        
+        guard !challenge.isCompleted else { return }
+        
+        titleLabel.text = challenge.status.title
+        
+        guard !isHomeMode else { return }
+        
+        bottomStackView.isHidden = false
+        let savedAmount = (challenge.spendingLimit - challenge.currentSpending).formattedWithComma
+        messageLabel.text = "목표 소비 금액보다 \(savedAmount)원 절약했네요🎉\n열매를 수확해보세요!"
+        confirmButton.setTitle("수확", for: .normal)
+    }
+    
+    /// 실패 상태 UI 설정
+    private func configureFailureStatus(with challenge: Challenge) {
+        stageImageView.image = UIImage(systemName: "x.circle")
+        
+        guard !challenge.isCompleted else { return }
+        
+        titleLabel.text = challenge.status.title
+        
+        guard !isHomeMode else { return }
+        
+        bottomStackView.isHidden = false
+        messageLabel.text = "앗 목표 소비 금액을 초과했네요😥\n확인을 누르고 다음 기회에 도전해보세요!"
+        confirmButton.setTitle("확인", for: .normal)
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
         progressView.progress = 0
+        isHomeMode = false
     }
     
     @objc private func confirmButtonTapped() {
