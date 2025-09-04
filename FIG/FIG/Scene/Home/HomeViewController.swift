@@ -18,6 +18,11 @@ final class HomeViewController: UIViewController, View {
     
     var currentChallengeCount = 0
     
+    private let backgroundImageView = UIImageView().then {
+        $0.image = UIImage(named: "home_background")
+        $0.contentMode = .scaleAspectFill
+    }
+    
     private let monthButton = UIButton(configuration: .plain()).then {
         $0.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
             var outgoing = incoming
@@ -44,7 +49,7 @@ final class HomeViewController: UIViewController, View {
     private lazy var collectionView: UICollectionView = {
         let layout = createCompositionalLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .background
+        collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = false
         return collectionView
     }()
@@ -114,7 +119,12 @@ final class HomeViewController: UIViewController, View {
     }
     
     private func setupUI() {
-        view.backgroundColor = .background
+        view.addSubview(backgroundImageView)
+        view.sendSubviewToBack(backgroundImageView)
+        
+        backgroundImageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints {

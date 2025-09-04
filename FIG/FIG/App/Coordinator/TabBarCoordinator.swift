@@ -18,7 +18,7 @@ final class TabBarCoordinator: Coordinator {
     }
     
     private func setupTabs() {
-        tabBarController.tabBar.backgroundColor = .systemBackground
+        tabBarController.tabBar.backgroundColor = .white
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
