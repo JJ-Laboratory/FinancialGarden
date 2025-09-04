@@ -7,7 +7,6 @@
 
 import ReactorKit
 import Foundation
-import UIKit
 
 class ChallengeFormViewReactor: Reactor {
     
@@ -61,15 +60,15 @@ class ChallengeFormViewReactor: Reactor {
         var isEnabled: Bool {
             selectedCategory != nil && fruitCount > 0
         }
+        var isSeedInsufficient: Bool {
+            currentSeedCount < selectedPeriod.requiredSeed
+        }
         var infoLabelText: String {
-            if currentSeedCount < selectedPeriod.requiredSeed {
+            if isSeedInsufficient {
                 return "현재 사용 가능한 씨앗(\(currentSeedCount)개)이 부족해요.\n가계부 내역을 등록하고 씨앗을 모아보세요!"
             } else {
                 return "현재 사용 가능한 씨앗: \(currentSeedCount)개\n열매 1개당 필요 씨앗: 일주일 5개 / 한달 3개"
             }
-        }
-        var infoLabelColor: UIColor {
-            currentSeedCount < selectedPeriod.requiredSeed ? .primary : .gray2
         }
     }
     

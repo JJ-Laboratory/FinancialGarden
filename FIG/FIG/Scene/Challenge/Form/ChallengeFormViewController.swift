@@ -316,9 +316,10 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.state
-            .map(\.infoLabelColor)
+            .map(\.isSeedInsufficient)
+            .map { $0 ? .primary : .gray2 }
             .distinctUntilChanged()
-            .asDriver(onErrorDriveWith: .empty())
+            .asDriver(onErrorJustReturn: .gray2)
             .drive(infoLabel.rx.textColor)
             .disposed(by: disposeBag)
         
