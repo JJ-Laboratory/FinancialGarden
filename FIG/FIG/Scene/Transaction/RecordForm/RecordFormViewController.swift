@@ -94,7 +94,7 @@ final class RecordFormViewController: UIViewController, View {
     
     private let scrollView = UIScrollView()
     
-    private lazy var formView = FormView(titleSize: .fixed(120)) {
+    private lazy var formView = FormView {
         FormItem("카테고리")
             .image(UIImage(systemName: "folder"))
             .showsDisclosureIndicator(true)

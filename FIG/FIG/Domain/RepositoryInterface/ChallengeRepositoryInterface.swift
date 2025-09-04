@@ -19,6 +19,8 @@ protocol ChallengeRepositoryInterface {
     
     /// 모든 챌린지를 불러옵니다
     func fetchAllChallenges() -> Observable<[Challenge]>
+    /// 해당 월에 시작된 챌린지들을 불러옵니다
+    func fetchChallengesByMonth(_ year: Int, _ month: Int) -> Observable<[Challenge]>
     
     // MARK: - UPDATE
     

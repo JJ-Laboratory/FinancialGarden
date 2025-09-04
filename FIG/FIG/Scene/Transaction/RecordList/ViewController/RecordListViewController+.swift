@@ -13,15 +13,18 @@ extension RecordListViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        guard let section = Section(rawValue: section) else { return 0 }
+        guard let section = Section(rawValue: section),
+             let reactor = reactor else { return 0 }
+        
+        let hasRecords = !reactor.currentState.recordGroups.isEmpty
         
         switch section {
         case .summary:
             return 1
         case .sectionHeader:
-            return reactor?.currentState.recordGroups.isEmpty == false ? 1 : 0
+            return 1
         case .records:
-            return reactor?.currentState.recordGroups.count ?? 0
+            return hasRecords ? reactor.currentState.recordGroups.count : 1
         }
     }
     
@@ -30,6 +33,8 @@ extension RecordListViewController: UICollectionViewDataSource {
               let reactor = reactor else {
             return UICollectionViewCell()
         }
+        
+        let hasRecords = !reactor.currentState.recordGroups.isEmpty
         
         switch section {
         case .summary:
@@ -53,21 +58,38 @@ extension RecordListViewController: UICollectionViewDataSource {
             return cell
             
         case .records:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: RecordGroupCell.identifier,
-                for: indexPath
-            ) as? RecordGroupCell else {
-                return UICollectionViewCell()
+            if hasRecords {
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: RecordGroupCell.identifier,
+                    for: indexPath
+                ) as? RecordGroupCell else {
+                    return UICollectionViewCell()
+                }
+                
+                let recordGroups = reactor.currentState.recordGroups
+                let recordGroup = recordGroups[indexPath.item]
+                cell.configure(with: recordGroup)
+                
+                cell.onRecordTap = { [weak self] transaction in
+                    self?.coordinator?.pushTransactionEdit(transaction: transaction)
+                }
+                return cell
+            } else {
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: EmptyStateCell.identifier,
+                    for: indexPath
+                ) as? EmptyStateCell else {
+                    return UICollectionViewCell()
+                }
+                
+                cell.configure(type: .transaction)
+                cell.pushButtonTapped
+                    .subscribe { [weak self] _ in
+                        self?.coordinator?.pushTransactionInput()
+                    }
+                    .disposed(by: cell.disposeBag)
+                return cell
             }
-            
-            let recordGroups = reactor.currentState.recordGroups
-            let recordGroup = recordGroups[indexPath.item]
-            cell.configure(with: recordGroup)
-            
-            cell.onRecordTap = { [weak self] transaction in
-                self?.coordinator?.pushTransactionEdit(transaction: transaction)
-            }
-            return cell
         }
     }
 }

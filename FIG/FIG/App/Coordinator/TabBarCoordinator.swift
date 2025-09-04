@@ -91,8 +91,10 @@ final class TabBarCoordinator: Coordinator {
         switch type {
         case .transaction:
             navigateToRecordForm()
-        case .challenge:
+        case .challenge, .week, .month:
             navigateToChallengeForm()
+        case .completed:
+            return
         }
     }
     

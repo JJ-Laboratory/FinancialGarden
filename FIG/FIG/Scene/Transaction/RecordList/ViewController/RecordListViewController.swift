@@ -156,7 +156,7 @@ final class RecordListViewController: UIViewController, View {
         collectionView.register(MonthlySummaryCell.self, forCellWithReuseIdentifier: MonthlySummaryCell.identifier)
         collectionView.register(SectionHeaderCell.self, forCellWithReuseIdentifier: SectionHeaderCell.identifier)
         collectionView.register(RecordGroupCell.self, forCellWithReuseIdentifier: RecordGroupCell.identifier)
-        
+        collectionView.register(EmptyStateCell.self, forCellWithReuseIdentifier: EmptyStateCell.identifier)
         collectionView.collectionViewLayout.register(GroupBackgroundView.self, forDecorationViewOfKind: GroupBackgroundView.elementKind)
     }
     

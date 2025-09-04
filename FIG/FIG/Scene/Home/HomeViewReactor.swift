@@ -59,7 +59,8 @@ final class HomeViewReactor: Reactor {
         case .selectMonth(let date):
             return Observable.concat([
                 .just(.setSelectedMonth(date)),
-                loadMonthlySummary(date)
+                loadMonthlySummary(date),
+                loadCurrentChallenges(date)
             ])
         case .headerTapped(let homeSection):
             coordinator?.selectTab(for: homeSection)
@@ -97,7 +98,7 @@ extension HomeViewReactor {
     func loadHomeData() -> Observable<Mutation> {
         return Observable.merge([
             loadMonthlySummary(currentState.selectedMonth),
-            loadCurrentChallenges()
+            loadCurrentChallenges(currentState.selectedMonth)
         ])
         .catch { error in
                 .just(.setError(error))
@@ -128,44 +129,43 @@ extension HomeViewReactor {
             }
     }
     
-    private func loadCurrentChallenges() -> Observable<Mutation> {
-        return fetchChallengesWithSpending()
-            .map { allChallenges -> [Challenge] in
-                let progressChallenges = allChallenges.filter { challenge in
-                    !challenge.isCompleted
-                }
+    private func loadCurrentChallenges(_ date: Date) -> Observable<Mutation> {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: date)
+        let month = calendar.component(.month, from: date)
+        
+        return challengeRepository.fetchChallengesByMonth(year, month)
+            .flatMap { [weak self] challenges -> Observable<[Challenge]> in
+                guard let self = self, !challenges.isEmpty else { return .just([]) }
                 
-                return progressChallenges
+                return updateChallengesWithSpending(challenges)
             }
-            .map { .setCurrentChallenges($0) }
+            .map { challenges in
+                return .setCurrentChallenges(challenges)
+            }
             .catch { error in
                 print("❌ Failed to load current challenges: \(error)")
                 return .just(.setCurrentChallenges([]))
             }
     }
     
-    private func fetchChallengesWithSpending() -> Observable<[Challenge]> {
-        return challengeRepository.fetchAllChallenges()
-            .flatMap { [weak self] challenges -> Observable<[Challenge]> in
-                guard let self, !challenges.isEmpty else { return .just([]) }
-                
-                let amountObservables = challenges.map { challenge in
-                    self.transactionRepository.fetchTotalAmount(
-                        categoryId: challenge.category.id,
-                        startDate: challenge.startDate,
-                        endDate: challenge.endDate
-                    )
+    private func updateChallengesWithSpending(_ challenges: [Challenge]) -> Observable<[Challenge]> {
+        let amountObservables = challenges.map { challenge in
+            self.transactionRepository.fetchTotalAmount(
+                categoryId: challenge.category.id,
+                startDate: challenge.startDate,
+                endDate: challenge.endDate
+            )
+        }
+        
+        return Observable.zip(amountObservables)
+            .map { amounts in
+                var updatedChallenges: [Challenge] = []
+                for (var challenge, amount) in zip(challenges, amounts) {
+                    challenge.currentSpending = amount
+                    updatedChallenges.append(challenge)
                 }
-                
-                return Observable.zip(amountObservables)
-                    .map { amounts in
-                        var updatedChallenges: [Challenge] = []
-                        for (var challenge, amount) in zip(challenges, amounts) {
-                            challenge.currentSpending = amount
-                            updatedChallenges.append(challenge)
-                        }
-                        return updatedChallenges
-                    }
+                return updatedChallenges
             }
     }
 }
