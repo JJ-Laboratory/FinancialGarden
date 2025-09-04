@@ -286,10 +286,10 @@ final class ChallengeFormViewController: UIViewController, View {
             .map(\.selectedPeriod)
             .distinctUntilChanged()
             .asDriver(onErrorJustReturn: .week)
-            .drive(onNext: { [weak self] period in
+            .drive { [weak self] period in
                 self?.weekButton.isSelected = (period == .week)
                 self?.monthButton.isSelected = (period == .month)
-            })
+            }
             .disposed(by: disposeBag)
         
         reactor.state
@@ -330,18 +330,18 @@ final class ChallengeFormViewController: UIViewController, View {
         
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
-            .subscribe(onNext: { [weak self] isClose in
+            .subscribe { [weak self] isClose in
                 if isClose == true {
                     self?.coordinator?.popChallengeInput()
                 }
-            })
+            }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$alertMessage)
             .compactMap { $0 }
-            .subscribe(onNext: { [weak self] message in
+            .subscribe { [weak self] message in
                 self?.showAlert(message: message)
-            })
+            }
             .disposed(by: disposeBag)
     }
     
