@@ -124,12 +124,16 @@ final class ChallengeFormViewController: UIViewController, View {
             .trailing { amountLabel }
             .bottom(alignment: .center) {
                 .adaptiveStack {
-                    amount1
-                    amount2
-                    amount3
-                    amount4
+                    UIStackView(axis: .horizontal, spacing: 10) {
+                        amount1
+                        amount2
+                    }
+                    UIStackView(axis: .horizontal, spacing: 10) {
+                        amount3
+                        amount4
+                    }
                 } contentSizeChanges: { contentSize, stackView in
-                    if contentSize >= .extraExtraExtraLarge {
+                    if contentSize >= .extraLarge {
                         stackView.axis = .vertical
                     } else {
                         stackView.axis = .horizontal
@@ -327,10 +331,10 @@ final class ChallengeFormViewController: UIViewController, View {
             })
             .disposed(by: disposeBag)
         
-        reactor.pulse(\.$errorMessage)
+        reactor.pulse(\.$alertMessage)
             .compactMap { $0 }
-            .subscribe(onNext: { message in
-                print("error: \(message)")
+            .subscribe(onNext: { [weak self] message in
+                self?.showAlert(message: message)
             })
             .disposed(by: disposeBag)
     }
@@ -361,5 +365,12 @@ final class ChallengeFormViewController: UIViewController, View {
         
         present(picker, animated: true)
     }
+    
+    private func showAlert(message: String) {
+            let alert = UIAlertController(title: "알림", message: message, preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "확인", style: .default)
+            alert.addAction(okAction)
+            present(alert, animated: true)
+        }
 }
 
