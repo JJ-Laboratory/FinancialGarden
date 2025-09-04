@@ -66,6 +66,7 @@ final class ChartViewController: UIViewController, View {
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: monthButton)
         collectionView.backgroundColor = .background
+        collectionView.showsVerticalScrollIndicator = false
         collectionView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
         
         view.addSubview(collectionView)

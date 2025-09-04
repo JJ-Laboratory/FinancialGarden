@@ -26,6 +26,7 @@ final class ChallengeListViewController: UIViewController, View {
     
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCompositionalLayout()).then {
         $0.backgroundColor = .clear
+        $0.showsVerticalScrollIndicator = false
     }
     
     init(reactor: ChallengeListViewReactor) {
