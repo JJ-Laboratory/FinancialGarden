@@ -99,9 +99,9 @@ final class ChallengeFormViewController: UIViewController, View {
         $0.image = UIImage(systemName: "info.circle",withConfiguration: config)
         $0.adjustsImageSizeForAccessibilityContentSizeCategory = true
     }
-    private lazy var infoStackView = UIStackView(axis: .horizontal, alignment: .center, spacing: 8) {
-        infoLabel
+    private lazy var infoStackView = UIStackView(axis: .horizontal, alignment: .top, spacing: 8) {
         infoImageView
+        infoLabel
     }
     
     private let createButton = CustomButton(style: .filled).then {
@@ -309,11 +309,17 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.state
-            .map(\.currentSeedCount)
+            .map(\.infoLabelText)
             .distinctUntilChanged()
-            .map { "현재 사용 가능 씨앗 \($0)개" }
             .asDriver(onErrorJustReturn: "")
             .drive(infoLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state
+            .map(\.infoLabelColor)
+            .distinctUntilChanged()
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(infoLabel.rx.textColor)
             .disposed(by: disposeBag)
         
         reactor.state
