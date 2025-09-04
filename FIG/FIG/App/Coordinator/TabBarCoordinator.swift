@@ -59,8 +59,8 @@ final class TabBarCoordinator: Coordinator {
         
         challengeNavController.tabBarItem = UITabBarItem(
             title: "챌린지",
-            image: UIImage(systemName: "target"),
-            selectedImage: UIImage(systemName: "target")
+            image: UIImage(systemName: "apple.meditate"),
+            selectedImage: UIImage(systemName: "apple.meditate")
         )
         
         // 차트 탭

@@ -118,7 +118,7 @@ extension HomeViewController {
         
         let section = NSCollectionLayoutSection(group: group)
 
-        section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 40, bottom: 16, trailing: 40)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
         section.interGroupSpacing = 16
 
         let decorationItem = NSCollectionLayoutDecorationItem.background(

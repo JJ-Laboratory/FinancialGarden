@@ -14,9 +14,9 @@ final class ChartCategoryProgressCell: UICollectionViewCell {
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.semibold)
         $0.textColor = .charcoal
     }
-
+    
     let progressView = ChartProgressView()
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         let stackView = UIStackView(axis: .horizontal, spacing: 20) {
@@ -27,22 +27,25 @@ final class ChartCategoryProgressCell: UICollectionViewCell {
             }
             amountLabel
         }
-
+        
         contentView.addSubview(stackView)
         contentView.addSubview(progressView)
-
+        
         stackView.snp.makeConstraints {
-            $0.top.trailing.equalToSuperview()
-            $0.leading.greaterThanOrEqualToSuperview()
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
+            $0.trailing.equalToSuperview().inset(20)
         }
-
+        
         progressView.snp.makeConstraints {
             $0.top.equalTo(stackView.snp.bottom).offset(10)
-            $0.leading.trailing.bottom.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
+            $0.trailing.equalToSuperview().inset(20)
+            $0.bottom.equalToSuperview()
             $0.height.equalTo(24)
         }
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

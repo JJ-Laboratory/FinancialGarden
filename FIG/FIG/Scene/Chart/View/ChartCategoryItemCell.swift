@@ -62,7 +62,7 @@ final class ChartCategoryItemCell: UICollectionViewCell {
         contentView.addSubview(stackView)
         
         iconContainerView.snp.makeConstraints {
-            $0.leading.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
             $0.top.bottom.equalTo(stackView)
             $0.size.equalTo(44)
         }
@@ -74,7 +74,8 @@ final class ChartCategoryItemCell: UICollectionViewCell {
         
         stackView.snp.makeConstraints {
             $0.leading.equalTo(iconContainerView.snp.trailing).offset(10)
-            $0.top.bottom.trailing.equalToSuperview()
+            $0.top.bottom.equalToSuperview()
+            $0.trailing.equalToSuperview().inset(20)
         }
     }
     

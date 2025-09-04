@@ -175,11 +175,20 @@ extension ChartViewController {
             let decorationItem = NSCollectionLayoutDecorationItem.background(
                 elementKind: Self.elementKindSectionBackground
             )
+            
+            let contentInsets: NSDirectionalEdgeInsets
+            switch section {
+            case .category:
+                contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 0, bottom: 16, trailing: 0)
+            case .summary:
+                contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
+            }
+            
             return NSCollectionLayoutSection(group: layoutGroup).then {
                 $0.interGroupSpacing = 16
                 $0.boundarySupplementaryItems = [boundaryItem]
                 $0.decorationItems = [decorationItem]
-                $0.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 20, bottom: 16, trailing: 20)
+                $0.contentInsets = contentInsets
             }
         }
         let configuration = UICollectionViewCompositionalLayoutConfiguration().then {
