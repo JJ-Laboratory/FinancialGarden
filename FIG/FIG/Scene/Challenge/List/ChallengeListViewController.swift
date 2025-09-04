@@ -75,44 +75,55 @@ final class ChallengeListViewController: UIViewController, View {
             .asDriver(onErrorDriveWith: .empty())
         
         Driver.combineLatest(gardenInfoDriver, displayedChallengesDriver)
-            .drive(onNext: { [weak self] gardenInfo, displayedChallenges in
+            .drive { [weak self] gardenInfo, displayedChallenges in
                 self?.applySnapshot(gardenInfo: gardenInfo, challenges: displayedChallenges)
-            })
+            }
             .disposed(by: disposeBag)
         
         collectionView.rx.itemSelected
-            .subscribe(onNext: { [weak self] indexPath in
+            .subscribe { [weak self] indexPath in
                 let item = self?.dataSource.itemIdentifier(for: indexPath)
                 guard case .challenge(let challenge) = item else { return }
                 self?.coordinator?.pushChallengeDetail(challenge: challenge)
-            })
+            }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$animation)
             .compactMap { $0 }
-            .subscribe(onNext: { [weak self] animation in
+            .subscribe { [weak self] animation in
                 guard let self = self, let reactor = self.reactor else { return }
-                if let gardenCell = self.collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? GardenInfoCell {
-                    gardenCell.configure(with: GardenRecord(totalSeeds: reactor.currentState.gardenInfo?.totalSeeds ?? 0, totalFruits: animation.to), animated: true, completion: { reactor.action.onNext(.animationFinished)})
+                if let gardenCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? GardenInfoCell {
+                    gardenCell.configure(
+                        with: GardenRecord(
+                            totalSeeds: reactor.currentState.gardenInfo?.totalSeeds ?? 0,
+                            totalFruits: animation.to
+                        ),
+                        animated: true,
+                        completion: { reactor.action.onNext(.animationFinished)}
+                    )
                 }
-            })
+            }
             .disposed(by: disposeBag)
         
         reactor.pulse(\.$challengeForPopup)
             .compactMap { $0 }
-            .subscribe(onNext: { [weak self] challenge in
+            .subscribe { [weak self] challenge in
                 let count = (challenge.status == .success) ? challenge.targetFruitsCount : challenge.requiredSeedCount
                 self?.presentPopup(status: challenge.status, count: count)
-            })
+            }
             .disposed(by: disposeBag)
     }
     
     private func configureDataSource() {
-        let gardenRegistration = UICollectionView.CellRegistration<GardenInfoCell, GardenRecord> { cell, indexPath, data in
+        let gardenRegistration = UICollectionView.CellRegistration<GardenInfoCell, GardenRecord> { cell, _, data in
             cell.configure(with: data)
         }
-        let challengeRegistration = UICollectionView.CellRegistration<ChallengeCell, Challenge> { cell, indexPath, data in
+        let challengeRegistration = UICollectionView.CellRegistration<ChallengeCell, Challenge> { cell, _, data in
             cell.configure(with: data)
+        }
+        
+        let emptyStateRegistration = UICollectionView.CellRegistration<EmptyStateCell, EmptyStateType> { cell, _, type in
+            cell.configure(type: type)
         }
         
         dataSource = UICollectionViewDiffableDataSource<ChallengeSection, ChallengeItem>(collectionView: collectionView) { collectionView, indexPath, data -> UICollectionViewCell? in
@@ -126,11 +137,19 @@ final class ChallengeListViewController: UIViewController, View {
                     self?.reactor?.action.onNext(.confirmButtonTapped(challengeData))
                 }
                 return cell
+            case .emptyState(let type):
+                let cell = collectionView.dequeueConfiguredReusableCell(using: emptyStateRegistration, for: indexPath, item: type)
+                cell.pushButtonTapped
+                    .subscribe { [weak self] _ in
+                        self?.coordinator?.pushChallengeInput()
+                    }
+                    .disposed(by: cell.disposeBag)
+                return cell
             }
         }
         
-        let headerRegistration = UICollectionView.SupplementaryRegistration<ChallengeListHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] supplementaryView, elementKind, indexPath in
-            guard let self = self, let reactor = self.reactor else { return }
+        let headerRegistration = UICollectionView.SupplementaryRegistration<ChallengeListHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] supplementaryView, _, _ in
+            guard let self = self, let reactor = reactor else { return }
             
             supplementaryView.rx.tabSelected
                 .map { .selectTab($0 == 0 ? .week : .month) }
@@ -150,7 +169,7 @@ final class ChallengeListViewController: UIViewController, View {
                 .disposed(by: supplementaryView.disposeBag)
         }
         
-        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
+        dataSource.supplementaryViewProvider = { collectionView, _, indexPath in
             return collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
         }
     }
@@ -161,35 +180,47 @@ final class ChallengeListViewController: UIViewController, View {
             
             switch sectionType {
             case .gardenInfo:
-                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                      heightDimension: .estimated(100))
+                let itemSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(100)
+                )
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                       heightDimension: .estimated(100))
+                let groupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(100)
+                )
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 10, trailing: 20)
                 return section
                 
             case .challengeList:
-                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                      heightDimension: .estimated(100))
+                let itemSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(100)
+                )
                 let item = NSCollectionLayoutItem(layoutSize: itemSize)
                 
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                       heightDimension: .estimated(100))
+                let groupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(100)
+                )
                 let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
                 
                 let section = NSCollectionLayoutSection(group: group)
                 section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 20, bottom: 20, trailing: 20)
                 section.interGroupSpacing = 20
                 
-                let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                        heightDimension: .estimated(100))
-                let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
-                                                                         elementKind: UICollectionView.elementKindSectionHeader,
-                                                                         alignment: .top)
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .estimated(100)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
                 header.pinToVisibleBounds = true
                 section.boundarySupplementaryItems = [header]
                 
@@ -206,7 +237,13 @@ final class ChallengeListViewController: UIViewController, View {
         if let gardenData = gardenInfo {
             snapshot.appendItems([.gardenInfo(gardenData)], toSection: .gardenInfo)
         }
-        snapshot.appendItems(challenges.map { .challenge($0) }, toSection: .challengeList)
+        
+        if challenges.isEmpty && reactor?.currentState.selectedFilter == .inProgress {
+            let type: EmptyStateType = reactor?.currentState.selectedTab == .week ? .week: .month
+            snapshot.appendItems([.emptyState(type)], toSection: .challengeList)
+        } else {
+            snapshot.appendItems(challenges.map { .challenge($0) }, toSection: .challengeList)
+        }
         
         dataSource.apply(snapshot, animatingDifferences: true)
     }

@@ -14,6 +14,8 @@ import RxCocoa
 enum EmptyStateType: Hashable {
     case transaction
     case challenge
+    case week
+    case month
     
     var title: String {
         switch self {
@@ -21,6 +23,10 @@ enum EmptyStateType: Hashable {
             return "아직 거래 내역이 없어요\n거래내역을 등록하고 효율적인 재무 관리를 해보세요"
         case .challenge:
             return "아직 진행중인 챌린지가 없어요\n챌린지를 등록하고 효율적인 금융 생활을 해보세요"
+        case .week:
+            return "아직 진행중인 일주일 챌린지가 없어요\n챌린지를 등록하고 효율적인 금융 생활을 해보세요"
+        case .month:
+            return "아직 진행중인 한달 챌린지가 없어요\n챌린지를 등록하고 효율적인 금융 생활을 해보세요"
         }
     }
     
@@ -28,7 +34,7 @@ enum EmptyStateType: Hashable {
         switch self {
         case .transaction:
             return "새 거래 내역 기록하기"
-        case .challenge:
+        case .challenge, .week, .month:
             return "새 챌린지 등록하기"
         }
     }

@@ -129,4 +129,3 @@ extension Date {
         return Float(progress)
     }
 }
-

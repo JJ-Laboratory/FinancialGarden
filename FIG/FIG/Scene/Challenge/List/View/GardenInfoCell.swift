@@ -9,7 +9,7 @@ import UIKit
 import Then
 import SnapKit
 
-class GardenInfoCell: UICollectionViewCell{
+class GardenInfoCell: UICollectionViewCell {
     
     private let seedItem = GardenItemView(type: .seed)
     private let fruitItem = GardenItemView(type: .fruit)
@@ -21,7 +21,7 @@ class GardenInfoCell: UICollectionViewCell{
     private let infoImageView = UIImageView().then {
         $0.tintColor = .gray1
         let config = UIImage.SymbolConfiguration(textStyle: .caption2)
-        $0.image = UIImage(systemName: "info.circle",withConfiguration: config)
+        $0.image = UIImage(systemName: "info.circle", withConfiguration: config)
         $0.adjustsImageSizeForAccessibilityContentSizeCategory = true
         $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }

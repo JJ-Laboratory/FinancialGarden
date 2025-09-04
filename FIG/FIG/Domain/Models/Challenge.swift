@@ -113,6 +113,7 @@ enum ChallengeSection: Int {
 enum ChallengeItem: Hashable {
     case gardenInfo(GardenRecord)
     case challenge(Challenge)
+    case emptyState(EmptyStateType)
 }
 
 import UIKit
