@@ -49,6 +49,33 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
         }
     }
     
+    func fetchChallengesByMonth(_ year: Int, _ month: Int) -> Observable<[Challenge]> {
+        let calendar = Calendar.current
+        
+        guard let startDate = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+              let endDate = calendar.date(byAdding: .month, value: 1, to: startDate) else {
+            return Observable.error(CoreDataError.invalidDate)
+        }
+        
+        let predicate = NSPredicate(
+            format: "startDate >= %@ AND startDate < %@",
+            startDate as NSDate,
+            endDate as NSDate
+        )
+        
+        return coreDataService.fetch(
+            ChallengeEntity.self,
+            predicate: predicate,
+            sortDescriptors: [NSSortDescriptor(key: "startDate", ascending: false)]
+        )
+        .map { [weak self] entities -> [Challenge] in
+            guard let self else { return [] }
+            let challenges = entities.compactMap { self.toModel($0) }
+            return challenges
+        }
+    }
+    
+    
     func editChallenge(_ challenge: Challenge) -> Observable<Challenge> {
         let predicate = NSPredicate(format: "id == %@", challenge.id as CVarArg)
         
