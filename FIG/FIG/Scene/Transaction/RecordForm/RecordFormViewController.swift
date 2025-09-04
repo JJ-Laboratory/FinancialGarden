@@ -79,6 +79,7 @@ final class RecordFormViewController: UIViewController, View {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
+        $0.textAlignment = .right
     }
     
     private let saveButton = CustomButton(style: .filled).then {
@@ -125,7 +126,7 @@ final class RecordFormViewController: UIViewController, View {
         
         FormItem("메모")
             .image(UIImage(systemName: "doc.text"))
-            .bottom { memoTextField }
+            .trailing { memoTextField }
     }
     
     private lazy var contentStackView = UIStackView(axis: .vertical, spacing: 20) {
