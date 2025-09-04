@@ -20,6 +20,10 @@ class PopupView: UIView {
         $0.clipsToBounds = true
     }
     
+    private let imageView = UIImageView().then {
+        $0.contentMode = .scaleAspectFit
+    }
+    
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.textAlignment = .center
@@ -49,7 +53,7 @@ class PopupView: UIView {
     private func setupUI() {
         addSubview(contentView)
         
-        [titleLabel, messageLabel, challengeButton, closeButton].forEach {
+        [imageView, titleLabel, messageLabel, challengeButton, closeButton].forEach {
             contentView.addSubview($0)
         }
         
@@ -58,8 +62,14 @@ class PopupView: UIView {
             $0.centerY.equalToSuperview()
         }
         
+        imageView.snp.makeConstraints {
+            $0.top.equalToSuperview().inset(20)
+            $0.width.equalToSuperview().multipliedBy(0.8)
+            $0.centerX.equalToSuperview()
+        }
+        
         titleLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(200)
+            $0.top.equalTo(imageView.snp.bottom).offset(20)
             $0.leading.trailing.equalToSuperview().inset(20)
         }
         
@@ -84,6 +94,7 @@ class PopupView: UIView {
     }
     
     private func configure(type: ChallengeStatus, count: Int) {
+        imageView.image = type.image
         titleLabel.text = type.title
         messageLabel.text = "\(count)" + type.message
         challengeButton.setTitle( type.buttonTitle, for: .normal)
