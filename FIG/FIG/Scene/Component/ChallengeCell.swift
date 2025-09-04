@@ -263,7 +263,7 @@ class ChallengeCell: UICollectionViewCell {
     
     /// 성공 상태 UI 설정
     private func configureSuccessStatus(with challenge: Challenge) {
-        stageImageView.image = UIImage(systemName: "apple.meditate")
+        stageImageView.image = UIImage(named: "success")
         
         guard !challenge.isCompleted else { return }
         
@@ -282,7 +282,7 @@ class ChallengeCell: UICollectionViewCell {
         DispatchQueue.main.async {
             self.progressView.setProgress(1.0, animated: true)
         }
-        stageImageView.image = UIImage(systemName: "x.circle")
+        stageImageView.image = UIImage(named: "failure")
         
         guard !challenge.isCompleted else { return }
         
