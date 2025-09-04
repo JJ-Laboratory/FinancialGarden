@@ -29,7 +29,8 @@ enum HomeItem: Hashable {
     case monthlySummary(expense: Int, income: Int)
     case challenge(Challenge)
     case emptyState(EmptyStateType)
-    case chart
+    case chartProgress(totalAmount: Int, items: [ChartProgressView.Item])
+    case chartCategory(CategoryChartItem)
     
     static func == (lhs: HomeItem, rhs: HomeItem) -> Bool {
         switch (lhs, rhs) {
@@ -41,8 +42,10 @@ enum HomeItem: Hashable {
             
         case (.emptyState(let lhs), .emptyState(let rhs)):
             return lhs == rhs
-        case (.chart, .chart):
-            return true
+        case (.chartProgress(let lhsTotal, let lhsItems), .chartProgress(let rhsTotal, let rhsItems)):
+            return lhsTotal == rhsTotal && lhsItems == rhsItems
+        case (.chartCategory(let lhs), .chartCategory(let rhs)):
+            return lhs.category.id == rhs.category.id
         default:
             return false
         }
@@ -60,8 +63,13 @@ enum HomeItem: Hashable {
         case .emptyState(let type):
             hasher.combine("emptyState")
             hasher.combine(type)
-        case .chart:
-            hasher.combine("chart")
+        case .chartProgress(let totalAmount, let items):
+            hasher.combine("chartProgress")
+            hasher.combine(totalAmount)
+            hasher.combine(items.count)
+        case .chartCategory(let item):
+            hasher.combine("chartCategory")
+            hasher.combine(item.category.id)
         }
     }
 }

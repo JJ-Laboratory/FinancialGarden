@@ -14,6 +14,7 @@ final class HomeViewReactor: Reactor {
     weak var coordinator: TabBarCoordinator?
     private let transactionRepository: TransactionRepositoryInterface
     private let challengeRepository: ChallengeRepositoryInterface
+    private let categoryService: CategoryService
     
     enum Action {
         case viewDidLoad
@@ -27,6 +28,7 @@ final class HomeViewReactor: Reactor {
         case setSelectedMonth(Date)
         case setMonthlySummary(expense: Int, income: Int)
         case setCurrentChallenges([Challenge])
+        case setChartData([CategoryChartItem])
         case setError(Error)
     }
     
@@ -35,10 +37,29 @@ final class HomeViewReactor: Reactor {
         var monthlyExpense: Int = 0
         var monthlyIncome: Int = 0
         var currentChallenges: [Challenge] = []
+        var chartItems: [CategoryChartItem] = []
         @Pulse var error: Error?
         
         var hasRecords: Bool {
             return monthlyExpense > 0
+        }
+        
+        var categoryTotalAmount: Int {
+            return chartItems.reduce(0) { $0 + $1.amount }
+        }
+        
+        var categoryProgressItems: [ChartProgressView.Item] {
+            guard categoryTotalAmount > 0 else {
+                return [ChartProgressView.Item(value: 100, color: ChartColor.none.uiColor)]
+            }
+            
+            let topItems = Array(chartItems.prefix(4))
+            return topItems.enumerated().map { index, item in
+                ChartProgressView.Item(
+                    value: Int(item.percentage.rounded()),
+                    color: ChartColor.rank(index).uiColor
+                )
+            }
         }
     }
     
@@ -46,10 +67,12 @@ final class HomeViewReactor: Reactor {
     
     init(
         transactionRepository: TransactionRepositoryInterface,
-        challengeRepository: ChallengeRepositoryInterface
+        challengeRepository: ChallengeRepositoryInterface,
+        categoryService: CategoryService
     ) {
         self.transactionRepository = transactionRepository
         self.challengeRepository = challengeRepository
+        self.categoryService = categoryService
     }
     
     func mutate(action: Action) -> Observable<Mutation> {
@@ -60,7 +83,8 @@ final class HomeViewReactor: Reactor {
             return Observable.concat([
                 .just(.setSelectedMonth(date)),
                 loadMonthlySummary(date),
-                loadCurrentChallenges(date)
+                loadCurrentChallenges(date),
+                loadChartData(date)
             ])
         case .headerTapped(let homeSection):
             coordinator?.selectTab(for: homeSection)
@@ -85,6 +109,9 @@ final class HomeViewReactor: Reactor {
         case .setCurrentChallenges(let challenges):
             newState.currentChallenges = challenges
             
+        case .setChartData(let items):
+            newState.chartItems = items
+            
         case .setError(let error):
             newState.error = error
         }
@@ -98,7 +125,8 @@ extension HomeViewReactor {
     func loadHomeData() -> Observable<Mutation> {
         return Observable.merge([
             loadMonthlySummary(currentState.selectedMonth),
-            loadCurrentChallenges(currentState.selectedMonth)
+            loadCurrentChallenges(currentState.selectedMonth),
+            loadChartData(currentState.selectedMonth)
         ])
         .catch { error in
                 .just(.setError(error))
@@ -166,6 +194,56 @@ extension HomeViewReactor {
                     updatedChallenges.append(challenge)
                 }
                 return updatedChallenges
+            }
+    }
+    
+    private func loadChartData(_ date: Date) -> Observable<Mutation> {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: date)
+        guard let year = components.year, let month = components.month else {
+            return .just(.setChartData([]))
+        }
+        
+        let lastMonthDate = calendar.date(byAdding: .month, value: -1, to: date) ?? date
+        let lastMonthComponents = calendar.dateComponents([.year, .month], from: lastMonthDate)
+        guard let lastYear = lastMonthComponents.year, let lastMonth = lastMonthComponents.month else {
+            return .just(.setChartData([]))
+        }
+        
+        let currentMonthTransactions = transactionRepository.fetchTransactionByMonth(year, month)
+        let lastMonthTransactions = transactionRepository.fetchTransactionByMonth(lastYear, lastMonth)
+        
+        return Observable.zip(currentMonthTransactions, lastMonthTransactions)
+            .map { current, last in
+                let currentExpenses = current.filter { $0.category.transactionType == .expense }
+                let totalAmount = currentExpenses.reduce(0) { $0 + $1.amount }
+                
+                guard totalAmount > 0 else { return [] }
+                
+                let expensesByCategory = Dictionary(grouping: currentExpenses, by: { $0.category })
+                let lastExpenses = last.filter { $0.category.transactionType == .expense }
+                let lastExpensesByCategory = Dictionary(grouping: lastExpenses, by: { $0.category })
+                let lastAmounts = lastExpensesByCategory.mapValues { $0.reduce(0) { $0 + $1.amount } }
+                
+                let items = expensesByCategory.map { category, transactions -> CategoryChartItem in
+                    let amount = transactions.reduce(0) { $0 + $1.amount }
+                    let lastAmount = lastAmounts[category] ?? 0
+                    let percentage = (Double(amount) / Double(totalAmount)) * 100
+                    
+                    return CategoryChartItem(
+                        category: category,
+                        amount: amount,
+                        percentage: percentage.rounded(to: 2),
+                        changed: amount - lastAmount
+                    )
+                }
+                
+                return items.sorted { $0.percentage > $1.percentage }
+            }
+            .map { .setChartData($0) }
+            .catch { error in
+                print("❌ Failed to load chart data: \(error)")
+                return .just(.setChartData([]))
             }
     }
 }

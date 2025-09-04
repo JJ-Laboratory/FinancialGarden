@@ -46,7 +46,8 @@ final class ChartCategoryHeaderView: UICollectionReusableView {
         addSubview(stackView)
         stackView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(16)
-            $0.leading.trailing.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
+            $0.trailing.equalToSuperview().inset(20)
             $0.bottom.equalToSuperview()
         }
     }

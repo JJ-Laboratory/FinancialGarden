@@ -26,6 +26,7 @@ final class ChallengeListViewController: UIViewController, View {
     
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createCompositionalLayout()).then {
         $0.backgroundColor = .clear
+        $0.showsVerticalScrollIndicator = false
     }
     
     init(reactor: ChallengeListViewReactor) {
@@ -58,7 +59,8 @@ final class ChallengeListViewController: UIViewController, View {
         view.addSubview(collectionView)
         
         collectionView.snp.makeConstraints {
-            $0.top.leading.trailing.bottom.equalToSuperview()
+            $0.top.equalTo(view.safeAreaLayoutGuide)
+            $0.leading.trailing.bottom.equalToSuperview()
         }
     }
     

@@ -18,13 +18,14 @@ final class TabBarCoordinator: Coordinator {
     }
     
     private func setupTabs() {
-        tabBarController.tabBar.backgroundColor = .systemBackground
+        tabBarController.tabBar.backgroundColor = .white
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
         let homeReactor = HomeViewReactor(
             transactionRepository: TransactionRepository(),
-            challengeRepository: ChallengeRepository()
+            challengeRepository: ChallengeRepository(),
+            categoryService: .shared
         )
         homeReactor.coordinator = self
         let homeVC = HomeViewController(reactor: homeReactor)
@@ -58,8 +59,8 @@ final class TabBarCoordinator: Coordinator {
         
         challengeNavController.tabBarItem = UITabBarItem(
             title: "챌린지",
-            image: UIImage(systemName: "target"),
-            selectedImage: UIImage(systemName: "target")
+            image: UIImage(systemName: "apple.meditate"),
+            selectedImage: UIImage(systemName: "apple.meditate")
         )
         
         // 차트 탭

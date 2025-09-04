@@ -62,7 +62,7 @@ final class ChartCategoryItemCell: UICollectionViewCell {
         contentView.addSubview(stackView)
         
         iconContainerView.snp.makeConstraints {
-            $0.leading.equalToSuperview()
+            $0.leading.equalToSuperview().offset(20)
             $0.top.bottom.equalTo(stackView)
             $0.size.equalTo(44)
         }
@@ -74,11 +74,25 @@ final class ChartCategoryItemCell: UICollectionViewCell {
         
         stackView.snp.makeConstraints {
             $0.leading.equalTo(iconContainerView.snp.trailing).offset(10)
-            $0.top.bottom.trailing.equalToSuperview()
+            $0.top.bottom.equalToSuperview()
+            $0.trailing.equalToSuperview().inset(20)
         }
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(with item: CategoryChartItem) {
+        imageView.image = item.category.icon
+        imageView.tintColor = item.iconColor
+        iconContainerView.backgroundColor = item.backgroundColor
+        nameLabel.text = item.category.title
+        rateLabel.text = "\(item.percentage)%"
+        totalValueLabel.text = "\(item.amount.formattedWithComma)원"
+        
+        let isIncrease = item.changed >= 0
+        changedValueLabel.text = "\(isIncrease ? "▲" : "▼") \(abs(item.changed).formattedWithComma)원"
+        changedValueLabel.textColor = isIncrease ? .secondary : .gray1
     }
 }
