@@ -93,6 +93,8 @@ final class TabBarCoordinator: Coordinator {
             navigateToRecordForm()
         case .challenge, .week, .month:
             navigateToChallengeForm()
+        case .completed:
+            return
         }
     }
     

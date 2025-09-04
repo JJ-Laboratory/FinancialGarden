@@ -238,8 +238,14 @@ final class ChallengeListViewController: UIViewController, View {
             snapshot.appendItems([.gardenInfo(gardenData)], toSection: .gardenInfo)
         }
         
-        if challenges.isEmpty && reactor?.currentState.selectedFilter == .inProgress {
-            let type: EmptyStateType = reactor?.currentState.selectedTab == .week ? .week: .month
+        if challenges.isEmpty {
+            let type: EmptyStateType
+            
+            if reactor?.currentState.selectedFilter == .inProgress {
+                type = reactor?.currentState.selectedTab == .week ? .week: .month
+            } else {
+                type = .completed
+            }
             snapshot.appendItems([.emptyState(type)], toSection: .challengeList)
         } else {
             snapshot.appendItems(challenges.map { .challenge($0) }, toSection: .challengeList)
