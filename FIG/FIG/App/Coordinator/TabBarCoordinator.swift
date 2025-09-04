@@ -24,7 +24,8 @@ final class TabBarCoordinator: Coordinator {
         // 홈 탭
         let homeReactor = HomeViewReactor(
             transactionRepository: TransactionRepository(),
-            challengeRepository: ChallengeRepository()
+            challengeRepository: ChallengeRepository(),
+            categoryService: .shared
         )
         homeReactor.coordinator = self
         let homeVC = HomeViewController(reactor: homeReactor)

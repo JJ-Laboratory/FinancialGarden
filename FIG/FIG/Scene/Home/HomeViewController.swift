@@ -121,6 +121,9 @@ final class HomeViewController: UIViewController, View {
             $0.top.equalTo(view.safeAreaLayoutGuide)
             $0.leading.trailing.bottom.equalToSuperview()
         }
+        
+        collectionView.contentInset.bottom = 20
+        collectionView.verticalScrollIndicatorInsets.bottom = 20
     }
     
     private func setupNavigationBar() {
@@ -131,10 +134,15 @@ final class HomeViewController: UIViewController, View {
     private func setupCollectionView() {
         collectionView.register(MonthlySummaryCell.self, forCellWithReuseIdentifier: MonthlySummaryCell.identifier)
         collectionView.register(ChallengeCell.self, forCellWithReuseIdentifier: ChallengeCell.identifier)
+        collectionView.register(ChartCategoryProgressCell.self, forCellWithReuseIdentifier: ChartCategoryProgressCell.identifier)
+        collectionView.register(ChartCategoryItemCell.self, forCellWithReuseIdentifier: ChartCategoryItemCell.identifier)
         collectionView.register(EmptyStateCell.self, forCellWithReuseIdentifier: EmptyStateCell.identifier)
-                collectionView.register(ChartCell.self, forCellWithReuseIdentifier: ChartCell.identifier)
         
         collectionView.register(HomeHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: HomeHeaderView.reuseIdentifier)
+        collectionView.collectionViewLayout.register(
+            ChartSectionBackgroundView.self,
+            forDecorationViewOfKind: ChartSectionBackgroundView.reuseIdentifier
+        )
     }
     
     private func setupDataSource() {
@@ -179,11 +187,21 @@ final class HomeViewController: UIViewController, View {
             
             return cell
             
-        case .chart:
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChartCell.identifier, for: indexPath) as? ChartCell else {
-                        return UICollectionViewCell()
-                    }
-                    return cell
+        case .chartProgress(let totalAmount, let items):
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChartCategoryProgressCell.identifier, for: indexPath) as? ChartCategoryProgressCell else {
+                return UICollectionViewCell()
+            }
+            cell.amountLabel.text = "\(totalAmount.formattedWithComma)원"
+            cell.progressView.items = items
+            return cell
+            
+        case .chartCategory(let item):
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChartCategoryItemCell.identifier, for: indexPath) as? ChartCategoryItemCell else {
+                return UICollectionViewCell()
+            }
+            
+            cell.configure(with: item)
+            return cell
         }
     }
     
@@ -243,8 +261,24 @@ final class HomeViewController: UIViewController, View {
         
         // 차트 섹션
         snapshot.appendSections([.chart])
-        if state.hasRecords {
-            snapshot.appendItems([.chart], toSection: .chart)
+        if state.hasRecords && state.categoryTotalAmount > 0 {
+            var chartItems: [HomeItem] = []
+            
+            // Progress 셀 추가
+            chartItems.append(.chartProgress(
+                totalAmount: state.categoryTotalAmount,
+                items: state.categoryProgressItems
+            ))
+            
+            // 상위 4개 카테고리 아이템 추가
+            let topCategories = Array(state.chartItems.prefix(4))
+            let categoryItems = topCategories.enumerated().map { index, item in
+                let coloredItem = item.withColor(ChartColor.rank(index))
+                return HomeItem.chartCategory(coloredItem)
+            }
+            chartItems.append(contentsOf: categoryItems)
+            
+            snapshot.appendItems(chartItems, toSection: .chart)
         } else {
             snapshot.appendItems([.emptyState(.transaction)], toSection: .chart)
         }

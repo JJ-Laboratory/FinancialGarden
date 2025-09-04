@@ -69,10 +69,15 @@ final class ChartViewController: UIViewController, View {
         collectionView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
         
         view.addSubview(collectionView)
+        view.backgroundColor = .background
+        
         collectionView.snp.makeConstraints {
-            $0.top.bottom.equalToSuperview()
-            $0.leading.trailing.equalToSuperview()
+            $0.top.equalTo(view.safeAreaLayoutGuide).inset(8)
+            $0.leading.trailing.bottom.equalToSuperview()
         }
+        
+        collectionView.contentInset.bottom = 20
+        collectionView.verticalScrollIndicatorInsets.bottom = 20
     }
     
     func bind(reactor: ChartReactor) {
@@ -195,15 +200,7 @@ extension ChartViewController {
             print(item.items)
         }
         let categoryItemCellRegistration = CellRegistration<ChartCategoryItemCell, CategoryChartItem> { cell, indexPath, item in
-            cell.imageView.image = item.category.icon
-            cell.imageView.tintColor = item.iconColor
-            cell.iconContainerView.backgroundColor = item.backgroundColor
-            cell.nameLabel.text = item.category.title
-            cell.rateLabel.text = "\(item.percentage)%"
-            cell.totalValueLabel.text = "\(item.amount.formattedWithComma)원"
-            let isIncrease = item.changed >= 0
-            cell.changedValueLabel.text = "\(isIncrease ? "▲" : "▼") \(abs(item.changed).formattedWithComma)원"
-            cell.changedValueLabel.textColor = isIncrease ? .secondary : .gray1
+            cell.configure(with: item)
         }
         let summaryItemCellRegistration = CellRegistration<ChartSummaryItemCell, SummaryChartItem> { cell, indexPath, item in
             cell.monthLabel.text = item.month + "월"
