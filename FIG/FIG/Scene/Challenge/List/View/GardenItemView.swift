@@ -15,8 +15,8 @@ enum GardenItemType {
     
     var icon: UIImage? {
         switch self {
-        case .seed: return UIImage(systemName: "wonsign.circle")
-        case .fruit: return UIImage(systemName: "wonsign.circle")
+        case .seed: return UIImage(named: "level0")
+        case .fruit: return UIImage(named: "success")
         }
     }
     
