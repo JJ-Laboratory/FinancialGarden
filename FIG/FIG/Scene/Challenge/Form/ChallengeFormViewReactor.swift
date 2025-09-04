@@ -32,7 +32,7 @@ class ChallengeFormViewReactor: Reactor {
         case setAmount(Int)
         case setFruitCount(Int)
         case close
-        case error(String)
+        case showAlert(String)
     }
     
     struct State {
@@ -43,7 +43,7 @@ class ChallengeFormViewReactor: Reactor {
         var amount: Int = 0
         var fruitCount: Int = 0
         @Pulse var isClose: Bool = false
-        @Pulse var errorMessage: String?
+        @Pulse var alertMessage: String?
         var isEnabled: Bool {
             selectedCategory != nil && fruitCount > 0
         }
@@ -101,18 +101,27 @@ class ChallengeFormViewReactor: Reactor {
             
         case .createButtonTapped:
             guard let newChallenge = createChallenge() else {return .empty()}
-            let saveChallenge = challengeRepository.saveChallenge(newChallenge)
-            let deductSeeds = gardenRepository.add(seeds: -newChallenge.requiredSeedCount, fruits: 0)
             
-            return Observable.zip(saveChallenge, deductSeeds)
-                .map { _ in .close }
-                .catch { error in return .just(.error(error.localizedDescription)) }
+            return challengeRepository.fetchAllChallenges()
+                .flatMap { [weak self] challenges -> Observable<Mutation> in
+                    guard let self = self else { return .empty() }
+                    
+                    if isChallengeExist(newChallenge, challenges: challenges) {
+                        return .just(.showAlert("이미 동일한 카테고리와 기간의 챌린지가 진행 중입니다.\n다른 챌린지를 추가해주세요!"))
+                    }
+                    let saveChallenge = challengeRepository.saveChallenge(newChallenge)
+                    let deductSeeds = gardenRepository.add(seeds: -newChallenge.requiredSeedCount, fruits: 0)
+                    
+                    return Observable.zip(saveChallenge, deductSeeds)
+                        .map { _ in .close }
+                        .catchAndReturn(.showAlert("에러가 발생했습니다.\n잠시 후 다시 시도해주세요!"))
+                }
             
         case .deleteButtonTapped:
             guard case .detail(let challenge) = currentState.mode else { return .empty() }
             return challengeRepository.deleteChallenge(id: challenge.id)
                 .map { _ in .close }
-                .catch { error in return .just(.error(error.localizedDescription)) }
+                .catch { error in return .just(.showAlert(error.localizedDescription)) }
         }
     }
     
@@ -131,8 +140,8 @@ class ChallengeFormViewReactor: Reactor {
             newState.fruitCount = fruitCount
         case .close:
             newState.isClose = true
-        case .error(let message):
-            newState.errorMessage = message
+        case .showAlert(let message):
+            newState.alertMessage = message
         }
         return newState
     }
@@ -152,5 +161,20 @@ class ChallengeFormViewReactor: Reactor {
         }
         
         return Challenge(category: category, endDate: endDate, duration: currentState.selectedPeriod, spendingLimit: currentState.amount, requiredSeedCount: requiredSeedCount, targetFruitsCount: currentState.fruitCount)
+    }
+    
+    private func isChallengeExist(_ newChallenge: Challenge, challenges: [Challenge]) -> Bool {
+        let calendar = Calendar.current
+        let newStart = calendar.startOfDay(for: newChallenge.startDate)
+        let newEnd = calendar.startOfDay(for: newChallenge.endDate)
+        
+        return challenges.contains { challenge in
+            let start = calendar.startOfDay(for: challenge.startDate)
+            let end = calendar.startOfDay(for: challenge.endDate)
+            return challenge.category.id == newChallenge.category.id &&
+            start == newStart &&
+            end == newEnd &&
+            !challenge.isCompleted
+        }
     }
 }
