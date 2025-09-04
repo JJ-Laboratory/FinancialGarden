@@ -34,6 +34,8 @@ final class RecordFormViewController: UIViewController, View {
         $0.preferredSymbolConfiguration = UIImage.SymbolConfiguration(weight: .bold)
         $0.tintColor = .charcoal
         $0.contentMode = .scaleAspectFit
+        $0.setContentHuggingPriority(.required, for: .horizontal)
+        $0.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
     
     private let amountTextField = UITextField().then {
@@ -84,13 +86,13 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private lazy var amountStackView = UIStackView(
-        axis: .horizontal, spacing: 10
+        axis: .horizontal, alignment: .center, spacing: 10
     ) {
         wonIconImageView
         amountTextField
     }
     
-    private let amountInputView = UIView()
+    private let scrollView = UIScrollView()
     
     private lazy var formView = FormView {
         FormItem("카테고리")
@@ -128,7 +130,7 @@ final class RecordFormViewController: UIViewController, View {
     
     private lazy var contentStackView = UIStackView(axis: .vertical, spacing: 20) {
         titleLabel
-        amountInputView
+        amountStackView
         formView
     }
     
@@ -154,28 +156,35 @@ final class RecordFormViewController: UIViewController, View {
     
     private func setupUI() {
         view.backgroundColor = .background
+        view.keyboardLayoutGuide.usesBottomSafeArea = false
         
         setupKeyboardDismiss()
         setupKeyboardToolbar()
         
-        amountInputView.addSubview(amountStackView)
-        view.addSubview(contentStackView)
-        view.addSubview(saveButton)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentStackView)
+        scrollView.addSubview(saveButton)
+
+        scrollView.snp.makeConstraints {
+            $0.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+        }
         
-        amountStackView.alignment = .center
-        amountStackView.snp.makeConstraints {
-            $0.leading.top.equalToSuperview()
-            $0.bottom.equalToSuperview().offset(-16)
+        scrollView.contentLayoutGuide.snp.makeConstraints {
+            $0.height.greaterThanOrEqualTo(scrollView.safeAreaLayoutGuide)
         }
         
         contentStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).offset(16)
-            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.top.equalTo(scrollView.contentLayoutGuide).inset(16)
+            $0.width.equalTo(scrollView.contentLayoutGuide)
+            $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
         }
         
         saveButton.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide)
+            $0.top.greaterThanOrEqualTo(contentStackView.snp.bottom).offset(20)
+            $0.top.equalTo(contentStackView.snp.bottom).offset(20).priority(1)
+            $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
+            $0.bottom.equalTo(scrollView.contentLayoutGuide).inset(16)
         }
     }
     
@@ -237,6 +246,27 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private func bindAction(_ reactor: RecordFormReactor) {
+        let keyboardWillShow = NotificationCenter.default.rx.notification(UIResponder.keyboardWillShowNotification)
+        let keyboardWillHide = NotificationCenter.default.rx.notification(UIResponder.keyboardWillHideNotification)
+        Observable
+            .merge(keyboardWillShow, keyboardWillHide)
+            .compactMap(\.userInfo)
+            .bind { [weak self] userInfo in
+                guard let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
+                    return
+                }
+                guard let self, let responder = view.findFirstResponder() as? UIView else {
+                    return
+                }
+                let frame = responder.convert(responder.frame, to: view)
+                let offset = CGPoint(
+                    x: scrollView.contentOffset.x,
+                    y: max(scrollView.contentOffset.y, max(0, frame.minY - keyboardFrame.minY))
+                )
+                scrollView.setContentOffset(offset, animated: true)
+            }
+            .disposed(by: disposeBag)
+
         placeTextField.rx.text.orEmpty
             .distinctUntilChanged()
             .map(Reactor.Action.setPlace)
