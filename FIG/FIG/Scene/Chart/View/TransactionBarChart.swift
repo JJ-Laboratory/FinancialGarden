@@ -74,7 +74,7 @@ final class TransactionBarChart: UIView {
 // MARK: - TransactionBarChart.Item
 
 extension TransactionBarChart {
-    enum Item {
+    enum Item: Equatable {
         case transaction(label: String, income: Int, expense: Int)
         case empty
         
@@ -155,9 +155,6 @@ extension TransactionBarChart {
         
         override func layoutSubviews() {
             super.layoutSubviews()
-            guard maxIncome > 0 || maxExpense > 0 else {
-                return
-            }
             let textSize = label.intrinsicContentSize
             label.frame = CGRect(
                 x: bounds.midX - textSize.width * 0.5,
@@ -179,6 +176,9 @@ extension TransactionBarChart {
             let expenseRatio = 1 - incomeRatio
             
             switch item {
+            case .transaction(_, 0, 0):
+                incomeLayer.frame = CGRect(x: barRect.minX, y: barRect.midY, width: barRect.width, height: 0)
+                expenseLayer.frame = CGRect(x: barRect.minX,y: barRect.midY, width: barRect.width, height: 0)
             case .transaction(_, let income, let expense):
                 let incomeHeight = income > 0 ? barRect.height * incomeRatio * (CGFloat(income) / CGFloat(maxIncome)) : 0
                 let expenseHeight = expense > 0 ? barRect.height * expenseRatio * (CGFloat(expense) / CGFloat(maxExpense)) : 0
@@ -200,6 +200,7 @@ extension TransactionBarChart {
                 expenseLayer.frame = CGRect(x: barRect.minX,y: barRect.maxY * incomeRatio, width: barRect.width, height: 0)
             }
         }
+        
     }
 }
 
