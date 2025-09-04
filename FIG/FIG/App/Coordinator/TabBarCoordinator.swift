@@ -63,7 +63,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 차트 탭
-        let chartVC = ChartViewController()
+        let chartVC = ChartViewController(reactor: ChartReactor(transactionRepository: TransactionRepository()))
         let chartNavController = UINavigationController(rootViewController: chartVC)
         chartNavController.tabBarItem = UITabBarItem(
             title: "차트",

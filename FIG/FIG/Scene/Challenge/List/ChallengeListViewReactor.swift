@@ -157,6 +157,10 @@ class ChallengeListViewReactor: Reactor {
                 updatedChallenge.status = .failure
                 editedChallenge.append(updatedChallenge)
                 finalChallenges[index] = updatedChallenge
+            } else {
+                updatedChallenge.status = .progress
+                editedChallenge.append(updatedChallenge)
+                finalChallenges[index] = updatedChallenge
             }
         }
         

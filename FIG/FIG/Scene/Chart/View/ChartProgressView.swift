@@ -43,19 +43,19 @@ extension ChartProgressView {
         for (offset, layer) in sublayers.enumerated() {
             layer.isHidden = offset >= items.count
         }
-
+        
         let requiredCount = max(0, items.count - sublayers.count)
         let newLayers = repeatElement((), count: requiredCount).map { CALayer() }
         for newLayer in newLayers {
             layer.addSublayer(newLayer)
         }
     }
-
+    
     private func layoutSublayers(items: [Item]) {
-        guard let layers = layer.sublayers else {
-            return
-        }
+        guard let layers = layer.sublayers, !items.isEmpty else { return }
+        guard bounds.width > 0, bounds.height > 0 else { return }
         let total = items.reduce(0) { $0 + $1.value }
+        guard total > 0 else { return }
         let progresses = items.map { CGFloat($0.value) / CGFloat(total) }
         let positions: [CGRect] = progresses.reduce(into: []) {
             let last = $0.last ?? .zero
@@ -70,7 +70,7 @@ extension ChartProgressView {
 }
 
 extension ChartProgressView {
-    struct Item {
+    struct Item: Hashable {
         let value: Int
         let color: UIColor
         
@@ -92,7 +92,7 @@ extension ChartProgressView {
                 .item(value: 2, color: .primary),
                 .item(value: 2, color: .pink)
             ]
-
+            
             let action = UIAction(title: "Random") { _ in
                 progressView.items = [
                     .item(value: .random(in: 1...4), color: .gray3),
