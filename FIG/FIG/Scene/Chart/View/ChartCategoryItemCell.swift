@@ -10,6 +10,11 @@ import SnapKit
 import Then
 
 final class ChartCategoryItemCell: UICollectionViewCell {
+    let iconContainerView = UIView().then {
+        $0.clipsToBounds = true
+        $0.layer.cornerRadius = 22
+    }
+    
     let imageView = UIImageView().then {
         $0.contentMode = .scaleAspectFit
         $0.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
@@ -51,17 +56,24 @@ final class ChartCategoryItemCell: UICollectionViewCell {
                 changedValueLabel
             }
         }
-        contentView.addSubview(imageView)
+        
+        iconContainerView.addSubview(imageView)
+        contentView.addSubview(iconContainerView)
         contentView.addSubview(stackView)
         
-        imageView.snp.makeConstraints {
+        iconContainerView.snp.makeConstraints {
             $0.leading.equalToSuperview()
             $0.top.bottom.equalTo(stackView)
-            $0.width.equalTo(imageView.snp.height)
+            $0.size.equalTo(44)
+        }
+        
+        imageView.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.size.equalTo(24)
         }
         
         stackView.snp.makeConstraints {
-            $0.leading.equalTo(imageView.snp.trailing).offset(10)
+            $0.leading.equalTo(iconContainerView.snp.trailing).offset(10)
             $0.top.bottom.trailing.equalToSuperview()
         }
     }

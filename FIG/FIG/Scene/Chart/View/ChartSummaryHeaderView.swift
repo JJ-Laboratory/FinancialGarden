@@ -11,9 +11,9 @@ import SnapKit
 
 final class ChartSummaryHeaderView: UICollectionViewCell {
     let chartView = TransactionBarChart(numberOfSegments: 6).then {
-        $0.contentInsets = UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 30)
+        $0.contentInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
     }
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         let titleLabel = UILabel().then {
@@ -40,7 +40,7 @@ final class ChartSummaryHeaderView: UICollectionViewCell {
         }
         contentView.addSubview(titleStackView)
         contentView.addSubview(chartView)
-
+        
         titleStackView.snp.makeConstraints {
             $0.top.equalToSuperview().inset(16)
             $0.leading.trailing.equalToSuperview()
@@ -72,10 +72,10 @@ extension ChartSummaryHeaderView {
             super.init(frame: .zero)
             indicatorView.backgroundColor = color
             titleLabel.text = title
-
+            
             addSubview(indicatorView)
             addSubview(titleLabel)
-
+            
             indicatorView.snp.makeConstraints {
                 $0.leading.equalToSuperview()
                 $0.top.bottom.equalTo(titleLabel).inset(2)
@@ -86,7 +86,7 @@ extension ChartSummaryHeaderView {
                 $0.top.bottom.trailing.equalToSuperview()
             }
         }
-
+        
         @available(*, unavailable)
         required init?(coder: NSCoder) {
             fatalError("init(coder:) has not been implemented")

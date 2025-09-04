@@ -279,6 +279,9 @@ class ChallengeCell: UICollectionViewCell {
     
     /// 실패 상태 UI 설정
     private func configureFailureStatus(with challenge: Challenge) {
+        DispatchQueue.main.async {
+            self.progressView.setProgress(1.0, animated: true)
+        }
         stageImageView.image = UIImage(systemName: "x.circle")
         
         guard !challenge.isCompleted else { return }
