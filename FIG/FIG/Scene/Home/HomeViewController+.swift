@@ -146,6 +146,31 @@ extension HomeViewController {
         
         return sectionHeader
     }
+    
+    func makeCategoryItemsForHome(from chartItems: [CategoryChartItem], total: Int) -> [CategoryChartItem] {
+        let baseItems = chartItems.prefix(4).enumerated().map { (index, data) in
+            data.withColor(ChartColor.rank(index))
+        }
+        guard chartItems.count > 4 else { return baseItems }
+        
+        let others = chartItems.dropFirst(4)
+        return baseItems + [makeOthersCategory(from: others, total: total)]
+    }
+    
+    private func makeOthersCategory(from items: ArraySlice<CategoryChartItem>, total: Int) -> CategoryChartItem {
+        let othersAmount = items.reduce(0) { $0 + $1.amount }
+        let othersChanged = items.reduce(0) { $0 + $1.changed }
+        let othersPercentage = total > 0 ? (Double(othersAmount) / Double(total)) * 100 : 0
+        
+        return CategoryChartItem(
+            category: Category.othersCategory,
+            amount: othersAmount,
+            percentage: othersPercentage.rounded(to: 2),
+            changed: othersChanged,
+            iconColor: ChartColor.others.uiColor,
+            backgroundColor: ChartColor.others.uiColor.withAlphaComponent(0.1)
+        )
+    }
 }
 
 final class ChartSectionBackgroundView: UICollectionReusableView {

@@ -122,13 +122,13 @@ final class ChallengeFormViewController: UIViewController, View {
         FormItem("금액")
             .image(UIImage(systemName: "wonsign.circle"))
             .trailing { amountLabel }
-            .bottom(alignment: .center) {
+            .bottom {
                 .adaptiveStack {
-                    UIStackView(axis: .horizontal, spacing: 10) {
+                    UIStackView(axis: .horizontal, distribution: .fillEqually, spacing: 10) {
                         amount1
                         amount2
                     }
-                    UIStackView(axis: .horizontal, spacing: 10) {
+                    UIStackView(axis: .horizontal, distribution: .fillProportionally, spacing: 10) {
                         amount3
                         amount4
                     }
