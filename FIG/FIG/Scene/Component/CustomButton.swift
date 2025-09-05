@@ -44,6 +44,11 @@ class CustomButton: UIButton {
     }
     
     private func setupHandler() {
+        titleLabel?.lineBreakMode = .byTruncatingTail
+            titleLabel?.numberOfLines = 1
+            titleLabel?.adjustsFontSizeToFitWidth = true
+            titleLabel?.minimumScaleFactor = 0.8
+        
         configurationUpdateHandler = { [weak self] button in
             guard let self else { return }
             

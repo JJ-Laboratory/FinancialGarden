@@ -124,11 +124,11 @@ final class ChallengeFormViewController: UIViewController, View {
             .trailing { amountLabel }
             .bottom {
                 .adaptiveStack {
-                    UIStackView(axis: .horizontal, distribution: .fillProportionally, spacing: 12) {
+                    UIStackView(axis: .horizontal, distribution: .fillEqually, spacing: 10) {
                         amount1
                         amount2
                     }
-                    UIStackView(axis: .horizontal, distribution: .fillProportionally, spacing: 12) {
+                    UIStackView(axis: .horizontal, distribution: .fillProportionally, spacing: 10) {
                         amount3
                         amount4
                     }
