@@ -7,13 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B5610AFA2E56FA8A001A885E /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = B5610AF92E56FA8A001A885E /* .swiftlint.yml */; };
 		B5983F9F2E54473C00DEB52A /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = B5983F9E2E54473C00DEB52A /* RxCocoa */; };
 		B5983FA12E54473C00DEB52A /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA02E54473C00DEB52A /* RxSwift */; };
 		B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA32E54474A00DEB52A /* ReactorKit */; };
 		B5983FA72E54475700DEB52A /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA62E54475700DEB52A /* SnapKit */; };
+		B5FF75332E5DBFA200298146 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = B5FF75322E5DBFA200298146 /* Then */; };
+		B5FF78652E5FF07E00298146 /* RxGesture in Frameworks */ = {isa = PBXBuildFile; productRef = B5FF78642E5FF07E00298146 /* RxGesture */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B5610AF92E56FA8A001A885E /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		B5983F812E5445DD00DEB52A /* FIG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FIG.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -43,9 +47,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5FF75332E5DBFA200298146 /* Then in Frameworks */,
 				B5983FA12E54473C00DEB52A /* RxSwift in Frameworks */,
 				B5983FA72E54475700DEB52A /* SnapKit in Frameworks */,
 				B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */,
+				B5FF78652E5FF07E00298146 /* RxGesture in Frameworks */,
 				B5983F9F2E54473C00DEB52A /* RxCocoa in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -56,6 +62,7 @@
 		B5983F782E5445DD00DEB52A = {
 			isa = PBXGroup;
 			children = (
+				B5610AF92E56FA8A001A885E /* .swiftlint.yml */,
 				B5983F832E5445DD00DEB52A /* FIG */,
 				B5983F822E5445DD00DEB52A /* Products */,
 			);
@@ -76,6 +83,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B5983F982E5445DF00DEB52A /* Build configuration list for PBXNativeTarget "FIG" */;
 			buildPhases = (
+				B5610AF82E56FA06001A885E /* SwiftLint Script */,
 				B5983F7D2E5445DD00DEB52A /* Sources */,
 				B5983F7E2E5445DD00DEB52A /* Frameworks */,
 				B5983F7F2E5445DD00DEB52A /* Resources */,
@@ -93,6 +101,8 @@
 				B5983FA02E54473C00DEB52A /* RxSwift */,
 				B5983FA32E54474A00DEB52A /* ReactorKit */,
 				B5983FA62E54475700DEB52A /* SnapKit */,
+				B5FF75322E5DBFA200298146 /* Then */,
+				B5FF78642E5FF07E00298146 /* RxGesture */,
 			);
 			productName = FIG;
 			productReference = B5983F812E5445DD00DEB52A /* FIG.app */;
@@ -114,11 +124,12 @@
 				};
 			};
 			buildConfigurationList = B5983F7C2E5445DD00DEB52A /* Build configuration list for PBXProject "FIG" */;
-			developmentRegion = en;
+			developmentRegion = ko;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ko,
 			);
 			mainGroup = B5983F782E5445DD00DEB52A;
 			minimizedProjectReferenceProxies = 1;
@@ -126,6 +137,8 @@
 				B5983F9D2E54473C00DEB52A /* XCRemoteSwiftPackageReference "RxSwift" */,
 				B5983FA22E54474A00DEB52A /* XCRemoteSwiftPackageReference "ReactorKit" */,
 				B5983FA52E54475700DEB52A /* XCRemoteSwiftPackageReference "SnapKit" */,
+				B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */,
+				B5FF78632E5FF07E00298146 /* XCRemoteSwiftPackageReference "RxGesture" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5983F822E5445DD00DEB52A /* Products */;
@@ -142,10 +155,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5610AFA2E56FA8A001A885E /* .swiftlint.yml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		B5610AF82E56FA06001A885E /* SwiftLint Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "SwiftLint Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [[ \"$(uname -m)\" == arm64 ]]; then\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif which swiftlint > /dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B5983F7D2E5445DD00DEB52A /* Sources */ = {
@@ -166,6 +202,7 @@
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2WSJ3W54FF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FIG/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -173,6 +210,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -199,6 +237,7 @@
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2WSJ3W54FF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FIG/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
@@ -206,6 +245,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -229,6 +269,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -261,7 +302,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -292,6 +333,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -324,7 +366,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -391,6 +433,22 @@
 				minimumVersion = 5.7.1;
 			};
 		};
+		B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+		B5FF78632E5FF07E00298146 /* XCRemoteSwiftPackageReference "RxGesture" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxGesture.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.0.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -413,6 +471,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B5983FA52E54475700DEB52A /* XCRemoteSwiftPackageReference "SnapKit" */;
 			productName = SnapKit;
+		};
+		B5FF75322E5DBFA200298146 /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
+		};
+		B5FF78642E5FF07E00298146 /* RxGesture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5FF78632E5FF07E00298146 /* XCRemoteSwiftPackageReference "RxGesture" */;
+			productName = RxGesture;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
