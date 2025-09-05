@@ -280,12 +280,8 @@ final class HomeViewController: UIViewController, View {
                 items: state.categoryProgressItems
             ))
             
-            // 상위 4개 카테고리 아이템 추가
-            let topCategories = Array(state.chartItems.prefix(4))
-            let categoryItems = topCategories.enumerated().map { index, item in
-                let coloredItem = item.withColor(ChartColor.rank(index))
-                return HomeItem.chartCategory(coloredItem)
-            }
+            let processedChartItems = makeCategoryItemsForHome(from: state.chartItems, total: state.categoryTotalAmount)
+            let categoryItems = processedChartItems.map { HomeItem.chartCategory($0) }
             chartItems.append(contentsOf: categoryItems)
             
             snapshot.appendItems(chartItems, toSection: .chart)
