@@ -175,6 +175,7 @@ extension FormItem {
                     traits: [UITraitPreferredContentSizeCategory.self],
                     axis: .horizontal,
                     spacing: spacing,
+                    distribution: .fillEqually,
                     contents: contents
                 ) {
                     contentSizeChanges($0.preferredContentSizeCategory, $1)
@@ -213,11 +214,13 @@ extension FormItem {
             traits: [UITrait],
             axis: NSLayoutConstraint.Axis,
             spacing: CGFloat,
+            distribution: UIStackView.Distribution = .fill,
             @ArrayBuilder<UIView> contents: () -> [UIView],
             traitChanges: @escaping (UITraitCollection, UIStackView) -> Void
         ) {
             self.init(
                 axis: axis,
+                distribution: distribution,
                 spacing: spacing,
                 build: contents
             )
