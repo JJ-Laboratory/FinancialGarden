@@ -96,7 +96,7 @@ final class ChallengeFormViewController: UIViewController, View {
     private let infoImageView = UIImageView().then {
         $0.tintColor = .gray2
         let config = UIImage.SymbolConfiguration(textStyle: .footnote)
-        $0.image = UIImage(systemName: "info.circle",withConfiguration: config)
+        $0.image = UIImage(systemName: "info.circle", withConfiguration: config)
         $0.adjustsImageSizeForAccessibilityContentSizeCategory = true
     }
     private lazy var infoStackView = UIStackView(axis: .horizontal, alignment: .top, spacing: 8) {
@@ -250,7 +250,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         deleteButton.rx.tap
-            .subscribe(onNext: { [weak self] in
+            .subscribe { [weak self] in
                 guard let self else { return }
                 let alert = UIAlertController(title: "삭제 확인", message: "정말로 삭제하시겠습니까?", preferredStyle: .alert)
                 let confirm = UIAlertAction(title: "삭제", style: .destructive) { _ in
@@ -261,7 +261,7 @@ final class ChallengeFormViewController: UIViewController, View {
                 alert.addAction(confirm)
                 alert.addAction(cancel)
                 present(alert, animated: true, completion: nil)
-            })
+            }
             .disposed(by: disposeBag)
     }
     
@@ -352,7 +352,7 @@ final class ChallengeFormViewController: UIViewController, View {
             createButton.isHidden = false
             deleteButton.isHidden = true
             
-        case .detail( _):
+        case .detail(_):
             createButton.isHidden = true
             deleteButton.isHidden = false
             formView.isUserInteractionEnabled = false
