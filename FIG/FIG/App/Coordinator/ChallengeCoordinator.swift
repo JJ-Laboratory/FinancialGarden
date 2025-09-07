@@ -6,8 +6,6 @@
 //
 
 import UIKit
-import RxSwift
-import RxCocoa
 
 final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     let navigationController: UINavigationController
@@ -15,7 +13,6 @@ final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     weak var parentCoordinator: Coordinator?
     
     private let viewControllerFactory: ViewControllerFactoryInterface
-    private let disposeBag = DisposeBag()
     
     init(
         navigationController: UINavigationController,
@@ -31,7 +28,11 @@ final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     
     // MARK: - Navigation Methods
     
-    private func showChallengeList() {}
+    private func showChallengeList() {
+        let challengeListVC = viewControllerFactory.makeChallengeListViewController()
+        challengeListVC.coordinator = self
+        navigationController.setViewControllers([challengeListVC], animated: false)
+    }
     
     func pushChallengeForm() {
         let challengeFormVC = viewControllerFactory.makeChallengeFormViewController(mode: .create)

@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol HomeCoordinatorProtocol: AnyObject {
+protocol TabBarCoordinatorProtocol: AnyObject {
     func selectTab(for section: HomeSection)
     func navigateToFormScreen(type: EmptyStateType)
 }

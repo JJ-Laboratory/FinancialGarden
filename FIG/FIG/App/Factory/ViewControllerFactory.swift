@@ -40,8 +40,7 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
         return RecordListViewController(reactor: reactor)
     }
     
-    func makeRecordFormViewController(editingRecord:
-                                      Transaction? = nil) -> RecordFormViewController {
+    func makeRecordFormViewController(editingRecord: Transaction? = nil) -> RecordFormViewController {
         let reactor = RecordFormReactor(
             transactionRepository: repositoryProvider.transactionRepository,
             gardenRepository: repositoryProvider.gardenRepository,

@@ -11,7 +11,7 @@ import RxSwift
 
 final class HomeReactor: Reactor {
     
-    weak var coordinator: HomeCoordinatorProtocol?
+    weak var coordinator: TabBarCoordinatorProtocol?
     private let transactionRepository: TransactionRepositoryInterface
     private let challengeRepository: ChallengeRepositoryInterface
     private let categoryService: CategoryService

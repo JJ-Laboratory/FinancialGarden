@@ -27,11 +27,13 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeVC = viewControllerFactory.makeHomeViewController()
-        if let homeReactor = homeVC.reactor {
-            homeReactor.coordinator = self
-        }
-        let homeNavController = UINavigationController(rootViewController: homeVC)
+        let homeNavController = UINavigationController()
+        let homeCoordinator = HomeCoordinator(
+            navigationController: homeNavController,
+            viewControllerFactory: viewControllerFactory
+        )
+        addChildCoordinator(homeCoordinator)
+        homeCoordinator.start()
         homeNavController.tabBarItem = UITabBarItem(
             title: "홈",
             image: UIImage(systemName: "house"),
@@ -39,74 +41,57 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 가계부 탭
-        let transactionNavController = UINavigationController()
-        let transactionCoordinator = RecordCoordinator(
-            navigationController: transactionNavController,
+        let recordNavController = UINavigationController()
+        let recordCoordinator = RecordCoordinator(
+            navigationController: recordNavController,
             viewControllerFactory: viewControllerFactory
         )
-        addChildCoordinator(transactionCoordinator)
-        transactionCoordinator.start()
-        transactionNavController.tabBarItem = UITabBarItem(
+        addChildCoordinator(recordCoordinator)
+        recordCoordinator.start()
+        recordNavController.tabBarItem = UITabBarItem(
             title: "가계부",
             image: UIImage(systemName: "list.clipboard"),
             selectedImage: UIImage(systemName: "list.clipboard.fill")
         )
-
+        
         // 챌린지 탭
-        let challengeVC = viewControllerFactory.makeChallengeListViewController()
-        let challengeNavController = UINavigationController(rootViewController: challengeVC)
+        let challengeNavController = UINavigationController()
         let challengeCoordinator = ChallengeCoordinator(
             navigationController: challengeNavController,
             viewControllerFactory: viewControllerFactory
         )
-        challengeVC.coordinator = challengeCoordinator
         addChildCoordinator(challengeCoordinator)
+        challengeCoordinator.start()
         challengeNavController.tabBarItem = UITabBarItem(
             title: "챌린지",
             image: UIImage(systemName: "apple.meditate"),
             selectedImage: UIImage(systemName: "apple.meditate")
         )
-
+        
         // 차트 탭
-        let chartVC = viewControllerFactory.makeChartViewController()
-        chartVC.coordinator = self
-        let chartNavController = UINavigationController(rootViewController: chartVC)
+        let chartNavController = UINavigationController()
+        let chartCoordinator = ChartCoordinator(
+            navigationController: chartNavController,
+            viewControllerFactory: viewControllerFactory
+        )
+        addChildCoordinator(chartCoordinator)
+        chartCoordinator.start()
         chartNavController.tabBarItem = UITabBarItem(
             title: "차트",
             image: UIImage(systemName: "chart.bar"),
             selectedImage: UIImage(systemName: "chart.bar.fill")
         )
         
-        tabBarController.viewControllers = [homeNavController, transactionNavController, challengeNavController, chartNavController]
-    }
-    
-    private func selectTab(at index: Int) {
-        guard index >= 0 && index < tabBarController.viewControllers?.count ?? 0 else {
-            print("Invalid tab index: \(index)")
-            return
-        }
-        
-        tabBarController.selectedIndex = index
-    }
-    
-    private func navigateToRecordForm() {
-        selectTab(at: 1)
-        
-        if let transactionCoordinator = childCoordinators.first(where: { $0 is RecordCoordinator }) as? RecordCoordinator {
-            transactionCoordinator.pushRecordForm()
-        }
-    }
-    
-    private func navigateToChallengeForm() {
-        selectTab(at: 2)
-        
-        if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
-            challengeCoordinator.pushChallengeForm()
-        }
+        tabBarController.viewControllers = [
+            homeNavController,
+            recordNavController,
+            challengeNavController,
+            chartNavController
+        ]
     }
 }
 
-extension TabBarCoordinator: HomeCoordinatorProtocol {
+extension TabBarCoordinator: TabBarCoordinatorProtocol {
     func selectTab(for section: HomeSection) {
         tabBarController.selectedIndex = section.tabIndex
     }
@@ -119,6 +104,30 @@ extension TabBarCoordinator: HomeCoordinatorProtocol {
             navigateToChallengeForm()
         case .completed:
             return
+        }
+    }
+    
+    private func selectTab(at index: Int) {
+        guard index >= 0 && index < tabBarController.viewControllers?.count ?? 0 else {
+            return
+        }
+        
+        tabBarController.selectedIndex = index
+    }
+    
+    private func navigateToRecordForm() {
+        selectTab(at: 1)
+        
+        if let recordCoordinator = childCoordinators.first(where: { $0 is RecordCoordinator }) as? RecordCoordinator {
+            recordCoordinator.pushRecordForm()
+        }
+    }
+    
+    private func navigateToChallengeForm() {
+        selectTab(at: 2)
+        
+        if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
+            challengeCoordinator.pushChallengeForm()
         }
     }
 }

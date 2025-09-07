@@ -1,5 +1,5 @@
 //
-//  TransactionCoordinator.swift
+//  RecordCoordinator.swift
 //  FIG
 //
 //  Created by Milou on 8/28/25.
@@ -15,7 +15,6 @@ final class RecordCoordinator: Coordinator, RecordCoordinatorProtocol {
     weak var parentCoordinator: Coordinator?
     
     private let viewControllerFactory: ViewControllerFactoryInterface
-    private let disposeBag = DisposeBag()
     
     init(
         navigationController: UINavigationController,
