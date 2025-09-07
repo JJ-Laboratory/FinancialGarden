@@ -22,7 +22,7 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeReactor = HomeViewReactor(
+        let homeReactor = HomeReactor(
             transactionRepository: TransactionRepository(),
             challengeRepository: ChallengeRepository(),
             categoryService: .shared
@@ -50,7 +50,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 챌린지 탭
-        let reactor = ChallengeListViewReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository(), transactionRepository: TransactionRepository())
+        let reactor = ChallengeListReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository(), transactionRepository: TransactionRepository())
         let challengeVC = ChallengeListViewController(reactor: reactor)
         let challengeNavController = UINavigationController(rootViewController: challengeVC)
         let challengeCoordinator = ChallengeCoordinator(navigationController: challengeNavController)
@@ -65,6 +65,7 @@ final class TabBarCoordinator: Coordinator {
         
         // 차트 탭
         let chartVC = ChartViewController(reactor: ChartReactor(transactionRepository: TransactionRepository()))
+        chartVC.coordinator = self
         let chartNavController = UINavigationController(rootViewController: chartVC)
         chartNavController.tabBarItem = UITabBarItem(
             title: "차트",

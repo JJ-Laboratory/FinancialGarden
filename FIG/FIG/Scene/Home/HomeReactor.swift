@@ -9,7 +9,7 @@ import Foundation
 import ReactorKit
 import RxSwift
 
-final class HomeViewReactor: Reactor {
+final class HomeReactor: Reactor {
     
     weak var coordinator: TabBarCoordinator?
     private let transactionRepository: TransactionRepositoryInterface
@@ -146,7 +146,7 @@ final class HomeViewReactor: Reactor {
     }
 }
 
-extension HomeViewReactor {
+extension HomeReactor {
     
     func loadHomeData() -> Observable<Mutation> {
         return Observable.merge([

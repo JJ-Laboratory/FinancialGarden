@@ -56,7 +56,7 @@ final class HomeViewController: UIViewController, View {
     
     private var dataSource: UICollectionViewDiffableDataSource<HomeSection, HomeItem>!
     
-    init(reactor: HomeViewReactor) {
+    init(reactor: HomeReactor) {
         super.init(nibName: nil, bundle: nil)
         self.reactor = reactor
     }
@@ -80,12 +80,12 @@ final class HomeViewController: UIViewController, View {
         reactor?.action.onNext(.viewDidLoad)
     }
     
-    func bind(reactor: HomeViewReactor) {
+    func bind(reactor: HomeReactor) {
         bindAction(reactor)
         bindState(reactor)
     }
     
-    private func bindAction(_ reactor: HomeViewReactor) {
+    private func bindAction(_ reactor: HomeReactor) {
         monthButton.rx.tap
             .subscribe { [weak self] _ in
                 self?.presentMonthPicker()
@@ -93,7 +93,7 @@ final class HomeViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
     
-    private func bindState(_ reactor: HomeViewReactor) {
+    private func bindState(_ reactor: HomeReactor) {
         reactor.state.map(\.selectedMonth)
             .distinctUntilChanged()
             .observe(on: MainScheduler.instance)
@@ -239,7 +239,7 @@ final class HomeViewController: UIViewController, View {
     
     // MARK: - Snapshot Update
     
-    private func updateSnapshot(with state: HomeViewReactor.State) {
+    private func updateSnapshot(with state: HomeReactor.State) {
         guard let dataSource = dataSource else { return }
         
         let newChallengesCount = state.currentChallenges.count

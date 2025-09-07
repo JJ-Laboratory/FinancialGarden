@@ -147,7 +147,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .bottom(alignment: .leading) { infoStackView }
     }
     
-    init(reactor: ChallengeFormViewReactor) {
+    init(reactor: ChallengeFormReactor) {
         super.init(nibName: nil, bundle: nil)
         self.reactor = reactor
     }
@@ -198,12 +198,12 @@ final class ChallengeFormViewController: UIViewController, View {
     
     // MARK: - Bind
     
-    func bind(reactor: ChallengeFormViewReactor) {
+    func bind(reactor: ChallengeFormReactor) {
         bindAction(reactor)
         bindState(reactor)
     }
     
-    private func bindAction(_ reactor: ChallengeFormViewReactor) {
+    private func bindAction(_ reactor: ChallengeFormReactor) {
         weekButton.rx.tap
             .map { .selectPeriod(.week) }
             .bind(to: reactor.action)
@@ -265,7 +265,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
     
-    private func bindState(_ reactor: ChallengeFormViewReactor) {
+    private func bindState(_ reactor: ChallengeFormReactor) {
         reactor.state
             .map(\.mode)
             .distinctUntilChanged()
@@ -346,7 +346,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
     
-    private func updateUI(for mode: ChallengeFormViewReactor.Mode) {
+    private func updateUI(for mode: ChallengeFormReactor.Mode) {
         switch mode {
         case .create:
             createButton.isHidden = false

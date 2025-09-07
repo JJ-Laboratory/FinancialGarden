@@ -29,7 +29,7 @@ final class ChallengeListViewController: UIViewController, View {
         $0.showsVerticalScrollIndicator = false
     }
     
-    init(reactor: ChallengeListViewReactor) {
+    init(reactor: ChallengeListReactor) {
         super.init(nibName: nil, bundle: nil)
         self.reactor = reactor
     }
@@ -64,7 +64,7 @@ final class ChallengeListViewController: UIViewController, View {
         }
     }
     
-    func bind(reactor: ChallengeListViewReactor) {
+    func bind(reactor: ChallengeListReactor) {
         
         let gardenInfoDriver = reactor.state
             .map(\.gardenInfo)
