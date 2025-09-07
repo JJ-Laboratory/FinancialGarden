@@ -14,10 +14,14 @@ final class ChallengeCoordinator: Coordinator {
     var childCoordinators: [Coordinator] = []
     weak var parentCoordinator: Coordinator?
     
+    private let repositoryProvider: RepositoryProviderInterface
     private let disposeBag = DisposeBag()
     
-    init(navigationController: UINavigationController) {
+    init(navigationController: UINavigationController,
+         repositoryProvider: RepositoryProviderInterface = RepositoryProvider.shared
+    ) {
         self.navigationController = navigationController
+        self.repositoryProvider = repositoryProvider
     }
     
     func start() {
@@ -49,21 +53,32 @@ final class ChallengeCoordinator: Coordinator {
     // MARK: - ViewController Factory Methods
     
     private func createChallengeViewController() -> ChallengeListViewController {
-        let reator = ChallengeListReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository(), transactionRepository: TransactionRepository())
+        let reator = ChallengeListReactor(
+            challengeRepository: repositoryProvider.challengeRepository,
+            gardenRepository: repositoryProvider.gardenRepository,
+            transactionRepository: repositoryProvider.transactionRepository
+        )
         let viewController = ChallengeListViewController(reactor: reator)
         viewController.coordinator = self
         return viewController
     }
     
     private func createChallengeFormViewController() -> ChallengeFormViewController {
-        let reator = ChallengeFormReactor(mode: .create, challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository())
+        let reator = ChallengeFormReactor(
+            mode: .create,
+            challengeRepository: repositoryProvider.challengeRepository,
+            gardenRepository: repositoryProvider.gardenRepository)
         let viewController = ChallengeFormViewController(reactor: reator)
         viewController.coordinator = self
         return viewController
     }
     
     private func createChallengeDetailViewController(challenge: Challenge) -> ChallengeFormViewController {
-        let reator = ChallengeFormReactor(mode: .detail(challenge), challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository())
+        let reator = ChallengeFormReactor(
+            mode: .detail(challenge),
+            challengeRepository: repositoryProvider.challengeRepository,
+            gardenRepository: repositoryProvider.gardenRepository
+        )
         let viewController = ChallengeFormViewController(reactor: reator)
         viewController.coordinator = self
         return viewController

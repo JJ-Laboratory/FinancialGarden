@@ -14,10 +14,15 @@ final class TransactionCoordinator: Coordinator {
     var childCoordinators: [Coordinator] = []
     weak var parentCoordinator: Coordinator?
     
+    private let repositoryProvider: RepositoryProviderInterface
     private let disposeBag = DisposeBag()
     
-    init(navigationController: UINavigationController) {
+    init(
+        navigationController: UINavigationController,
+        repositoryProvider: RepositoryProviderInterface = RepositoryProvider.shared
+    ) {
         self.navigationController = navigationController
+        self.repositoryProvider = repositoryProvider
     }
     
     func start() {
@@ -50,14 +55,20 @@ final class TransactionCoordinator: Coordinator {
     // MARK: - ViewController Factory Methods
     
     private func createRecordListViewController() -> RecordListViewController {
-        let reactor = RecordListReactor(transactionRepository: TransactionRepository())
+        let reactor = RecordListReactor(
+            transactionRepository: repositoryProvider.transactionRepository
+        )
         let viewController = RecordListViewController(reactor: reactor)
         viewController.coordinator = self
         return viewController
     }
     
     private func createRecordFormViewController(editingTransaction: Transaction? = nil) -> RecordFormViewController {
-        let reactor = RecordFormReactor(transactionRepository: TransactionRepository(), gardenRepository: GardenRepository(), editingRecord: editingTransaction)
+        let reactor = RecordFormReactor(
+            transactionRepository: repositoryProvider.transactionRepository,
+            gardenRepository: repositoryProvider.gardenRepository,
+            editingRecord: editingTransaction
+        )
         let viewController = RecordFormViewController(reactor: reactor)
         viewController.coordinator = self
         return viewController
