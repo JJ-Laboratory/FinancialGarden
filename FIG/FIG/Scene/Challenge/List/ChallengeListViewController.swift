@@ -143,7 +143,7 @@ final class ChallengeListViewController: UIViewController, View {
                 let cell = collectionView.dequeueConfiguredReusableCell(using: emptyStateRegistration, for: indexPath, item: type)
                 cell.pushButtonTapped
                     .subscribe { [weak self] _ in
-                        self?.coordinator?.pushChallengeInput()
+                        self?.coordinator?.pushChallengeForm()
                     }
                     .disposed(by: cell.disposeBag)
                 return cell
@@ -257,7 +257,7 @@ final class ChallengeListViewController: UIViewController, View {
     }
     
     @objc private func addButtonTapped() {
-        coordinator?.pushChallengeInput()
+        coordinator?.pushChallengeForm()
     }
     
     private func presentPopup(status: ChallengeStatus, count: Int) {
@@ -265,7 +265,7 @@ final class ChallengeListViewController: UIViewController, View {
         
         popupVC.onChallengeButtonTapped = { [weak self] in
             self?.dismiss(animated: true, completion: {
-                self?.coordinator?.pushChallengeInput()
+                self?.coordinator?.pushChallengeForm()
             })
         }
         popupVC.onCloseButtonTapped = { [weak self] in

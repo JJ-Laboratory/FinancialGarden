@@ -333,7 +333,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .compactMap { $0 }
             .subscribe { [weak self] isClose in
                 if isClose == true {
-                    self?.coordinator?.popChallengeInput()
+                    self?.coordinator?.popChallengeForm()
                 }
             }
             .disposed(by: disposeBag)
@@ -360,7 +360,7 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     @objc private func backButtonTapped() {
-        coordinator?.popChallengeInput()
+        coordinator?.popChallengeForm()
     }
     
     private func presentCategoryPicker() {

@@ -12,10 +12,10 @@ final class TabBarCoordinator: Coordinator {
     weak var parentCoordinator: Coordinator?
     
     let tabBarController = UITabBarController()
-    private let repositoryProvider: RepositoryProviderInterface
+    private let viewControllerFactory: ViewControllerFactoryInterface
     
-    init(repositoryProvider: RepositoryProviderInterface) {
-        self.repositoryProvider = repositoryProvider
+    init(viewControllerFactory: ViewControllerFactoryInterface) {
+        self.viewControllerFactory = viewControllerFactory
     }
     
     func start() {
@@ -27,13 +27,10 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeReactor = HomeReactor(
-            transactionRepository: repositoryProvider.transactionRepository,
-            challengeRepository: repositoryProvider.challengeRepository,
-            categoryService: .shared
-        )
-        homeReactor.coordinator = self
-        let homeVC = HomeViewController(reactor: homeReactor)
+        let homeVC = viewControllerFactory.makeHomeViewController()
+        if let homeReactor = homeVC.reactor {
+            homeReactor.coordinator = self
+        }
         let homeNavController = UINavigationController(rootViewController: homeVC)
         homeNavController.tabBarItem = UITabBarItem(
             title: "홈",
@@ -43,37 +40,35 @@ final class TabBarCoordinator: Coordinator {
         
         // 가계부 탭
         let transactionNavController = UINavigationController()
-        let transactionCoordinator = TransactionCoordinator(navigationController: transactionNavController)
+        let transactionCoordinator = RecordCoordinator(
+            navigationController: transactionNavController,
+            viewControllerFactory: viewControllerFactory
+        )
         addChildCoordinator(transactionCoordinator)
-        
         transactionCoordinator.start()
-        
         transactionNavController.tabBarItem = UITabBarItem(
             title: "가계부",
             image: UIImage(systemName: "list.clipboard"),
             selectedImage: UIImage(systemName: "list.clipboard.fill")
         )
-        
+
         // 챌린지 탭
-        let reactor = ChallengeListReactor(
-            challengeRepository: repositoryProvider.challengeRepository,
-            gardenRepository: repositoryProvider.gardenRepository,
-            transactionRepository: repositoryProvider.transactionRepository
-        )
-        let challengeVC = ChallengeListViewController(reactor: reactor)
+        let challengeVC = viewControllerFactory.makeChallengeListViewController()
         let challengeNavController = UINavigationController(rootViewController: challengeVC)
-        let challengeCoordinator = ChallengeCoordinator(navigationController: challengeNavController)
+        let challengeCoordinator = ChallengeCoordinator(
+            navigationController: challengeNavController,
+            viewControllerFactory: viewControllerFactory
+        )
         challengeVC.coordinator = challengeCoordinator
         addChildCoordinator(challengeCoordinator)
-        
         challengeNavController.tabBarItem = UITabBarItem(
             title: "챌린지",
             image: UIImage(systemName: "apple.meditate"),
             selectedImage: UIImage(systemName: "apple.meditate")
         )
-        
+
         // 차트 탭
-        let chartVC = ChartViewController(reactor: ChartReactor(transactionRepository: repositoryProvider.transactionRepository))
+        let chartVC = viewControllerFactory.makeChartViewController()
         chartVC.coordinator = self
         let chartNavController = UINavigationController(rootViewController: chartVC)
         chartNavController.tabBarItem = UITabBarItem(
@@ -85,10 +80,6 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.viewControllers = [homeNavController, transactionNavController, challengeNavController, chartNavController]
     }
     
-//    func selectTab(for section: HomeSection) {
-//        selectTab(at: section.tabIndex)
-//    }
-    
     private func selectTab(at index: Int) {
         guard index >= 0 && index < tabBarController.viewControllers?.count ?? 0 else {
             print("Invalid tab index: \(index)")
@@ -98,22 +89,11 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.selectedIndex = index
     }
     
-//    func navigateToFormScreen(type: EmptyStateType) {
-//        switch type {
-//        case .transaction:
-//            navigateToRecordForm()
-//        case .challenge, .week, .month:
-//            navigateToChallengeForm()
-//        case .completed:
-//            return
-//        }
-//    }
-    
     private func navigateToRecordForm() {
         selectTab(at: 1)
         
-        if let transactionCoordinator = childCoordinators.first(where: { $0 is TransactionCoordinator }) as? TransactionCoordinator {
-            transactionCoordinator.pushTransactionInput()
+        if let transactionCoordinator = childCoordinators.first(where: { $0 is RecordCoordinator }) as? RecordCoordinator {
+            transactionCoordinator.pushRecordForm()
         }
     }
     
@@ -121,7 +101,7 @@ final class TabBarCoordinator: Coordinator {
         selectTab(at: 2)
         
         if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
-            challengeCoordinator.pushChallengeInput()
+            challengeCoordinator.pushChallengeForm()
         }
     }
 }
@@ -130,7 +110,7 @@ extension TabBarCoordinator: HomeCoordinatorProtocol {
     func selectTab(for section: HomeSection) {
         tabBarController.selectedIndex = section.tabIndex
     }
-
+    
     func navigateToFormScreen(type: EmptyStateType) {
         switch type {
         case .transaction:
@@ -140,20 +120,5 @@ extension TabBarCoordinator: HomeCoordinatorProtocol {
         case .completed:
             return
         }
-    }
-}
-
-extension TabBarCoordinator: ChartCoordinatorProtocol {
-    func navigateToTransactionDetail(transaction: Transaction) {
-        selectTab(at: 1) // 가계부 탭으로 이동
-        if let transactionCoordinator = childCoordinators.first(where: {
-$0 is TransactionCoordinator }) as? TransactionCoordinator {
-            transactionCoordinator.pushTransactionEdit(transaction:
-transaction)
-        }
-    }
-
-    func navigateToHome() {
-        selectTab(at: 0) // 홈 탭으로 이동
     }
 }

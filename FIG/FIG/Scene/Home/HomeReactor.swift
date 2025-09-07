@@ -1,5 +1,5 @@
 //
-//  HomeViewReactor.swift
+//  HomeReactor.swift
 //  FIG
 //
 //  Created by Milou on 9/2/25.
@@ -11,7 +11,7 @@ import RxSwift
 
 final class HomeReactor: Reactor {
     
-    weak var coordinator: TabBarCoordinator?
+    weak var coordinator: HomeCoordinatorProtocol?
     private let transactionRepository: TransactionRepositoryInterface
     private let challengeRepository: ChallengeRepositoryInterface
     private let categoryService: CategoryService

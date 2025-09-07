@@ -15,7 +15,7 @@ import ReactorKit
 final class RecordFormViewController: UIViewController, View {
     
     // MARK: - Properties
-    weak var coordinator: TransactionCoordinator?
+    weak var coordinator: RecordCoordinator?
     var disposeBag = DisposeBag()
     
     private var actualAmount: Int = 0
@@ -314,7 +314,7 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
-                    self?.coordinator?.popTransactionInput()
+                    self?.coordinator?.popRecordForm()
                 case .failure(let error):
                     print("저장실패: \(error.localizedDescription)")
                 }
@@ -342,7 +342,7 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
-                    self?.coordinator?.popTransactionInput()
+                    self?.coordinator?.popRecordForm()
                 case .failure(let error):
                     self?.showDeleteError(error)
                 }
@@ -425,7 +425,7 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     @objc private func backButtonTapped() {
-        coordinator?.popTransactionInput()
+        coordinator?.popRecordForm()
     }
     
     private func presentCategoryPicker() {
