@@ -15,12 +15,9 @@ final class AppCoordinator: Coordinator {
     private let window: UIWindow
     private let viewControllerFactory: ViewControllerFactoryInterface
 
-    init(
-        window: UIWindow,
-        viewControllerFactory: ViewControllerFactoryInterface = ViewControllerFactory(repositoryProvider: RepositoryProvider.shared)
-    ) {
+    init(window: UIWindow) {
         self.window = window
-        self.viewControllerFactory = viewControllerFactory
+        self.viewControllerFactory = ViewControllerFactory()
         self.navigationController = UINavigationController()
     }
 

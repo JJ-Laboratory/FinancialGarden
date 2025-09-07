@@ -18,16 +18,32 @@ protocol ViewControllerFactoryInterface {
 
 final class ViewControllerFactory: ViewControllerFactoryInterface {
     
-    private let repositoryProvider: RepositoryProviderInterface
+    private lazy var transactionRepository: TransactionRepositoryInterface = {
+        TransactionRepository(
+            coreDataService: .shared,
+            categoryService: .shared
+        )
+    }()
     
-    init(repositoryProvider: RepositoryProviderInterface) {
-        self.repositoryProvider = repositoryProvider
-    }
+    private lazy var challengeRepository: ChallengeRepositoryInterface = {
+        ChallengeRepository(
+            coreDataService: .shared,
+            categoryService: .shared
+        )
+    }()
+    
+    private lazy var gardenRepository: GardenRepositoryInterface = {
+        GardenRepository(
+            coreDataService: .shared
+        )
+    }()
+    
+    // MARK: - ViewController 생성 메서드들
     
     func makeHomeViewController() -> HomeViewController {
         let reactor = HomeReactor(
-            transactionRepository: repositoryProvider.transactionRepository,
-            challengeRepository: repositoryProvider.challengeRepository,
+            transactionRepository: transactionRepository,
+            challengeRepository: challengeRepository,
             categoryService: .shared
         )
         return HomeViewController(reactor: reactor)
@@ -35,15 +51,15 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     func makeRecordListViewController() -> RecordListViewController {
         let reactor = RecordListReactor(
-            transactionRepository: repositoryProvider.transactionRepository
+            transactionRepository: transactionRepository
         )
         return RecordListViewController(reactor: reactor)
     }
     
     func makeRecordFormViewController(editingRecord: Transaction? = nil) -> RecordFormViewController {
         let reactor = RecordFormReactor(
-            transactionRepository: repositoryProvider.transactionRepository,
-            gardenRepository: repositoryProvider.gardenRepository,
+            transactionRepository: transactionRepository,
+            gardenRepository: gardenRepository,
             editingRecord: editingRecord
         )
         return RecordFormViewController(reactor: reactor)
@@ -51,26 +67,25 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     func makeChallengeListViewController() -> ChallengeListViewController {
         let reactor = ChallengeListReactor(
-            challengeRepository: repositoryProvider.challengeRepository,
-            gardenRepository: repositoryProvider.gardenRepository,
-            transactionRepository: repositoryProvider.transactionRepository
+            challengeRepository: challengeRepository,
+            gardenRepository: gardenRepository,
+            transactionRepository: transactionRepository
         )
         return ChallengeListViewController(reactor: reactor)
     }
     
-    func makeChallengeFormViewController(mode: ChallengeFormReactor.Mode) ->
-    ChallengeFormViewController {
+    func makeChallengeFormViewController(mode: ChallengeFormReactor.Mode) -> ChallengeFormViewController {
         let reactor = ChallengeFormReactor(
             mode: mode,
-            challengeRepository: repositoryProvider.challengeRepository,
-            gardenRepository: repositoryProvider.gardenRepository
+            challengeRepository: challengeRepository,
+            gardenRepository: gardenRepository
         )
         return ChallengeFormViewController(reactor: reactor)
     }
     
     func makeChartViewController() -> ChartViewController {
         let reactor = ChartReactor(
-            transactionRepository: repositoryProvider.transactionRepository
+            transactionRepository: transactionRepository
         )
         return ChartViewController(reactor: reactor)
     }
