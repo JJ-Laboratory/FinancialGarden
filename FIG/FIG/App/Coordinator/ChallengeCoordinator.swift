@@ -31,7 +31,7 @@ final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     private func showChallengeList() {
         let challengeListVC = viewControllerFactory.makeChallengeListViewController()
         challengeListVC.coordinator = self
-        navigationController.setViewControllers([challengeListVC], animated: false)
+        navigationController.setViewControllers([challengeListVC], animated: true)
     }
     
     func pushChallengeForm() {
