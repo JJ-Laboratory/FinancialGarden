@@ -30,13 +30,13 @@ final class ChallengeUseCase {
     
     private func updateChallengesWithSpending(_ challenges: [Challenge]) -> Observable<[Challenge]> {
         let amountObservables = challenges
-            .map { challenge in
-            self.transactionRepository.fetchTotalAmount(
-                categoryId: challenge.category.id,
-                startDate: challenge.startDate,
-                endDate: challenge.endDate
-            )
-        }
+            .map { [transactionRepository] challenge in
+                transactionRepository.fetchTotalAmount(
+                    categoryId: challenge.category.id,
+                    startDate: challenge.startDate,
+                    endDate: challenge.endDate
+                )
+            }
         
         return Observable.zip(amountObservables)
             .map { amounts in
