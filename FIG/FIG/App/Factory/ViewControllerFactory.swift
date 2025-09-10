@@ -93,7 +93,7 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     func makeChartViewController() -> ChartViewController {
         let reactor = ChartReactor(
-            transactionRepository: transactionRepository
+            recordUseCase: recordUseCase
         )
         return ChartViewController(reactor: reactor)
     }

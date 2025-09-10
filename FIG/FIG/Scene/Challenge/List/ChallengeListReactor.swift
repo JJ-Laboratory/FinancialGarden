@@ -142,6 +142,11 @@ class ChallengeListReactor: Reactor {
         var finalChallenges = challenges
         
         for (index, challenge) in challenges.enumerated() {
+            
+            if challenge.isCompleted {
+                continue
+            }
+            
             var updatedChallenge = challenge
             let progressValue = challenge.startDate.progress(to: challenge.endDate)
             
