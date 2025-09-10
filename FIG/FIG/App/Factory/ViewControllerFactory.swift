@@ -38,13 +38,21 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
         )
     }()
     
+    private lazy var recordUseCase = RecordUseCase(
+        transactionRepository: transactionRepository
+    )
+    
+    private lazy var challengeUseCase = ChallengeUseCase(
+        challengeRepository: challengeRepository,
+        transactionRepository: transactionRepository
+    )
+    
     // MARK: - ViewController 생성 메서드들
     
     func makeHomeViewController() -> HomeViewController {
         let reactor = HomeReactor(
-            transactionRepository: transactionRepository,
-            challengeRepository: challengeRepository,
-            categoryService: .shared
+            recordUseCase: recordUseCase,
+            challengeUseCase: challengeUseCase
         )
         return HomeViewController(reactor: reactor)
     }

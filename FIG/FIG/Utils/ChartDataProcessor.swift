@@ -18,11 +18,18 @@ struct ChartDataProcessor {
          return baseItems + [makeOthersCategory(from: others, total: total)]
      }
      
-     static func createProgressItems(from chartItems: [CategoryChartItem], totalAmount: Int) -> [ChartProgressView.Item] {
-         return totalAmount > 0
-             ? chartItems.map { ChartProgressView.Item(value: Int($0.percentage.rounded()), color: $0.iconColor) }
-             : [ChartProgressView.Item(value: 100, color: ChartColor.none.uiColor)]
-     }
+    static func createProgressItems(from chartItems: [CategoryChartItem], totalAmount: Int) -> [ChartProgressView.Item] {
+        guard totalAmount > 0 else {
+            return [ChartProgressView.Item(value: 100, color: ChartColor.none.uiColor)]
+        }
+        
+        return chartItems.map { item in
+            ChartProgressView.Item(
+                value: Int(item.percentage.rounded()),
+                color: item.iconColor
+            )
+        }
+    }
      
      private static func makeOthersCategory(from items: ArraySlice<CategoryChartItem>, total: Int) -> CategoryChartItem {
          let othersAmount = items.reduce(0) { $0 + $1.amount }
