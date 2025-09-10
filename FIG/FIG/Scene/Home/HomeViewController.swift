@@ -280,8 +280,7 @@ final class HomeViewController: UIViewController, View {
                 items: state.categoryProgressItems
             ))
             
-            let processedChartItems = makeCategoryItemsForHome(from: state.chartItems, total: state.categoryTotalAmount)
-            let categoryItems = processedChartItems.map { HomeItem.chartCategory($0) }
+            let categoryItems = state.chartItems.map { HomeItem.chartCategory($0) }
             chartItems.append(contentsOf: categoryItems)
             
             snapshot.appendItems(chartItems, toSection: .chart)

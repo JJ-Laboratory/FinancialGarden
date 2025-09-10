@@ -49,43 +49,9 @@ final class HomeReactor: Reactor {
         }
         
         var categoryProgressItems: [ChartProgressView.Item] {
-            guard categoryTotalAmount > 0 else {
-                return [ChartProgressView.Item(value: 100, color: ChartColor.none.uiColor)]
-            }
-            
-            let processedItems = makeCategoryItemsForProgress(from: chartItems, total: categoryTotalAmount)
-            
-            return processedItems.map { item in
-                ChartProgressView.Item(
-                    value: Int(item.percentage.rounded()),
-                    color: item.iconColor
-                )
-            }
-        }
-        
-        private func makeCategoryItemsForProgress(from chartItems: [CategoryChartItem], total: Int) -> [CategoryChartItem] {
-            let baseItems = chartItems.prefix(4).enumerated().map { (index, data) in
-                data.withColor(ChartColor.rank(index))
-            }
-            guard chartItems.count > 4 else { return baseItems }
-            
-            let others = chartItems.dropFirst(4)
-            return baseItems + [makeOthersCategory(from: others, total: total)]
-        }
-        
-        private func makeOthersCategory(from items: ArraySlice<CategoryChartItem>, total: Int) -> CategoryChartItem {
-            let othersAmount = items.reduce(0) { $0 + $1.amount }
-            let othersChanged = items.reduce(0) { $0 + $1.changed }
-            let othersPercentage = total > 0 ? (Double(othersAmount) / Double(total)) * 100 : 0
-            
-            return CategoryChartItem(
-                category: Category.othersCategory,
-                amount: othersAmount,
-                percentage: othersPercentage.rounded(to: 2),
-                changed: othersChanged,
-                iconColor: ChartColor.others.uiColor,
-                backgroundColor: ChartColor.others.uiColor.withAlphaComponent(0.1)
-            )
+            categoryTotalAmount > 0
+            ? chartItems.map { ChartProgressView.Item(value: Int($0.percentage.rounded()), color: $0.iconColor) }
+            : [ChartProgressView.Item(value: 100, color: ChartColor.none.uiColor)]
         }
     }
     
@@ -136,7 +102,12 @@ final class HomeReactor: Reactor {
             newState.currentChallenges = challenges
             
         case .setChartData(let items):
-            newState.chartItems = items
+            let total = items.reduce(0) { $0 + $1.amount }
+            if total > 0 {
+                newState.chartItems = makeCategoryItems(from: items, total: total)
+            } else {
+                newState.chartItems = []
+            }
             
         case .setError(let error):
             newState.error = error
@@ -271,5 +242,30 @@ extension HomeReactor {
                 print("❌ Failed to load chart data: \(error)")
                 return .just(.setChartData([]))
             }
+    }
+    
+    private func makeCategoryItems(from chartItems: [CategoryChartItem], total: Int) -> [CategoryChartItem] {
+        let baseItems = chartItems.prefix(4).enumerated().map { (index, data) in
+            data.withColor(ChartColor.rank(index))
+        }
+        guard chartItems.count > 4 else { return baseItems }
+        
+        let others = chartItems.dropFirst(4)
+        return baseItems + [makeOthersCategory(from: others, total: total)]
+    }
+    
+    private func makeOthersCategory(from items: ArraySlice<CategoryChartItem>, total: Int) -> CategoryChartItem {
+        let othersAmount = items.reduce(0) { $0 + $1.amount }
+        let othersChanged = items.reduce(0) { $0 + $1.changed }
+        let othersPercentage = total > 0 ? (Double(othersAmount) / Double(total)) * 100 : 0
+        
+        return CategoryChartItem(
+            category: Category.othersCategory,
+            amount: othersAmount,
+            percentage: othersPercentage.rounded(to: 2),
+            changed: othersChanged,
+            iconColor: ChartColor.others.uiColor,
+            backgroundColor: ChartColor.others.uiColor.withAlphaComponent(0.1)
+        )
     }
 }
