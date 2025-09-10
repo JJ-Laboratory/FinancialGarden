@@ -13,7 +13,10 @@ import RxCocoa
 import ReactorKit
 
 final class ChartViewController: UIViewController, View {
+    
+    weak var coordinator: ChartCoordinator?
     var disposeBag = DisposeBag()
+    
     static let elementKindSectionHeader = "elementKindSectionHeader"
     static let elementKindSectionBackground = "elementKindSectionBackground"
     

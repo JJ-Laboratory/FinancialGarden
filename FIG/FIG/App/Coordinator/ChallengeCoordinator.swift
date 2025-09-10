@@ -6,18 +6,20 @@
 //
 
 import UIKit
-import RxSwift
-import RxCocoa
 
-final class ChallengeCoordinator: Coordinator {
+final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
     weak var parentCoordinator: Coordinator?
     
-    private let disposeBag = DisposeBag()
+    private let viewControllerFactory: ViewControllerFactoryInterface
     
-    init(navigationController: UINavigationController) {
+    init(
+        navigationController: UINavigationController,
+        viewControllerFactory: ViewControllerFactoryInterface
+    ) {
         self.navigationController = navigationController
+        self.viewControllerFactory = viewControllerFactory
     }
     
     func start() {
@@ -27,45 +29,26 @@ final class ChallengeCoordinator: Coordinator {
     // MARK: - Navigation Methods
     
     private func showChallengeList() {
-        _ = createChallengeViewController()
+        let challengeListVC = viewControllerFactory.makeChallengeListViewController()
+        challengeListVC.coordinator = self
+        navigationController.setViewControllers([challengeListVC], animated: false)
     }
     
-    func pushChallengeInput() {
-        let challengeInputVC = createChallengeFormViewController()
-        challengeInputVC.hidesBottomBarWhenPushed = true
-        navigationController.pushViewController(challengeInputVC, animated: true)
+    func pushChallengeForm() {
+        let challengeFormVC = viewControllerFactory.makeChallengeFormViewController(mode: .create)
+        challengeFormVC.coordinator = self
+        challengeFormVC.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(challengeFormVC, animated: true)
     }
     
     func pushChallengeDetail(challenge: Challenge) {
-        let challengeDetailVC = createChallengeDetailViewController(challenge: challenge)
+        let challengeDetailVC = viewControllerFactory.makeChallengeFormViewController(mode: .detail(challenge))
+        challengeDetailVC.coordinator = self
         challengeDetailVC.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(challengeDetailVC, animated: true)
     }
     
-    func popChallengeInput() {
+    func popChallengeForm() {
         navigationController.popViewController(animated: true)
-    }
-    
-    // MARK: - ViewController Factory Methods
-    
-    private func createChallengeViewController() -> ChallengeListViewController {
-        let reator = ChallengeListViewReactor(challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository(), transactionRepository: TransactionRepository())
-        let viewController = ChallengeListViewController(reactor: reator)
-        viewController.coordinator = self
-        return viewController
-    }
-    
-    private func createChallengeFormViewController() -> ChallengeFormViewController {
-        let reator = ChallengeFormViewReactor(mode: .create, challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository())
-        let viewController = ChallengeFormViewController(reactor: reator)
-        viewController.coordinator = self
-        return viewController
-    }
-    
-    private func createChallengeDetailViewController(challenge: Challenge) -> ChallengeFormViewController {
-        let reator = ChallengeFormViewReactor(mode: .detail(challenge), challengeRepository: ChallengeRepository(), gardenRepository: GardenRepository())
-        let viewController = ChallengeFormViewController(reactor: reator)
-        viewController.coordinator = self
-        return viewController
     }
 }

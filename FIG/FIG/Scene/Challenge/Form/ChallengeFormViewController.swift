@@ -96,7 +96,7 @@ final class ChallengeFormViewController: UIViewController, View {
     private let infoImageView = UIImageView().then {
         $0.tintColor = .gray2
         let config = UIImage.SymbolConfiguration(textStyle: .footnote)
-        $0.image = UIImage(systemName: "info.circle",withConfiguration: config)
+        $0.image = UIImage(systemName: "info.circle", withConfiguration: config)
         $0.adjustsImageSizeForAccessibilityContentSizeCategory = true
     }
     private lazy var infoStackView = UIStackView(axis: .horizontal, alignment: .top, spacing: 8) {
@@ -147,7 +147,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .bottom(alignment: .leading) { infoStackView }
     }
     
-    init(reactor: ChallengeFormViewReactor) {
+    init(reactor: ChallengeFormReactor) {
         super.init(nibName: nil, bundle: nil)
         self.reactor = reactor
     }
@@ -198,12 +198,12 @@ final class ChallengeFormViewController: UIViewController, View {
     
     // MARK: - Bind
     
-    func bind(reactor: ChallengeFormViewReactor) {
+    func bind(reactor: ChallengeFormReactor) {
         bindAction(reactor)
         bindState(reactor)
     }
     
-    private func bindAction(_ reactor: ChallengeFormViewReactor) {
+    private func bindAction(_ reactor: ChallengeFormReactor) {
         weekButton.rx.tap
             .map { .selectPeriod(.week) }
             .bind(to: reactor.action)
@@ -250,7 +250,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         deleteButton.rx.tap
-            .subscribe(onNext: { [weak self] in
+            .subscribe { [weak self] in
                 guard let self else { return }
                 let alert = UIAlertController(title: "삭제 확인", message: "정말로 삭제하시겠습니까?", preferredStyle: .alert)
                 let confirm = UIAlertAction(title: "삭제", style: .destructive) { _ in
@@ -261,11 +261,11 @@ final class ChallengeFormViewController: UIViewController, View {
                 alert.addAction(confirm)
                 alert.addAction(cancel)
                 present(alert, animated: true, completion: nil)
-            })
+            }
             .disposed(by: disposeBag)
     }
     
-    private func bindState(_ reactor: ChallengeFormViewReactor) {
+    private func bindState(_ reactor: ChallengeFormReactor) {
         reactor.state
             .map(\.mode)
             .distinctUntilChanged()
@@ -333,7 +333,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .compactMap { $0 }
             .subscribe { [weak self] isClose in
                 if isClose == true {
-                    self?.coordinator?.popChallengeInput()
+                    self?.coordinator?.popChallengeForm()
                 }
             }
             .disposed(by: disposeBag)
@@ -346,13 +346,13 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
     
-    private func updateUI(for mode: ChallengeFormViewReactor.Mode) {
+    private func updateUI(for mode: ChallengeFormReactor.Mode) {
         switch mode {
         case .create:
             createButton.isHidden = false
             deleteButton.isHidden = true
             
-        case .detail( _):
+        case .detail(_):
             createButton.isHidden = true
             deleteButton.isHidden = false
             formView.isUserInteractionEnabled = false
@@ -360,7 +360,7 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     @objc private func backButtonTapped() {
-        coordinator?.popChallengeInput()
+        coordinator?.popChallengeForm()
     }
     
     private func presentCategoryPicker() {

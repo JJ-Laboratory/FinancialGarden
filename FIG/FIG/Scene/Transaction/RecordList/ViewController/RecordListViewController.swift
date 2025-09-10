@@ -14,7 +14,7 @@ import ReactorKit
 
 final class RecordListViewController: UIViewController, View {
     
-    weak var coordinator: TransactionCoordinator?
+    weak var coordinator: RecordCoordinator?
     var disposeBag = DisposeBag()
     
     enum Section: Int, CaseIterable {
@@ -176,7 +176,7 @@ final class RecordListViewController: UIViewController, View {
     }
     
     @objc private func addButtonTapped() {
-        coordinator?.pushTransactionInput()
+        coordinator?.pushRecordForm()
     }
     
     private func showError(_ error: Error) {

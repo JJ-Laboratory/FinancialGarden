@@ -8,7 +8,7 @@
 import ReactorKit
 import Foundation
 
-class ChallengeFormViewReactor: Reactor {
+class ChallengeFormReactor: Reactor {
     
     enum Mode: Equatable {
         case create

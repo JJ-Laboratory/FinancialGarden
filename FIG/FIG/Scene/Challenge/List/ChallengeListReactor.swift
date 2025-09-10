@@ -9,7 +9,7 @@ import ReactorKit
 import RxSwift
 import Foundation
 
-class ChallengeListViewReactor: Reactor {
+class ChallengeListReactor: Reactor {
     
     enum Action {
         case viewDidLoad

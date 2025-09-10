@@ -1,5 +1,5 @@
 //
-//  HomeViewReactor.swift
+//  HomeReactor.swift
 //  FIG
 //
 //  Created by Milou on 9/2/25.
@@ -9,9 +9,9 @@ import Foundation
 import ReactorKit
 import RxSwift
 
-final class HomeViewReactor: Reactor {
+final class HomeReactor: Reactor {
     
-    weak var coordinator: TabBarCoordinator?
+    weak var coordinator: TabBarCoordinatorProtocol?
     private let transactionRepository: TransactionRepositoryInterface
     private let challengeRepository: ChallengeRepositoryInterface
     private let categoryService: CategoryService
@@ -55,7 +55,7 @@ final class HomeViewReactor: Reactor {
             
             let processedItems = makeCategoryItemsForProgress(from: chartItems, total: categoryTotalAmount)
             
-            return processedItems.enumerated().map { index, item in
+            return processedItems.map { item in
                 ChartProgressView.Item(
                     value: Int(item.percentage.rounded()),
                     color: item.iconColor
@@ -146,7 +146,7 @@ final class HomeViewReactor: Reactor {
     }
 }
 
-extension HomeViewReactor {
+extension HomeReactor {
     
     func loadHomeData() -> Observable<Mutation> {
         return Observable.merge([
@@ -246,7 +246,7 @@ extension HomeViewReactor {
                 
                 guard totalAmount > 0 else { return [] }
                 
-                let expensesByCategory = Dictionary(grouping: currentExpenses, by: { $0.category })
+                let expensesByCategory = Dictionary(grouping: currentExpenses, by: { $0.category } )
                 let lastExpenses = last.filter { $0.category.transactionType == .expense }
                 let lastExpensesByCategory = Dictionary(grouping: lastExpenses, by: { $0.category })
                 let lastAmounts = lastExpensesByCategory.mapValues { $0.reduce(0) { $0 + $1.amount } }
