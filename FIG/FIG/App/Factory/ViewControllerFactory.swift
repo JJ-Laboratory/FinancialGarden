@@ -59,7 +59,7 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     func makeRecordListViewController() -> RecordListViewController {
         let reactor = RecordListReactor(
-            transactionRepository: transactionRepository
+            transactionRepository: transactionRepository, recordUseCase: recordUseCase
         )
         return RecordListViewController(reactor: reactor)
     }
