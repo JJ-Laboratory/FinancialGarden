@@ -166,7 +166,7 @@ class ChartReactor: Reactor {
             var summaries : [SummaryChartItem] = []
             
             for (index, transactions) in transactionsByMonth.enumerated() {
-                let targetDate = calendar.date(byAdding: .month, value: -index, to: date)!
+                let targetDate = calendar.date(byAdding: .month, value: -index, to: date) ?? Date()
                 let monthString = "\(calendar.component(.month, from: targetDate))"
                 
                 let income = transactions.filter { $0.category.transactionType == .income }.reduce(0) { $0 + $1.amount }
