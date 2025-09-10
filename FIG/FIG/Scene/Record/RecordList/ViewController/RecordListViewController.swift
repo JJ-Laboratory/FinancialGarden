@@ -110,8 +110,8 @@ final class RecordListViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         Observable.combineLatest(
-            reactor.state.map(\.monthlyExpense).distinctUntilChanged(),
-            reactor.state.map(\.monthlyIncome).distinctUntilChanged()
+            reactor.state.map(\.monthlySummary.expense).distinctUntilChanged(),
+            reactor.state.map(\.monthlySummary.income).distinctUntilChanged()
         )
         .observe(on: MainScheduler.instance)
         .subscribe { [weak self] _, _ in

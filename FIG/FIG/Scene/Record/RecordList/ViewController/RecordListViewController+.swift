@@ -45,7 +45,7 @@ extension RecordListViewController: UICollectionViewDataSource {
                 return UICollectionViewCell()
             }
             let state = reactor.currentState
-            cell.configure(expense: state.monthlyExpense, income: state.monthlyIncome)
+            cell.configure(expense: state.monthlySummary.expense, income: state.monthlySummary.income)
             return cell
             
         case .sectionHeader:

@@ -15,7 +15,7 @@ final class RecordListReactor: Reactor {
         case viewDidLoad
         case selectMonth(Date)
         case refresh
-        case recordSelected(Transaction)
+//        case recordSelected(Transaction)
     }
     
     enum Mutation {
@@ -26,13 +26,13 @@ final class RecordListReactor: Reactor {
     }
     
     struct State {
-        var selectedMonth: Date = Date()
+        var selectedMonth = Date()
         var recordGroups: [RecordGroup] = []
-        var monthlySummary: MonthlySummary = MonthlySummary(expense: 0, income: 0, hasRecords: false)
+        var monthlySummary = MonthlySummary(expense: 0, income: 0, hasRecords: false)
         var error: Error?
         
-        var monthlyExpense: Int { monthlySummary.expense }
-        var monthlyIncome: Int { monthlySummary.income }
+//        var monthlyExpense: Int { monthlySummary.expense }
+//        var monthlyIncome: Int { monthlySummary.income }
     }
     
     struct RecordGroup {
@@ -76,8 +76,8 @@ final class RecordListReactor: Reactor {
             ])
         case .refresh:
             return loadMonthData(currentState.selectedMonth)
-        case .recordSelected(let transaction):
-            return Observable.empty()
+//        case .recordSelected(_):
+//            return Observable.empty()
         }
     }
     

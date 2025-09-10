@@ -81,7 +81,6 @@ enum ChallengeStatus: String {
         case .success: return UIImage(named: "success_popup")
         case .failure: return UIImage(named: "failure_popup")
         }
-        
     }
     
     var title: String {

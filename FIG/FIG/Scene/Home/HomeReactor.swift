@@ -18,7 +18,6 @@ final class HomeReactor: Reactor {
     
     enum Action {
         case viewDidLoad
-        case refresh
         case selectMonth(Date)
         case headerTapped(HomeSection)
         case emptyStateButtonTapped(EmptyStateType)
@@ -33,15 +32,15 @@ final class HomeReactor: Reactor {
     }
     
     struct State {
-        var selectedMonth: Date = Date()
-        var monthlySummary: MonthlySummary = MonthlySummary(expense: 0, income: 0, hasRecords: false)
+        var selectedMonth = Date()
+        var monthlySummary = MonthlySummary(expense: 0, income: 0, hasRecords: false)
         var currentChallenges: [Challenge] = []
         var chartItems: [CategoryChartItem] = []
         @Pulse var error: Error?
         
-        var monthlyExpense: Int { monthlySummary.expense }
-        var monthlyIncome: Int { monthlySummary.income }
-        var hasRecords: Bool { monthlySummary.hasRecords }
+//        var monthlyExpense: Int { monthlySummary.expense }
+//        var monthlyIncome: Int { monthlySummary.income }
+//        var hasRecords: Bool { monthlySummary.hasRecords }
         
         var categoryTotalAmount: Int {
             return chartItems.reduce(0) { $0 + $1.amount }
@@ -66,7 +65,7 @@ final class HomeReactor: Reactor {
     
     func mutate(action: Action) -> Observable<Mutation> {
         switch action {
-        case .viewDidLoad, .refresh:
+        case .viewDidLoad:
             return loadHomeData()
         case .selectMonth(let date):
             return Observable.concat([
@@ -118,16 +117,18 @@ extension HomeReactor {
         let year = calendar.component(.year, from: date)
         let month = calendar.component(.month, from: date)
         
-        return Observable.merge([
-            recordUseCase.getMonthlySummary(year: year, month: month)
-                .map { .setMonthlySummary($0) },
-            
-            challengeUseCase.getCurrentChallenges(year: year, month: month)
-                .map { .setCurrentChallenges($0) },
-            
-            recordUseCase.getCategoryChart(year: year, month: month)
-                .map { .setChartData($0) }
-        ])
+        let monthlySummary = recordUseCase.getMonthlySummary(year: year, month: month)
+        let challenges = challengeUseCase.getCurrentChallenges(year: year, month: month)
+        let chartData = recordUseCase.getCategoryChart(year: year, month: month)
+        
+        return Observable.zip(monthlySummary, challenges, chartData)
+            .flatMap { summary, challenges, chart -> Observable<Mutation> in
+                return .concat([
+                    .just(.setMonthlySummary(summary)),
+                    .just(.setCurrentChallenges(challenges)),
+                    .just(.setChartData(chart))
+                ])
+            }
         .catch { error in
             .just(.setError(error))
         }

@@ -40,6 +40,16 @@ enum PaymentMethod: String, CaseIterable, Hashable {
     }
 }
 
+struct MonthlySummary: Hashable {
+    let expense: Int
+    let income: Int
+    let hasRecords: Bool
+    
+    var netAmount: Int {
+        return income - expense
+    }
+}
+
 struct Transaction: Hashable {
     let id: UUID
     let amount: Int

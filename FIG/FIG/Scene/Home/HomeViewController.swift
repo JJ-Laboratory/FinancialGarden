@@ -67,7 +67,7 @@ final class HomeViewController: UIViewController, View {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        reactor?.action.onNext(.refresh)
+        reactor?.action.onNext(.viewDidLoad)
     }
     
     override func viewDidLoad() {
@@ -77,7 +77,7 @@ final class HomeViewController: UIViewController, View {
         setupCollectionView()
         setupDataSource()
         
-        reactor?.action.onNext(.viewDidLoad)
+//        reactor?.action.onNext(.viewDidLoad)
     }
     
     func bind(reactor: HomeReactor) {
