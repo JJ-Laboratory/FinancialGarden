@@ -50,6 +50,8 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
         $0.textAlignment = .right
+        $0.setContentHuggingPriority(UILayoutPriority(1), for: .horizontal)
+        $0.setContentCompressionResistancePriority(UILayoutPriority(1), for: .horizontal)
     }
     
     private let categoryLabel = UILabel().then {

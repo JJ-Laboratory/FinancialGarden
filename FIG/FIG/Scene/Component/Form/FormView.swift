@@ -121,7 +121,7 @@ extension FormView {
             }
             
             let contentView = UIStackView(axis: .vertical, spacing: 16) {
-                UIStackView(axis: .horizontal) {
+                UIStackView(axis: .horizontal, spacing: 16) {
                     // Title
                     titleContentView
                     
