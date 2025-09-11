@@ -29,6 +29,6 @@ final class ChartCoordinator: Coordinator {
     private func showChart() {
         let chartVC = viewControllerFactory.makeChartViewController()
         chartVC.coordinator = self
-        navigationController.setViewControllers([chartVC], animated: false)
+        navigationController.setViewControllers([chartVC], animated: true)
     }
 }

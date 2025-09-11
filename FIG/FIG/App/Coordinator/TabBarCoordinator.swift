@@ -27,7 +27,7 @@ final class TabBarCoordinator: Coordinator {
         tabBarController.tabBar.tintColor = .primary
         
         // 홈 탭
-        let homeNavController = UINavigationController()
+        let homeNavController = NavigationController()
         let homeCoordinator = HomeCoordinator(
             navigationController: homeNavController,
             viewControllerFactory: viewControllerFactory
@@ -41,7 +41,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 가계부 탭
-        let recordNavController = UINavigationController()
+        let recordNavController = NavigationController()
         let recordCoordinator = RecordCoordinator(
             navigationController: recordNavController,
             viewControllerFactory: viewControllerFactory
@@ -55,7 +55,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 챌린지 탭
-        let challengeNavController = UINavigationController()
+        let challengeNavController = NavigationController()
         let challengeCoordinator = ChallengeCoordinator(
             navigationController: challengeNavController,
             viewControllerFactory: viewControllerFactory
@@ -69,7 +69,7 @@ final class TabBarCoordinator: Coordinator {
         )
         
         // 차트 탭
-        let chartNavController = UINavigationController()
+        let chartNavController = NavigationController()
         let chartCoordinator = ChartCoordinator(
             navigationController: chartNavController,
             viewControllerFactory: viewControllerFactory

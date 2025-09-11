@@ -21,16 +21,18 @@ final class RecordListReactor: Reactor {
     enum Mutation {
         case setSelectMonth(Date)
         case setRecordGroups([RecordGroup])
-        case setMonthlySummary(expense: Int, income: Int)
+        case setMonthlySummary(MonthlySummary)
         case setError(Error?)
     }
     
     struct State {
         var selectedMonth: Date = Date()
         var recordGroups: [RecordGroup] = []
-        var monthlyExpense: Int = 0
-        var monthlyIncome: Int = 0
+        var monthlySummary: MonthlySummary = MonthlySummary(expense: 0, income: 0, hasRecords: false)
         var error: Error?
+        
+        var monthlyExpense: Int { monthlySummary.expense }
+        var monthlyIncome: Int { monthlySummary.income }
     }
     
     struct RecordGroup {
@@ -52,10 +54,14 @@ final class RecordListReactor: Reactor {
     
     let initialState: State
     private let transactionRepository: TransactionRepositoryInterface
-    private let logger = Logger.transaction
+    private let recordUseCase: RecordUseCase
     
-    init(transactionRepository: TransactionRepositoryInterface) {
+    init(
+        transactionRepository: TransactionRepositoryInterface,
+        recordUseCase: RecordUseCase
+    ) {
         self.transactionRepository = transactionRepository
+        self.recordUseCase = recordUseCase
         self.initialState = State()
     }
     
@@ -71,7 +77,6 @@ final class RecordListReactor: Reactor {
         case .refresh:
             return loadMonthData(currentState.selectedMonth)
         case .recordSelected(let transaction):
-            logger.info("거래 선택: \(transaction.title)")
             return Observable.empty()
         }
     }
@@ -84,19 +89,18 @@ final class RecordListReactor: Reactor {
             newState.selectedMonth = month
         case .setRecordGroups(let groups):
             newState.recordGroups = groups
-        case .setMonthlySummary(let expense, let income):
-            newState.monthlyExpense = expense
-            newState.monthlyIncome = income
+        case .setMonthlySummary(let summary):
+            newState.monthlySummary = summary
         case .setError(let error):
             newState.error = error
         }
         
         return newState
     }
-}
-
-extension RecordListReactor {
-    func loadCurrentMonthData() -> Observable<Mutation> {
+    
+    // MARK: - Private Methods (단순화)
+    
+    private func loadCurrentMonthData() -> Observable<Mutation> {
         let currentMonth = Date()
         return Observable.concat([
             Observable.just(.setSelectMonth(currentMonth)),
@@ -104,36 +108,37 @@ extension RecordListReactor {
         ])
     }
     
-    func loadMonthData(_ date: Date) -> Observable<Mutation> {
-        let calendar =  Calendar.current
-        let year  = calendar.component(.year, from: date)
+    private func loadMonthData(_ date: Date) -> Observable<Mutation> {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: date)
         let month = calendar.component(.month, from: date)
         
         return Observable.concat([
             Observable.just(.setError(nil)),
             
-            transactionRepository.fetchTransactionByMonth(year, month)
-                .map { transactions -> [Mutation] in
-                    let groups = self.groupTransactionByDate(transactions)
-                    let (expense, income) = self.calculateMonthlySummary(transactions)
-                    
-                    return [
-                        .setRecordGroups(groups),
-                        .setMonthlySummary(expense: expense, income: income)
-                    ]
-                }
-                .flatMap { Observable.from($0) }
-                .catch { error in
-                    Observable.from([
-                        .setError(error),
-                        .setRecordGroups([]),
-                        .setMonthlySummary(expense: 0, income: 0)
-                    ])
-                }
+            Observable.zip(
+                transactionRepository.fetchTransactionByMonth(year, month),
+                recordUseCase.getMonthlySummary(year: year, month: month)
+            )
+            .map { transactions, summary -> [Mutation] in
+                let groups = self.groupTransactionByDate(transactions)
+                return [
+                    .setRecordGroups(groups),
+                    .setMonthlySummary(summary)
+                ]
+            }
+            .flatMap { Observable.from($0) }
+            .catch { error in
+                Observable.from([
+                    .setError(error),
+                    .setRecordGroups([]),
+                    .setMonthlySummary(MonthlySummary(expense: 0, income: 0, hasRecords: false))
+                ])
+            }
         ])
     }
     
-    func groupTransactionByDate(_ transactions: [Transaction]) -> [RecordGroup] {
+    private func groupTransactionByDate(_ transactions: [Transaction]) -> [RecordGroup] {
         let calendar = Calendar.current
         
         let groupedByDate = Dictionary(grouping: transactions) { transaction in
@@ -148,18 +153,6 @@ extension RecordListReactor {
             }
         
         return sortedGroups
-    }
-    
-    func calculateMonthlySummary(_ transactions: [Transaction]) -> (expense: Int, income: Int) {
-        let expense = transactions
-            .filter { $0.category.transactionType == .expense }
-            .reduce(0) { $0 + $1.amount }
-        
-        let income = transactions
-            .filter { $0.category.transactionType == .income }
-            .reduce(0) { $0 + $1.amount }
-        
-        return (expense, income)
     }
 }
 

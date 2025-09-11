@@ -34,7 +34,7 @@ final class RecordCoordinator: Coordinator, RecordCoordinatorProtocol {
         let recordListVC =
         viewControllerFactory.makeRecordListViewController()
         recordListVC.coordinator = self
-        navigationController.setViewControllers([recordListVC], animated: false)
+        navigationController.setViewControllers([recordListVC], animated: true)
     }
     
     func pushRecordForm() {

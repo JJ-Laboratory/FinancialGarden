@@ -38,20 +38,28 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
         )
     }()
     
+    private lazy var recordUseCase = RecordUseCase(
+        transactionRepository: transactionRepository
+    )
+    
+    private lazy var challengeUseCase = ChallengeUseCase(
+        challengeRepository: challengeRepository,
+        transactionRepository: transactionRepository
+    )
+    
     // MARK: - ViewController 생성 메서드들
     
     func makeHomeViewController() -> HomeViewController {
         let reactor = HomeReactor(
-            transactionRepository: transactionRepository,
-            challengeRepository: challengeRepository,
-            categoryService: .shared
+            recordUseCase: recordUseCase,
+            challengeUseCase: challengeUseCase
         )
         return HomeViewController(reactor: reactor)
     }
     
     func makeRecordListViewController() -> RecordListViewController {
         let reactor = RecordListReactor(
-            transactionRepository: transactionRepository
+            transactionRepository: transactionRepository, recordUseCase: recordUseCase
         )
         return RecordListViewController(reactor: reactor)
     }
@@ -85,7 +93,7 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     func makeChartViewController() -> ChartViewController {
         let reactor = ChartReactor(
-            transactionRepository: transactionRepository
+            recordUseCase: recordUseCase
         )
         return ChartViewController(reactor: reactor)
     }

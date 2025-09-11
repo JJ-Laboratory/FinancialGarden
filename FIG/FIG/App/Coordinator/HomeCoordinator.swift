@@ -32,6 +32,6 @@ final class HomeCoordinator: Coordinator {
         if let homeReactor = homeVC.reactor {
             homeReactor.coordinator = parentCoordinator as? TabBarCoordinatorProtocol
         }
-        navigationController.setViewControllers([homeVC], animated: false)
+        navigationController.setViewControllers([homeVC], animated: true)
     }
 }
