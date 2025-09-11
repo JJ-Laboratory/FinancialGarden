@@ -32,7 +32,6 @@ final class CoreDataService {
                 self.logger.error("❌ Core Data 로드 실패: \(error, privacy: .public)")
                 self.logger.debug("Error UserInfo: \(error.userInfo, privacy: .private)")
             } else {
-                self.logger.info("✅ Core Data 로드 성공")
                 // parent context(백그라운드)에서 변경된 내용이 자동으로 viewContext(메인 스레드)로 병합
                 container.viewContext.automaticallyMergesChangesFromParent = true
                 // 외부(parent)에서 들어온 변경 사항이 메모리(viewContext)에 있는 기존 객체의 속성 값을 덮어씀
@@ -66,12 +65,6 @@ final class CoreDataService {
                 do {
                     try context.save()
                     
-                    // 로깅 위한 변수들
-                    let insertedCount = context.insertedObjects.count
-                    let updatedCount = context.updatedObjects.count
-                    let deletedCount = context.deletedObjects.count
-                    logger.info("✅ 저장 완료 - 추가: \(insertedCount), 수정: \(updatedCount), 삭제: \(deletedCount)")
-                    
                     observer.onNext(())
                     observer.onCompleted()
                 } catch {
@@ -103,7 +96,6 @@ final class CoreDataService {
             }
             
             let entityName = String(describing: entityType)
-            logger.debug("🧪 Fetch 시작 - Entity: \(entityName, privacy: .public)")
             
             let fetchRequest = NSFetchRequest<T>(entityName: entityName)
             fetchRequest.predicate = predicate
@@ -115,7 +107,6 @@ final class CoreDataService {
             
             do {
                 let results = try mainContext.fetch(fetchRequest)
-                logger.info("✅ Fetch 성공 - \(entityName): \(results.count)개")
                 
                 observer.onNext(results)
                 observer.onCompleted()
@@ -138,14 +129,12 @@ final class CoreDataService {
             }
             
             let entityName = String(describing: type(of: object))
-            logger.debug("🧪 Delete 시작 - Entity: \(entityName, privacy: .public)")
             
             mainContext.delete(object)
             
             return save()
                 .subscribe(
                     onNext: {
-                        self.logger.info("✅ Delete 성공 - \(entityName)")
                         observer.onNext(())
                         observer.onCompleted()
                     }, onError: { error in

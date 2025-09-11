@@ -75,9 +75,9 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     func makeChallengeListViewController() -> ChallengeListViewController {
         let reactor = ChallengeListReactor(
+            challengeUseCase: challengeUseCase,
             challengeRepository: challengeRepository,
-            gardenRepository: gardenRepository,
-            transactionRepository: transactionRepository
+            gardenRepository: gardenRepository
         )
         return ChallengeListViewController(reactor: reactor)
     }
