@@ -264,7 +264,7 @@ final class RecordFormViewController: UIViewController, View {
                 let frame = responder.convert(responder.frame, to: view)
                 let offset = CGPoint(
                     x: scrollView.contentOffset.x,
-                    y: max(scrollView.contentOffset.y, max(0, frame.minY - keyboardFrame.minY))
+                    y: max(scrollView.contentOffset.y, max(0, frame.maxY - keyboardFrame.minY + 20))
                 )
                 scrollView.setContentOffset(offset, animated: true)
             }

@@ -88,8 +88,21 @@ final class RecordListViewController: UIViewController, View {
     
     private func bindAction(_ reactor: RecordListReactor) {
         monthButton.rx.tap
-            .subscribe { [weak self] _ in
-                self?.presentMonthPicker()
+            .withUnretained(self)
+            .flatMap { viewController, _ -> Observable<Date> in
+                let currentMonth = viewController.reactor?.currentState.selectedMonth ?? Date()
+                let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
+                picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
+                picker.maximumDate = Date()
+                
+                viewController.present(picker, animated: true)
+                return picker.rx.dateSelected.asObservable()
+            }
+            .do { [weak self] date in
+                self?.monthButton.setTitle(date.monthString, for: .normal)
+            }
+            .subscribe { [weak self] date in
+                self?.reactor?.action.onNext(.selectMonth(date))
             }
             .disposed(by: disposeBag)
     }
@@ -98,7 +111,7 @@ final class RecordListViewController: UIViewController, View {
         reactor.state.map(\.selectedMonth)
             .distinctUntilChanged()
             .subscribe { [weak self] date in
-                self?.updateMonthButton(with: date)
+                self?.monthButton.setTitle(date.monthString, for: .normal)
             }
             .disposed(by: disposeBag)
         
@@ -158,23 +171,6 @@ final class RecordListViewController: UIViewController, View {
         collectionView.register(RecordGroupCell.self, forCellWithReuseIdentifier: RecordGroupCell.identifier)
         collectionView.register(EmptyStateCell.self, forCellWithReuseIdentifier: EmptyStateCell.identifier)
         collectionView.collectionViewLayout.register(GroupBackgroundView.self, forDecorationViewOfKind: GroupBackgroundView.elementKind)
-    }
-    
-    private func updateMonthButton(with date: Date) {
-        monthButton.setTitle(date.monthString, for: .normal)
-    }
-    
-    private func presentMonthPicker() {
-        let currentMonth = reactor?.currentState.selectedMonth ?? Date()
-        let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
-        picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
-        picker.maximumDate = Date()
-        
-        picker.dateSelected = { [weak self] date in
-            self?.reactor?.action.onNext(.selectMonth(date))
-        }
-        
-        present(picker, animated: true)
     }
     
     @objc private func addButtonTapped() {
