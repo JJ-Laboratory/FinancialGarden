@@ -23,9 +23,57 @@ final class ChallengeUseCase {
     func getCurrentChallenges(year: Int, month: Int) -> Observable<[Challenge]> {
         return challengeRepository.fetchChallengesByMonth(year, month)
             .flatMap { [weak self] challenges -> Observable<[Challenge]> in
-                guard let self = self, !challenges.isEmpty else { return .just([]) }
-                return self.updateChallengesWithSpending(challenges)
+                guard let self, !challenges.isEmpty else { return .just([]) }
+                return updateChallengesWithSpending(challenges)
             }
+            .flatMap { [weak self] challenges -> Observable<[Challenge]> in
+                guard let self else { return .just([]) }
+                return updateStatus(challenges)
+            }
+    }
+    
+    private func updateStatus(_ challenges: [Challenge]) -> Observable<[Challenge]> {
+        var editedChallenge: [Challenge] = []
+        var finalChallenges = challenges
+        
+        for (index, challenge) in challenges.enumerated() {
+            
+            if challenge.isCompleted {
+                continue
+            }
+            
+            var updatedChallenge = challenge
+            let progressValue = challenge.startDate.progress(to: challenge.endDate)
+            
+            if progressValue >= 1 {
+                if challenge.currentSpending <= challenge.spendingLimit {
+                    updatedChallenge.status = .success
+                } else {
+                    updatedChallenge.status = .failure
+                }
+                editedChallenge.append(updatedChallenge)
+                finalChallenges[index] = updatedChallenge
+            } else if challenge.currentSpending > challenge.spendingLimit {
+                updatedChallenge.status = .failure
+                editedChallenge.append(updatedChallenge)
+                finalChallenges[index] = updatedChallenge
+            } else {
+                updatedChallenge.status = .progress
+                editedChallenge.append(updatedChallenge)
+                finalChallenges[index] = updatedChallenge
+            }
+        }
+        
+        if editedChallenge.isEmpty {
+            return .just(challenges)
+        }
+        
+        let editObservables = editedChallenge.map { updatedChallenge in
+            self.challengeRepository.editChallenge(updatedChallenge)
+        }
+        
+        return Observable.zip(editObservables)
+            .map { _ in finalChallenges }
     }
     
     private func updateChallengesWithSpending(_ challenges: [Challenge]) -> Observable<[Challenge]> {

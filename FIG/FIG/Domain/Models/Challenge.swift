@@ -5,7 +5,7 @@
 //  Created by Milou on 8/21/25.
 //
 
-import Foundation
+import UIKit
 
 enum ChallengeDuration: Int, CaseIterable {
     case week = 7
@@ -123,8 +123,6 @@ enum ChallengeItem: Hashable {
     case challenge(Challenge)
     case emptyState(EmptyStateType)
 }
-
-import UIKit
 
 enum ProgressStage: Int {
     case level0, level1, level2, level3, level4, level5, level6
