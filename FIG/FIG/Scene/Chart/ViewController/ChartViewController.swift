@@ -123,7 +123,9 @@ final class ChartViewController: UIViewController, View {
     }
     
     private func presentMonthPicker() {
-        let picker = DatePickerController(title: "월 선택", mode: .yearAndMonth)
+        let currentMonth = reactor?.currentState.selectedMonth ?? Date()
+        let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
+        picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
         picker.maximumDate = Date()
         
         picker.dateSelected = { [weak self] date in
@@ -136,7 +138,7 @@ final class ChartViewController: UIViewController, View {
 
 extension ChartViewController {
     private func collectionViewLayout() -> UICollectionViewCompositionalLayout {
-        let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { [weak self] sectionIndex, environment in
+        let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { [weak self] sectionIndex, _ in
             guard let section = self?.dataSource.sectionIdentifier(for: sectionIndex) else {
                 return nil
             }

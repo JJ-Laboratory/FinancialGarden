@@ -451,8 +451,11 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private func presentDatePicker() {
-        let picker = DatePickerController(title: "날짜 선택", mode: .date)
+        let currentDate = reactor?.currentState.selectedDate ?? Date()
+        let picker = DatePickerController(title: "날짜 선택", date: currentDate, mode: .date)
+        picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
         picker.maximumDate = Date()
+        
         picker.dateSelected = { [weak self] date in
             print("선택된 날짜: \(date)")
             self?.reactor?.action.onNext(.selectDate(date))
