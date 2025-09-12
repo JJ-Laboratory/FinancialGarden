@@ -11,11 +11,12 @@ import Then
 import RxSwift
 import RxCocoa
 import ReactorKit
+import UITextViewPlaceholder
 
 final class RecordFormViewController: UIViewController, View {
     
     // MARK: - Properties
-    weak var coordinator: TransactionCoordinator?
+    weak var coordinator: RecordCoordinator?
     var disposeBag = DisposeBag()
     
     private var actualAmount: Int = 0
@@ -50,6 +51,8 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
         $0.textAlignment = .right
+        $0.setContentHuggingPriority(UILayoutPriority(1), for: .horizontal)
+        $0.setContentCompressionResistancePriority(UILayoutPriority(1), for: .horizontal)
     }
     
     private let categoryLabel = UILabel().then {
@@ -74,12 +77,14 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
     
-    // TODO: textview
-    private let memoTextField = UITextField().then {
+    private let memoTextView = TextView().then {
         $0.placeholder = "입력해주세요"
+        $0.textContainerInset = .zero
+        $0.textContainer.lineFragmentPadding = 0
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
-        $0.textAlignment = .right
+        $0.isScrollEnabled = false
+        $0.adjustsFontForContentSizeCategory = true
     }
     
     private let saveButton = CustomButton(style: .filled).then {
@@ -126,7 +131,7 @@ final class RecordFormViewController: UIViewController, View {
         
         FormItem("메모")
             .image(UIImage(systemName: "doc.text"))
-            .trailing { memoTextField }
+            .bottom { memoTextView }
     }
     
     private lazy var contentStackView = UIStackView(axis: .vertical, spacing: 20) {
@@ -183,13 +188,17 @@ final class RecordFormViewController: UIViewController, View {
         
         saveButton.snp.makeConstraints {
             $0.top.greaterThanOrEqualTo(contentStackView.snp.bottom).offset(20)
-            $0.top.equalTo(contentStackView.snp.bottom).offset(20).priority(1)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).inset(16)
+        }
+        
+        memoTextView.snp.makeConstraints {
+            $0.height.greaterThanOrEqualTo(32)
         }
     }
     
     // MARK: - Setup Navigation
+    
     private func setupNavigationBar() {
         title = ""
         
@@ -225,13 +234,13 @@ final class RecordFormViewController: UIViewController, View {
         
         amountTextField.inputAccessoryView = toolbar
         placeTextField.inputAccessoryView = toolbar
-        memoTextField.inputAccessoryView = toolbar
+        memoTextView.inputAccessoryView = toolbar
     }
     
     private func setupTextFieldDelegates() {
         amountTextField.delegate = self
         placeTextField.delegate = self
-        memoTextField.delegate = self
+        memoTextView.delegate = self
         
         amountTextField.addTarget(
             self,
@@ -262,7 +271,7 @@ final class RecordFormViewController: UIViewController, View {
                 let frame = responder.convert(responder.frame, to: view)
                 let offset = CGPoint(
                     x: scrollView.contentOffset.x,
-                    y: max(scrollView.contentOffset.y, max(0, frame.minY - keyboardFrame.minY))
+                    y: max(scrollView.contentOffset.y, max(0, frame.maxY - keyboardFrame.minY + 20))
                 )
                 scrollView.setContentOffset(offset, animated: true)
             }
@@ -274,7 +283,7 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
-        memoTextField.rx.text.orEmpty
+        memoTextView.rx.text.orEmpty
             .distinctUntilChanged()
             .map(Reactor.Action.setMemo)
             .bind(to: reactor.action)
@@ -314,7 +323,7 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
-                    self?.coordinator?.popTransactionInput()
+                    self?.coordinator?.popRecordForm()
                 case .failure(let error):
                     print("저장실패: \(error.localizedDescription)")
                 }
@@ -342,7 +351,7 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
-                    self?.coordinator?.popTransactionInput()
+                    self?.coordinator?.popRecordForm()
                 case .failure(let error):
                     self?.showDeleteError(error)
                 }
@@ -412,7 +421,7 @@ final class RecordFormViewController: UIViewController, View {
         
         setAmount(transaction.amount)
         placeTextField.text = transaction.title
-        memoTextField.text = transaction.memo ?? ""
+        memoTextView.text = transaction.memo ?? ""
     }
     
     private func setAmount(_ amount: Int) {
@@ -425,7 +434,7 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     @objc private func backButtonTapped() {
-        coordinator?.popTransactionInput()
+        coordinator?.popRecordForm()
     }
     
     private func presentCategoryPicker() {
@@ -449,8 +458,11 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private func presentDatePicker() {
-        let picker = DatePickerController(title: "날짜 선택", mode: .date)
+        let currentDate = reactor?.currentState.selectedDate ?? Date()
+        let picker = DatePickerController(title: "날짜 선택", date: currentDate, mode: .date)
+        picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
         picker.maximumDate = Date()
+        
         picker.dateSelected = { [weak self] date in
             print("선택된 날짜: \(date)")
             self?.reactor?.action.onNext(.selectDate(date))
@@ -470,13 +482,11 @@ final class RecordFormViewController: UIViewController, View {
     }
 }
 
-extension RecordFormViewController: UITextFieldDelegate {
+extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == amountTextField {
             placeTextField.becomeFirstResponder()
         } else if textField == placeTextField {
-            memoTextField.becomeFirstResponder()
-        } else if textField == memoTextField {
             textField.resignFirstResponder()
         }
         return true

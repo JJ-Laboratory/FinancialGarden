@@ -52,7 +52,6 @@ final class CategoryService {
             let response = try decoder.decode(CategoryResponse.self, from: data)
             self.categories = response.categories
             self.categoryDict = Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0) })
-            logger.info("✅ 카테고리 로드 완: \(self.categories.count)")
         } catch {
             logger.error("❌ defaultCategories json parsing 실패: \(error)")
             self.categories = []

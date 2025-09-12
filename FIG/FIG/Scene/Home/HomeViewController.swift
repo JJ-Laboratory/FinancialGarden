@@ -56,7 +56,7 @@ final class HomeViewController: UIViewController, View {
     
     private var dataSource: UICollectionViewDiffableDataSource<HomeSection, HomeItem>!
     
-    init(reactor: HomeViewReactor) {
+    init(reactor: HomeReactor) {
         super.init(nibName: nil, bundle: nil)
         self.reactor = reactor
     }
@@ -67,7 +67,7 @@ final class HomeViewController: UIViewController, View {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        reactor?.action.onNext(.refresh)
+        reactor?.action.onNext(.viewDidLoad)
     }
     
     override func viewDidLoad() {
@@ -77,29 +77,44 @@ final class HomeViewController: UIViewController, View {
         setupCollectionView()
         setupDataSource()
         
-        reactor?.action.onNext(.viewDidLoad)
+        //        reactor?.action.onNext(.viewDidLoad)
     }
     
-    func bind(reactor: HomeViewReactor) {
+    func bind(reactor: HomeReactor) {
         bindAction(reactor)
         bindState(reactor)
     }
     
-    private func bindAction(_ reactor: HomeViewReactor) {
-        monthButton.rx.tap
-            .subscribe { [weak self] _ in
-                self?.presentMonthPicker()
+    private func bindAction(_ reactor: HomeReactor) {
+        let selectedMonth = monthButton.rx.tap
+            .withUnretained(self)
+            .flatMap { viewController, _ -> Observable<Date> in
+                let currentMonth = viewController.reactor?.currentState.selectedMonth ?? Date()
+                let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
+                picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
+                picker.maximumDate = Date()
+                 
+                viewController.present(picker, animated: true)
+                return picker.rx.dateSelected.asObservable()
             }
+            .share()
+        
+        selectedMonth
+            .map(\.monthString)
+            .bind(to: monthButton.rx.title(for: .normal))
+            .disposed(by: disposeBag)
+        
+        selectedMonth
+            .map { .selectMonth($0) }
+            .bind(to: reactor.action)
             .disposed(by: disposeBag)
     }
     
-    private func bindState(_ reactor: HomeViewReactor) {
+    private func bindState(_ reactor: HomeReactor) {
         reactor.state.map(\.selectedMonth)
             .distinctUntilChanged()
-            .observe(on: MainScheduler.instance)
-            .subscribe { [weak self] date in
-                self?.updateMonthButton(with: date)
-            }
+            .map(\.monthString)
+            .bind(to: monthButton.rx.title(for: .normal))
             .disposed(by: disposeBag)
         
         reactor.state
@@ -156,62 +171,75 @@ final class HomeViewController: UIViewController, View {
     }
     
     private func setupDataSource() {
+        let monthlySummaryRegistration = UICollectionView.CellRegistration<MonthlySummaryCell, MonthlySummary> { cell, _, item in
+            cell.configure(expense: item.expense, income: item.income)
+        }
+        
+        let challengeRegistration = UICollectionView.CellRegistration<ChallengeCell, Challenge> { cell, _, challenge in
+            cell.configure(with: challenge, isHomeMode: true)
+        }
+        
+        let emptyStateRegistration = UICollectionView.CellRegistration<EmptyStateCell, EmptyStateType> { [weak self] cell, _, type in
+            cell.configure(type: type)
+            cell.pushButtonTapped
+                .subscribe { _ in
+                    self?.reactor?.action.onNext(.emptyStateButtonTapped(type))
+                }
+                .disposed(by: cell.disposeBag)
+        }
+        
+        let chartProgressRegistration = UICollectionView.CellRegistration<ChartCategoryProgressCell, (totalAmount: Int, items: [ChartProgressView.Item])> { cell, _, item in
+            cell.amountLabel.text = "\(item.totalAmount.formattedWithComma)원"
+            cell.progressView.items = item.items
+        }
+        
+        let chartCategoryRegistration = UICollectionView.CellRegistration<ChartCategoryItemCell, CategoryChartItem> { cell, _, item in
+            cell.configure(with: item)
+        }
+        
         dataSource = UICollectionViewDiffableDataSource<HomeSection, HomeItem>(
             collectionView: collectionView
-        ) { [weak self] collectionView, indexPath, item in
-            return self?.configureCell(collectionView: collectionView, indexPath: indexPath, item: item)
+        ) { collectionView, indexPath, item in
+            switch item {
+            case .monthlySummary(let summary):
+                return collectionView.dequeueConfiguredReusableCell(
+                    using: monthlySummaryRegistration,
+                    for: indexPath,
+                    item: summary
+                )
+                
+            case .challenge(let challenge):
+                return collectionView.dequeueConfiguredReusableCell(
+                    using: challengeRegistration,
+                    for: indexPath,
+                    item: challenge
+                )
+                
+            case .emptyState(let type):
+                return collectionView.dequeueConfiguredReusableCell(
+                    using: emptyStateRegistration,
+                    for: indexPath,
+                    item: type
+                )
+                
+            case .chartProgress(let totalAmount, let items):
+                return collectionView.dequeueConfiguredReusableCell(
+                    using: chartProgressRegistration,
+                    for: indexPath,
+                    item: (totalAmount: totalAmount, items: items)
+                )
+                
+            case .chartCategory(let item):
+                return collectionView.dequeueConfiguredReusableCell(
+                    using: chartCategoryRegistration,
+                    for: indexPath,
+                    item: item
+                )
+            }
         }
         
         dataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
             return self?.configureHeader(collectionView: collectionView, kind: kind, indexPath: indexPath)
-        }    }
-    
-    private func configureCell(collectionView: UICollectionView, indexPath: IndexPath, item: HomeItem) -> UICollectionViewCell? {
-        
-        switch item {
-        case .monthlySummary(let expense, let income):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MonthlySummaryCell.identifier, for: indexPath) as? MonthlySummaryCell else {
-                return UICollectionViewCell()
-            }
-            cell.configure(expense: expense, income: income)
-            return cell
-            
-        case .challenge(let challenge):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChallengeCell.identifier, for: indexPath) as? ChallengeCell else {
-                return UICollectionViewCell()
-            }
-            cell.configure(with: challenge, isHomeMode: true)  // 홈모드로 설정
-            return cell
-            
-        case .emptyState(let type):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmptyStateCell.identifier, for: indexPath) as? EmptyStateCell else {
-                return UICollectionViewCell()
-            }
-            cell.configure(type: type)
-            
-            cell.pushButtonTapped
-                .subscribe { [weak self] _ in
-                    self?.reactor?.action.onNext(.emptyStateButtonTapped(type))
-                }
-                .disposed(by: cell.disposeBag)
-            
-            return cell
-            
-        case .chartProgress(let totalAmount, let items):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChartCategoryProgressCell.identifier, for: indexPath) as? ChartCategoryProgressCell else {
-                return UICollectionViewCell()
-            }
-            cell.amountLabel.text = "\(totalAmount.formattedWithComma)원"
-            cell.progressView.items = items
-            return cell
-            
-        case .chartCategory(let item):
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChartCategoryItemCell.identifier, for: indexPath) as? ChartCategoryItemCell else {
-                return UICollectionViewCell()
-            }
-            
-            cell.configure(with: item)
-            return cell
         }
     }
     
@@ -239,7 +267,7 @@ final class HomeViewController: UIViewController, View {
     
     // MARK: - Snapshot Update
     
-    private func updateSnapshot(with state: HomeViewReactor.State) {
+    private func updateSnapshot(with state: HomeReactor.State) {
         guard let dataSource = dataSource else { return }
         
         let newChallengesCount = state.currentChallenges.count
@@ -258,7 +286,7 @@ final class HomeViewController: UIViewController, View {
         
         // 가계부 섹션
         snapshot.appendSections([.record])
-        snapshot.appendItems([.monthlySummary(expense: state.monthlyExpense, income: state.monthlyIncome)], toSection: .record)
+        snapshot.appendItems([.monthlySummary(state.monthlySummary)], toSection: .record)
         
         // 챌린지 섹션
         snapshot.appendSections([.challenge])
@@ -271,7 +299,7 @@ final class HomeViewController: UIViewController, View {
         
         // 차트 섹션
         snapshot.appendSections([.chart])
-        if state.hasRecords && state.categoryTotalAmount > 0 {
+        if state.monthlySummary.hasRecords && state.categoryTotalAmount > 0 {
             var chartItems: [HomeItem] = []
             
             // Progress 셀 추가
@@ -280,8 +308,7 @@ final class HomeViewController: UIViewController, View {
                 items: state.categoryProgressItems
             ))
             
-            let processedChartItems = makeCategoryItemsForHome(from: state.chartItems, total: state.categoryTotalAmount)
-            let categoryItems = processedChartItems.map { HomeItem.chartCategory($0) }
+            let categoryItems = state.chartItems.map { HomeItem.chartCategory($0) }
             chartItems.append(contentsOf: categoryItems)
             
             snapshot.appendItems(chartItems, toSection: .chart)
@@ -298,21 +325,6 @@ final class HomeViewController: UIViewController, View {
         let current = currentCount > 1
         
         return previous != current
-    }
-    
-    private func updateMonthButton(with date: Date) {
-        monthButton.setTitle(date.monthString, for: .normal)
-    }
-    
-    private func presentMonthPicker() {
-        let picker = DatePickerController(title: "월 선택", mode: .yearAndMonth)
-        picker.maximumDate = Date()
-        
-        picker.dateSelected = { [weak self] date in
-            self?.reactor?.action.onNext(.selectMonth(date))
-        }
-        
-        present(picker, animated: true)
     }
     
     private func showError(_ error: Error) {

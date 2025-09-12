@@ -44,7 +44,6 @@ final class TransactionRepository: TransactionRepositoryInterface {
             
             return coreDataService.save()
                 .map { _ in
-                    self.logger.info("✅ 거래 저장완: \(transaction.title)")
                     return transaction
                 }
                 .subscribe(observer)
@@ -86,7 +85,6 @@ final class TransactionRepository: TransactionRepositoryInterface {
         .map { [weak self] entities -> [Transaction] in
             guard let self = self else { return [] }
             let transactions = entities.compactMap { self.toModel($0) }
-            logger.info("✅ \(year). \(month)월의 내역 개수: \(transactions.count)")
             return transactions
         }
     }
@@ -109,7 +107,6 @@ final class TransactionRepository: TransactionRepositoryInterface {
         return coreDataService.fetch(TransactionEntity.self, predicate: predicate)
             .map { entities in
                 let total = entities.reduce(0) { $0 + Int($1.amount) }
-                self.logger.info("✅ \(categoryId) 카테고리: 총 \(total)원")
                 return total
             }
     }
@@ -137,7 +134,6 @@ final class TransactionRepository: TransactionRepositoryInterface {
                 
                 return coreDataService.save()
                     .map { _ in
-                        self.logger.info("✅ 수정 완: \(transaction.title)")
                         return transaction
                     }
             }

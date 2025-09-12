@@ -92,7 +92,7 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
                 
                 updateEntity(entity, from: challenge)
                 
-                return self.coreDataService.save()
+                return coreDataService.save()
                     .map { _ in
                         self.logger.info("✅ 챌린지 수정 완료: \(challenge.category.title)")
                         return challenge
@@ -114,7 +114,7 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
                     return .error(CoreDataError.entityNotFound)
                 }
                 
-                return self.coreDataService.delete(entity)
+                return coreDataService.delete(entity)
                     .do(onNext: { _ in
                         self.logger.info("✅ 챌린지 삭제 완료: \(id)")
                     })

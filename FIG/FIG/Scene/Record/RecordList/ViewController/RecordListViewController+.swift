@@ -45,7 +45,7 @@ extension RecordListViewController: UICollectionViewDataSource {
                 return UICollectionViewCell()
             }
             let state = reactor.currentState
-            cell.configure(expense: state.monthlyExpense, income: state.monthlyIncome)
+            cell.configure(expense: state.monthlySummary.expense, income: state.monthlySummary.income)
             return cell
             
         case .sectionHeader:
@@ -71,7 +71,7 @@ extension RecordListViewController: UICollectionViewDataSource {
                 cell.configure(with: recordGroup)
                 
                 cell.onRecordTap = { [weak self] transaction in
-                    self?.coordinator?.pushTransactionEdit(transaction: transaction)
+                    self?.coordinator?.pushRecordFormEdit(transaction: transaction)
                 }
                 return cell
             } else {
@@ -85,7 +85,7 @@ extension RecordListViewController: UICollectionViewDataSource {
                 cell.configure(type: .transaction)
                 cell.pushButtonTapped
                     .subscribe { [weak self] _ in
-                        self?.coordinator?.pushTransactionInput()
+                        self?.coordinator?.pushRecordForm()
                     }
                     .disposed(by: cell.disposeBag)
                 return cell

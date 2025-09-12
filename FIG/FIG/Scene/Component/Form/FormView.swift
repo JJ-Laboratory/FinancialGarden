@@ -121,7 +121,7 @@ extension FormView {
             }
             
             let contentView = UIStackView(axis: .vertical, spacing: 16) {
-                UIStackView(axis: .horizontal) {
+                UIStackView(axis: .horizontal, spacing: 16) {
                     // Title
                     titleContentView
                     
@@ -166,10 +166,17 @@ extension FormView {
             guard let view = super.hitTest(point, with: event) else {
                 return nil
             }
-            if view is UIButton {
+            return resolveHitTest(view)
+        }
+
+        private func resolveHitTest(_ view: UIView) -> UIView {
+            if view.canBecomeFirstResponder || view is UIControl {
                 return view
             }
-            return view.canBecomeFirstResponder ? view : self
+            guard let nextView = view.next as? UIView else {
+                return view
+            }
+            return resolveHitTest(nextView)
         }
     }
 }

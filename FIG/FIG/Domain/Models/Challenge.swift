@@ -5,7 +5,7 @@
 //  Created by Milou on 8/21/25.
 //
 
-import Foundation
+import UIKit
 
 enum ChallengeDuration: Int, CaseIterable {
     case week = 7
@@ -81,7 +81,6 @@ enum ChallengeStatus: String {
         case .success: return UIImage(named: "success_popup")
         case .failure: return UIImage(named: "failure_popup")
         }
-        
     }
     
     var title: String {
@@ -124,8 +123,6 @@ enum ChallengeItem: Hashable {
     case challenge(Challenge)
     case emptyState(EmptyStateType)
 }
-
-import UIKit
 
 enum ProgressStage: Int {
     case level0, level1, level2, level3, level4, level5, level6
