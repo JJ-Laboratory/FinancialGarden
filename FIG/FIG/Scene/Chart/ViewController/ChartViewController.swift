@@ -85,12 +85,24 @@ final class ChartViewController: UIViewController, View {
     }
     
     func bind(reactor: ChartReactor) {
-        monthButton.rx.tap
-            .subscribe { [weak self] _ in
-                self?.presentMonthPicker()
+        let selectedMonth = monthButton.rx.tap
+            .withUnretained(self)
+            .flatMap { viewController, _ -> Observable<Date> in
+                let currentMonth = viewController.reactor?.currentState.selectedMonth ?? Date()
+                let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
+                picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
+                picker.maximumDate = Date()
+                 
+                viewController.present(picker, animated: true)
+                return picker.rx.dateSelected.asObservable()
             }
-            .disposed(by: disposeBag)
+            .share()
         
+        selectedMonth
+            .map { .selectMonth($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+    
         let monthDriver = reactor.state
             .map(\.selectedMonth)
             .distinctUntilChanged()
@@ -121,22 +133,11 @@ final class ChartViewController: UIViewController, View {
             })
             .disposed(by: disposeBag)
     }
-    
-    private func presentMonthPicker() {
-        let picker = DatePickerController(title: "월 선택", mode: .yearAndMonth)
-        picker.maximumDate = Date()
-        
-        picker.dateSelected = { [weak self] date in
-            self?.reactor?.action.onNext(.selectMonth(date))
-        }
-        
-        present(picker, animated: true)
-    }
 }
 
 extension ChartViewController {
     private func collectionViewLayout() -> UICollectionViewCompositionalLayout {
-        let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { [weak self] sectionIndex, environment in
+        let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { [weak self] sectionIndex, _ in
             guard let section = self?.dataSource.sectionIdentifier(for: sectionIndex) else {
                 return nil
             }

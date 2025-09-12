@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		B5610AFA2E56FA8A001A885E /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = B5610AF92E56FA8A001A885E /* .swiftlint.yml */; };
+		B57F87392E73A51B004A897D /* UITextViewPlaceholder in Frameworks */ = {isa = PBXBuildFile; productRef = B57F87382E73A51B004A897D /* UITextViewPlaceholder */; };
 		B5983F9F2E54473C00DEB52A /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = B5983F9E2E54473C00DEB52A /* RxCocoa */; };
 		B5983FA12E54473C00DEB52A /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA02E54473C00DEB52A /* RxSwift */; };
 		B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5983FA32E54474A00DEB52A /* ReactorKit */; };
@@ -53,6 +54,7 @@
 				B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */,
 				B5FF78652E5FF07E00298146 /* RxGesture in Frameworks */,
 				B5983F9F2E54473C00DEB52A /* RxCocoa in Frameworks */,
+				B57F87392E73A51B004A897D /* UITextViewPlaceholder in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,6 +105,7 @@
 				B5983FA62E54475700DEB52A /* SnapKit */,
 				B5FF75322E5DBFA200298146 /* Then */,
 				B5FF78642E5FF07E00298146 /* RxGesture */,
+				B57F87382E73A51B004A897D /* UITextViewPlaceholder */,
 			);
 			productName = FIG;
 			productReference = B5983F812E5445DD00DEB52A /* FIG.app */;
@@ -120,11 +123,12 @@
 				TargetAttributes = {
 					B5983F802E5445DD00DEB52A = {
 						CreatedOnToolsVersion = 16.4;
+						LastSwiftMigration = 1640;
 					};
 				};
 			};
 			buildConfigurationList = B5983F7C2E5445DD00DEB52A /* Build configuration list for PBXProject "FIG" */;
-			developmentRegion = ko;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -139,6 +143,7 @@
 				B5983FA52E54475700DEB52A /* XCRemoteSwiftPackageReference "SnapKit" */,
 				B5FF75312E5DBFA100298146 /* XCRemoteSwiftPackageReference "Then" */,
 				B5FF78632E5FF07E00298146 /* XCRemoteSwiftPackageReference "RxGesture" */,
+				B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5983F822E5445DD00DEB52A /* Products */;
@@ -199,6 +204,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -210,13 +216,12 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sophia.FIG;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -224,6 +229,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -234,6 +240,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = FIG/FIG.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -245,13 +252,12 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sophia.FIG;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -269,7 +275,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -333,7 +338,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -409,6 +413,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Jaesung-Jung/UITextView-Placeholder.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.1;
+			};
+		};
 		B5983F9D2E54473C00DEB52A /* XCRemoteSwiftPackageReference "RxSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
@@ -452,6 +464,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B57F87382E73A51B004A897D /* UITextViewPlaceholder */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */;
+			productName = UITextViewPlaceholder;
+		};
 		B5983F9E2E54473C00DEB52A /* RxCocoa */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B5983F9D2E54473C00DEB52A /* XCRemoteSwiftPackageReference "RxSwift" */;

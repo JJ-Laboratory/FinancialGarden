@@ -1,5 +1,5 @@
 {
-  "originHash" : "df03238d4d33424b14137ffd1f6f40e6d2ef0f8b8e93b1f856b25092f2660098",
+  "originHash" : "89c7651d6b8d627c3d51d2e742be9d801535d93bb38b2f229fec3dd9ccbc209f",
   "pins" : [
     {
       "identity" : "reactorkit",
@@ -44,6 +44,15 @@
       "state" : {
         "revision" : "d41ef523faef0f911369f79c0b96815d9dbb6d7a",
         "version" : "3.0.0"
+      }
+    },
+    {
+      "identity" : "uitextview-placeholder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Jaesung-Jung/UITextView-Placeholder.git",
+      "state" : {
+        "revision" : "23be55d773c030b34c19ba4cf26fea90e1cf9879",
+        "version" : "1.4.3"
       }
     },
     {

@@ -77,7 +77,7 @@ final class HomeViewController: UIViewController, View {
         setupCollectionView()
         setupDataSource()
         
-//        reactor?.action.onNext(.viewDidLoad)
+        //        reactor?.action.onNext(.viewDidLoad)
     }
     
     func bind(reactor: HomeReactor) {
@@ -86,20 +86,35 @@ final class HomeViewController: UIViewController, View {
     }
     
     private func bindAction(_ reactor: HomeReactor) {
-        monthButton.rx.tap
-            .subscribe { [weak self] _ in
-                self?.presentMonthPicker()
+        let selectedMonth = monthButton.rx.tap
+            .withUnretained(self)
+            .flatMap { viewController, _ -> Observable<Date> in
+                let currentMonth = viewController.reactor?.currentState.selectedMonth ?? Date()
+                let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
+                picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
+                picker.maximumDate = Date()
+                 
+                viewController.present(picker, animated: true)
+                return picker.rx.dateSelected.asObservable()
             }
+            .share()
+        
+        selectedMonth
+            .map(\.monthString)
+            .bind(to: monthButton.rx.title(for: .normal))
+            .disposed(by: disposeBag)
+        
+        selectedMonth
+            .map { .selectMonth($0) }
+            .bind(to: reactor.action)
             .disposed(by: disposeBag)
     }
     
     private func bindState(_ reactor: HomeReactor) {
         reactor.state.map(\.selectedMonth)
             .distinctUntilChanged()
-            .observe(on: MainScheduler.instance)
-            .subscribe { [weak self] date in
-                self?.updateMonthButton(with: date)
-            }
+            .map(\.monthString)
+            .bind(to: monthButton.rx.title(for: .normal))
             .disposed(by: disposeBag)
         
         reactor.state
@@ -272,8 +287,6 @@ final class HomeViewController: UIViewController, View {
         // 가계부 섹션
         snapshot.appendSections([.record])
         snapshot.appendItems([.monthlySummary(state.monthlySummary)], toSection: .record)
-//            expense: state.monthlyExpense, income: state.monthlyIncome
-//        )], toSection: .record)
         
         // 챌린지 섹션
         snapshot.appendSections([.challenge])
@@ -312,21 +325,6 @@ final class HomeViewController: UIViewController, View {
         let current = currentCount > 1
         
         return previous != current
-    }
-    
-    private func updateMonthButton(with date: Date) {
-        monthButton.setTitle(date.monthString, for: .normal)
-    }
-    
-    private func presentMonthPicker() {
-        let picker = DatePickerController(title: "월 선택", mode: .yearAndMonth)
-        picker.maximumDate = Date()
-        
-        picker.dateSelected = { [weak self] date in
-            self?.reactor?.action.onNext(.selectMonth(date))
-        }
-        
-        present(picker, animated: true)
     }
     
     private func showError(_ error: Error) {
