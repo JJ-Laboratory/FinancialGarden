@@ -85,22 +85,24 @@ final class ChartViewController: UIViewController, View {
     }
     
     func bind(reactor: ChartReactor) {
-        monthButton.rx.tap
+        let selectedMonth = monthButton.rx.tap
             .withUnretained(self)
             .flatMap { viewController, _ -> Observable<Date> in
                 let currentMonth = viewController.reactor?.currentState.selectedMonth ?? Date()
                 let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
                 picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
                 picker.maximumDate = Date()
-                
+                 
                 viewController.present(picker, animated: true)
                 return picker.rx.dateSelected.asObservable()
             }
-            .subscribe { [weak self] date in
-                self?.reactor?.action.onNext(.selectMonth(date))
-            }
-            .disposed(by: disposeBag)
+            .share()
         
+        selectedMonth
+            .map { .selectMonth($0) }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+    
         let monthDriver = reactor.state
             .map(\.selectedMonth)
             .distinctUntilChanged()
