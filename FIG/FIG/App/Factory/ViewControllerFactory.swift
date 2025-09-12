@@ -14,6 +14,8 @@ protocol ViewControllerFactoryInterface {
     func makeChallengeListViewController() -> ChallengeListViewController
     func makeChallengeFormViewController(mode: ChallengeFormReactor.Mode) -> ChallengeFormViewController
     func makeChartViewController() -> ChartViewController
+    func makeAnalysisViewController() -> AnalysisViewController
+    func makeAnalysisResultViewController() -> AnalysisResultViewController
 }
 
 final class ViewControllerFactory: ViewControllerFactoryInterface {
@@ -96,5 +98,14 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
             recordUseCase: recordUseCase
         )
         return ChartViewController(reactor: reactor)
+    }
+    
+    
+    func makeAnalysisViewController() -> AnalysisViewController {
+        return AnalysisViewController()
+    }
+    
+    func makeAnalysisResultViewController() -> AnalysisResultViewController {
+        return AnalysisResultViewController()
     }
 }
