@@ -163,16 +163,20 @@ extension FormView {
         }
 
         override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-            guard action != nil else {
-                return super.hitTest(point, with: event)
-            }
             guard let view = super.hitTest(point, with: event) else {
                 return nil
             }
-            if view is UIButton {
+            return resolveHitTest(view)
+        }
+
+        private func resolveHitTest(_ view: UIView) -> UIView {
+            if view.canBecomeFirstResponder || view is UIControl {
                 return view
             }
-            return view.canBecomeFirstResponder ? view : self
+            guard let nextView = view.next as? UIView else {
+                return view
+            }
+            return resolveHitTest(nextView)
         }
     }
 }
