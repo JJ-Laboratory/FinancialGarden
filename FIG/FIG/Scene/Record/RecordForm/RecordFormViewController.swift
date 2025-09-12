@@ -77,8 +77,10 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
     
-    private let memoTextView = UITextView().then {
+    private let memoTextView = TextView().then {
         $0.placeholder = "입력해주세요"
+        $0.textContainerInset = .zero
+        $0.textContainer.lineFragmentPadding = 0
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
         $0.isScrollEnabled = false
@@ -132,7 +134,7 @@ final class RecordFormViewController: UIViewController, View {
             .bottom { memoTextView }
     }
     
-    private lazy var contentStackView = UIStackView(axis: .vertical, distribution: .fillProportionally, spacing: 20) {
+    private lazy var contentStackView = UIStackView(axis: .vertical, spacing: 20) {
         titleLabel
         amountStackView
         formView
@@ -186,7 +188,6 @@ final class RecordFormViewController: UIViewController, View {
         
         saveButton.snp.makeConstraints {
             $0.top.greaterThanOrEqualTo(contentStackView.snp.bottom).offset(20)
-            $0.top.equalTo(contentStackView.snp.bottom).offset(20).priority(1)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).inset(16)
         }
