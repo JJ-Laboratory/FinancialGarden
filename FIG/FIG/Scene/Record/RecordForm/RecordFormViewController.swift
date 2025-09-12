@@ -11,6 +11,8 @@ import Then
 import RxSwift
 import RxCocoa
 import ReactorKit
+import Vision
+import VisionKit
 import UITextViewPlaceholder
 
 final class RecordFormViewController: UIViewController, View {
@@ -19,7 +21,10 @@ final class RecordFormViewController: UIViewController, View {
     weak var coordinator: RecordCoordinator?
     var disposeBag = DisposeBag()
     
+    private let activityIndicator = UIActivityIndicatorView(style: .large)
     private var actualAmount: Int = 0
+    
+    var textRecognitionRequest = VNRecognizeTextRequest()
     
     // MARK: - UI Components
     
@@ -167,6 +172,7 @@ final class RecordFormViewController: UIViewController, View {
         setupUI()
         setupNavigationBar()
         setupTextFieldDelegates()
+        setupTextRecognition()
     }
     
     // MARK: - Setup UI
@@ -260,7 +266,27 @@ final class RecordFormViewController: UIViewController, View {
         )
     }
     
+    private func setupTextRecognition() {
+        textRecognitionRequest = VNRecognizeTextRequest(completionHandler: { [weak self] (request, error) in
+            guard let self = self else { return }
+            
+            if let results = request.results, !results.isEmpty {
+                if let requestResults = request.results as? [VNRecognizedTextObservation] {
+                    let recognizedTexts = self.extractTextFromObservations(requestResults)
+                    DispatchQueue.main.async {
+                        self.reactor?.action.onNext(.scanCompleted(recognizedTexts))
+                    }
+                }
+            }
+        })
+        
+        textRecognitionRequest.recognitionLevel = .accurate
+        textRecognitionRequest.recognitionLanguages = ["ko-KR"]
+        textRecognitionRequest.usesLanguageCorrection = true
+    }
+    
     // MARK: - Bind
+    
     func bind(reactor: RecordFormReactor) {
         bindAction(reactor)
         bindState(reactor)
@@ -300,6 +326,11 @@ final class RecordFormViewController: UIViewController, View {
         
         saveButton.rx.tap
             .map { Reactor.Action.save }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        scanButton.rx.tap
+            .map { Reactor.Action.startScan }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
     }
@@ -364,6 +395,21 @@ final class RecordFormViewController: UIViewController, View {
                 case .failure(let error):
                     self?.showDeleteError(error)
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.shouldStartScan)
+            .distinctUntilChanged()
+            .filter { $0 }
+            .subscribe { [weak self] _ in
+                self?.presentDocumentScanner()
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.recognizedTexts)
+            .filter { !$0.isEmpty }
+            .subscribe { [weak self] texts in
+                self?.processRecognizedTexts(texts)
             }
             .disposed(by: disposeBag)
     }
@@ -489,6 +535,46 @@ final class RecordFormViewController: UIViewController, View {
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
     }
+    
+    private func presentDocumentScanner() {
+        let documentCameraViewController = VNDocumentCameraViewController()
+        documentCameraViewController.delegate = self
+        present(documentCameraViewController, animated: true)
+    }
+    
+    private func processImage(image: UIImage) {
+        guard let cgImage = image.cgImage else {
+            print("Failed to get cgimage from input image")
+            return
+        }
+        
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        do {
+            try handler.perform([textRecognitionRequest])
+        } catch {
+            print("텍스트 인식 실패: \(error)")
+        }
+    }
+    
+    private func extractTextFromObservations(_ observations: [VNRecognizedTextObservation]) -> [String] {
+        var recognizedTexts: [String] = []
+        let maximumCandidates = 1
+        
+        for observation in observations {
+            guard let candidate = observation.topCandidates(maximumCandidates).first else { continue }
+            recognizedTexts.append(candidate.string)
+        }
+        
+        return recognizedTexts
+    }
+    
+    private func processRecognizedTexts(_ texts: [String]) {
+        for text in texts {
+            print(text)
+        }
+        
+        // TODO: 여기서 데이터 처리, 현재는 디버그 출력만
+    }
 }
 
 extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
@@ -522,5 +608,43 @@ extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
                 textField.text = ""
             }
         }
+    }
+}
+
+extension RecordFormViewController: VNDocumentCameraViewControllerDelegate {
+    func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
+        
+        activityIndicator.startAnimating()
+        
+        controller.dismiss(animated: true) {
+            // 백그라운드에서 텍스트 인식
+            DispatchQueue.global(qos: .userInitiated).async {
+                
+                guard scan.pageCount > 0 else {
+                    DispatchQueue.main.async {
+                        self.activityIndicator.stopAnimating()
+                        print("스캔된 페이지가 없습니다.")
+                    }
+                    return
+                }
+                
+                // 여러장 찍었을 경우 첫번째 사진만 처리
+                let firstImage = scan.imageOfPage(at: 0)
+                self.processImage(image: firstImage)
+                
+                DispatchQueue.main.async {
+                    self.activityIndicator.stopAnimating()
+                }
+            }
+        }
+    }
+    
+    func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+        controller.dismiss(animated: true)
+    }
+    
+    func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
+        print("문서 스캔 실패: \(error.localizedDescription)")
+        controller.dismiss(animated: true)
     }
 }

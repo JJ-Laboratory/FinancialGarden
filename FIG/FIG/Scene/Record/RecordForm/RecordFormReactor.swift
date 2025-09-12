@@ -22,6 +22,8 @@ final class RecordFormReactor: Reactor {
         case save
         case loadForEdit(Transaction)
         case delete
+        case startScan
+        case scanCompleted([String])
     }
     
     enum Mutation {
@@ -34,6 +36,8 @@ final class RecordFormReactor: Reactor {
         case setEditingRecord(Transaction?)
         case setSaveResult(Result<Transaction, Error>)
         case setDeleteResult(Result<Void, Error>)
+        case setRecognizedTexts([String])
+        case setScanStarted(Bool)
     }
     
     struct State {
@@ -47,6 +51,9 @@ final class RecordFormReactor: Reactor {
         var saveResult: Result<Transaction, Error>?
         var isSaveEnabled: Bool = false
         var deleteResult: Result<Void, Error>?
+        var recognizedTexts: [String] = []
+        var shouldStartScan: Bool = false
+        
         var isEditMode: Bool {
             return editingRecord != nil
         }
@@ -91,6 +98,10 @@ final class RecordFormReactor: Reactor {
                 .concat(loadTransactionData(transaction))
         case .delete:
             return deleteTransaction()
+        case .startScan:
+            return Observable.just(.setScanStarted(true))
+        case .scanCompleted(let texts):
+            return Observable.just(.setRecognizedTexts(texts))
         }
     }
     
@@ -116,6 +127,11 @@ final class RecordFormReactor: Reactor {
             newState.saveResult = result
         case .setDeleteResult(let result):
             newState.deleteResult = result
+        case .setRecognizedTexts(let texts):
+            newState.recognizedTexts = texts
+            newState.shouldStartScan = false
+        case .setScanStarted(let shouldStart):
+            newState.shouldStartScan = shouldStart
         }
         
         newState.isSaveEnabled = calculateSaveEnabled(newState)
