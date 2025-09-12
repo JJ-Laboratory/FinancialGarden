@@ -54,7 +54,7 @@ final class ChartViewController: UIViewController, View {
         $0.configuration?.title = "나의 MBTI"
         $0.configuration?.image = UIImage(named: "level0")?.resized(height: font.lineHeight)
         $0.configuration?.imagePlacement = .trailing
-        $0.configuration?.imagePadding = 4                
+        $0.configuration?.imagePadding = 4
     }
     
     private lazy var collectionView = UICollectionView(
@@ -100,10 +100,22 @@ final class ChartViewController: UIViewController, View {
     }
     
     func bind(reactor: ChartReactor) {
-        monthButton.rx.tap
-            .subscribe { [weak self] _ in
-                self?.presentMonthPicker()
+        let selectedMonth = monthButton.rx.tap
+            .withUnretained(self)
+            .flatMap { viewController, _ -> Observable<Date> in
+                let currentMonth = viewController.reactor?.currentState.selectedMonth ?? Date()
+                let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
+                picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
+                picker.maximumDate = Date()
+                
+                viewController.present(picker, animated: true)
+                return picker.rx.dateSelected.asObservable()
             }
+            .share()
+        
+        selectedMonth
+            .map { .selectMonth($0) }
+            .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
         mbtiButton.rx.tap
@@ -141,17 +153,6 @@ final class ChartViewController: UIViewController, View {
                 self?.dataSource.apply(snapshot)
             })
             .disposed(by: disposeBag)
-    }
-    
-    private func presentMonthPicker() {
-        let picker = DatePickerController(title: "월 선택", mode: .yearAndMonth)
-        picker.maximumDate = Date()
-        
-        picker.dateSelected = { [weak self] date in
-            self?.reactor?.action.onNext(.selectMonth(date))
-        }
-        
-        present(picker, animated: true)
     }
 }
 
