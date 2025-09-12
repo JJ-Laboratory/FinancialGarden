@@ -11,6 +11,7 @@ import Then
 import RxSwift
 import RxCocoa
 import ReactorKit
+import UITextViewPlaceholder
 
 final class RecordFormViewController: UIViewController, View {
     
@@ -76,12 +77,12 @@ final class RecordFormViewController: UIViewController, View {
         $0.font = .preferredFont(forTextStyle: .body).withWeight(.bold)
     }
     
-    // TODO: textview
-    private let memoTextField = UITextField().then {
+    private let memoTextView = UITextView().then {
         $0.placeholder = "입력해주세요"
         $0.font = .preferredFont(forTextStyle: .body)
         $0.textColor = .charcoal
-        $0.textAlignment = .right
+        $0.isScrollEnabled = false
+        $0.adjustsFontForContentSizeCategory = true
     }
     
     private let saveButton = CustomButton(style: .filled).then {
@@ -128,10 +129,10 @@ final class RecordFormViewController: UIViewController, View {
         
         FormItem("메모")
             .image(UIImage(systemName: "doc.text"))
-            .trailing { memoTextField }
+            .bottom { memoTextView }
     }
     
-    private lazy var contentStackView = UIStackView(axis: .vertical, spacing: 20) {
+    private lazy var contentStackView = UIStackView(axis: .vertical, distribution: .fillProportionally, spacing: 20) {
         titleLabel
         amountStackView
         formView
@@ -189,9 +190,14 @@ final class RecordFormViewController: UIViewController, View {
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).inset(16)
         }
+        
+        memoTextView.snp.makeConstraints {
+            $0.height.greaterThanOrEqualTo(32)
+        }
     }
     
     // MARK: - Setup Navigation
+    
     private func setupNavigationBar() {
         title = ""
         
@@ -227,13 +233,13 @@ final class RecordFormViewController: UIViewController, View {
         
         amountTextField.inputAccessoryView = toolbar
         placeTextField.inputAccessoryView = toolbar
-        memoTextField.inputAccessoryView = toolbar
+        memoTextView.inputAccessoryView = toolbar
     }
     
     private func setupTextFieldDelegates() {
         amountTextField.delegate = self
         placeTextField.delegate = self
-        memoTextField.delegate = self
+        memoTextView.delegate = self
         
         amountTextField.addTarget(
             self,
@@ -276,7 +282,7 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
         
-        memoTextField.rx.text.orEmpty
+        memoTextView.rx.text.orEmpty
             .distinctUntilChanged()
             .map(Reactor.Action.setMemo)
             .bind(to: reactor.action)
@@ -414,7 +420,7 @@ final class RecordFormViewController: UIViewController, View {
         
         setAmount(transaction.amount)
         placeTextField.text = transaction.title
-        memoTextField.text = transaction.memo ?? ""
+        memoTextView.text = transaction.memo ?? ""
     }
     
     private func setAmount(_ amount: Int) {
@@ -475,13 +481,11 @@ final class RecordFormViewController: UIViewController, View {
     }
 }
 
-extension RecordFormViewController: UITextFieldDelegate {
+extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == amountTextField {
             placeTextField.becomeFirstResponder()
         } else if textField == placeTextField {
-            memoTextField.becomeFirstResponder()
-        } else if textField == memoTextField {
             textField.resignFirstResponder()
         }
         return true

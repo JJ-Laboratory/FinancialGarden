@@ -163,6 +163,9 @@ extension FormView {
         }
 
         override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+            guard action != nil else {
+                return super.hitTest(point, with: event)
+            }
             guard let view = super.hitTest(point, with: event) else {
                 return nil
             }
