@@ -192,7 +192,7 @@ final class ChallengeFormViewController: UIViewController, View {
         
         createButton.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
         }
     }
     

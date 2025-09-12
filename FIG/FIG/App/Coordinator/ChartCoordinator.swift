@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ChartCoordinator: Coordinator {
+final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
     weak var parentCoordinator: Coordinator?
@@ -26,9 +26,29 @@ final class ChartCoordinator: Coordinator {
         showChart()
     }
     
+    // MARK: - Navigation Methods
+    
     private func showChart() {
         let chartVC = viewControllerFactory.makeChartViewController()
         chartVC.coordinator = self
         navigationController.setViewControllers([chartVC], animated: true)
+    }
+    
+    func pushAnalysis() {
+        let analysisVC = viewControllerFactory.makeAnalysisViewController()
+        analysisVC.coordinator = self
+        analysisVC.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(analysisVC, animated: true)
+    }
+    
+    func pushAnalysisResult() {
+        let analysisResultVC = viewControllerFactory.makeAnalysisResultViewController()
+        analysisResultVC.coordinator = self
+        analysisResultVC.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(analysisResultVC, animated: true)
+    }
+    
+    func popAnalysis() {
+        navigationController.popViewController(animated: true)
     }
 }

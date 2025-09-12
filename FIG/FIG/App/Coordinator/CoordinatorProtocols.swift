@@ -23,3 +23,9 @@ protocol ChallengeCoordinatorProtocol: AnyObject {
     func pushChallengeDetail(challenge: Challenge)
     func popChallengeForm()
 }
+
+protocol ChartCoordinatorProtocol: AnyObject {
+    func pushAnalysis()
+    func popAnalysis()
+    func pushAnalysisResult()
+}
