@@ -91,11 +91,22 @@ final class RecordFormViewController: UIViewController, View {
         $0.setTitle("저장", for: .normal)
     }
     
+    private let scanButton = CustomButton(style: .outline).then {
+        $0.setTitle("영수증 촬영", for: .normal)
+    }
+    
     private lazy var amountStackView = UIStackView(
         axis: .horizontal, alignment: .center, spacing: 10
     ) {
         wonIconImageView
         amountTextField
+    }
+    
+    private lazy var buttonStackView = UIStackView(
+        axis: .horizontal, distribution: .fillEqually, spacing: 20
+    ) {
+        scanButton
+        saveButton
     }
     
     private let scrollView = UIScrollView()
@@ -169,8 +180,8 @@ final class RecordFormViewController: UIViewController, View {
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentStackView)
-        scrollView.addSubview(saveButton)
-
+        scrollView.addSubview(buttonStackView)
+        
         scrollView.snp.makeConstraints {
             $0.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
             $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
@@ -180,20 +191,20 @@ final class RecordFormViewController: UIViewController, View {
             $0.height.greaterThanOrEqualTo(scrollView.safeAreaLayoutGuide)
         }
         
+        memoTextView.snp.makeConstraints {
+            $0.height.greaterThanOrEqualTo(32)
+        }
+        
         contentStackView.snp.makeConstraints {
             $0.top.equalTo(scrollView.contentLayoutGuide).inset(16)
             $0.width.equalTo(scrollView.contentLayoutGuide)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
         }
         
-        saveButton.snp.makeConstraints {
+        buttonStackView.snp.makeConstraints {
             $0.top.greaterThanOrEqualTo(contentStackView.snp.bottom).offset(20)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).inset(16)
-        }
-        
-        memoTextView.snp.makeConstraints {
-            $0.height.greaterThanOrEqualTo(32)
         }
     }
     
@@ -256,10 +267,8 @@ final class RecordFormViewController: UIViewController, View {
     }
     
     private func bindAction(_ reactor: RecordFormReactor) {
-        let keyboardWillShow = NotificationCenter.default.rx.notification(UIResponder.keyboardWillShowNotification)
-        let keyboardWillHide = NotificationCenter.default.rx.notification(UIResponder.keyboardWillHideNotification)
-        Observable
-            .merge(keyboardWillShow, keyboardWillHide)
+        NotificationCenter.default.rx
+            .notification(UIResponder.keyboardWillShowNotification)
             .compactMap(\.userInfo)
             .bind { [weak self] userInfo in
                 guard let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
@@ -268,7 +277,7 @@ final class RecordFormViewController: UIViewController, View {
                 guard let self, let responder = view.findFirstResponder() as? UIView else {
                     return
                 }
-                let frame = responder.convert(responder.frame, to: view)
+                let frame = responder.convert(responder.bounds, to: view)
                 let offset = CGPoint(
                     x: scrollView.contentOffset.x,
                     y: max(scrollView.contentOffset.y, max(0, frame.maxY - keyboardFrame.minY + 20))
@@ -276,7 +285,7 @@ final class RecordFormViewController: UIViewController, View {
                 scrollView.setContentOffset(offset, animated: true)
             }
             .disposed(by: disposeBag)
-
+        
         placeTextField.rx.text.orEmpty
             .distinctUntilChanged()
             .map(Reactor.Action.setPlace)
