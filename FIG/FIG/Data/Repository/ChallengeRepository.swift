@@ -75,7 +75,6 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
         }
     }
     
-    
     func editChallenge(_ challenge: Challenge) -> Observable<Challenge> {
         let predicate = NSPredicate(format: "id == %@", challenge.id as CVarArg)
         
