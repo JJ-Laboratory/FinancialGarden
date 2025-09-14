@@ -407,9 +407,27 @@ final class RecordFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         reactor.state.map(\.recognizedTexts)
+            .distinctUntilChanged { $0 == $1 }
             .filter { !$0.isEmpty }
-            .subscribe { [weak self] texts in
-                self?.processRecognizedTexts(texts)
+            .subscribe { texts in
+                print("인식된 텍스트: \(texts)")
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.isParsingLoading)
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe { isLoading in
+                if isLoading {
+                    // TODO: indicator를 띄우든 alert 화면을 띄우든
+                    print("영수증 분석중...")
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.compactMap(\.parsingError)
+            .subscribe { [weak self] error in
+                self?.showParsingError(error)
             }
             .disposed(by: disposeBag)
     }
@@ -568,12 +586,24 @@ final class RecordFormViewController: UIViewController, View {
         return recognizedTexts
     }
     
-    private func processRecognizedTexts(_ texts: [String]) {
-        for text in texts {
-            print(text)
-        }
-        
-        // TODO: 여기서 데이터 처리, 현재는 디버그 출력만
+    private func showParsingSuccess() {
+        let alert = UIAlertController(
+            title: "🎉 영수증 인식 완료",
+            message: "AI가 영수증 정보를 자동으로 입력했습니다.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
+    
+    private func showParsingError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "파싱 실패",
+            message: "영수증 분석에 실패했습니다. 직접 입력해주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
 }
 
@@ -628,9 +658,10 @@ extension RecordFormViewController: VNDocumentCameraViewControllerDelegate {
                     return
                 }
                 
-                // 여러장 찍었을 경우 첫번째 사진만 처리
-                let firstImage = scan.imageOfPage(at: 0)
-                self.processImage(image: firstImage)
+                // 여러장 찍었을 경우 마지막 사진만 처리
+                let lastPageIndex = scan.pageCount - 1
+                let lastImage = scan.imageOfPage(at: lastPageIndex)
+                self.processImage(image: lastImage)
                 
                 DispatchQueue.main.async {
                     self.activityIndicator.stopAnimating()

@@ -9,7 +9,7 @@ import Foundation
 import FirebaseAI
 import OSLog
 
-struct ParsedReceipt: Codable {
+struct ParsedReceipt: Codable, Equatable {
     let category: String
     let amount: Int
     let place: String
