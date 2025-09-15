@@ -36,7 +36,6 @@ final class GardenRepository: GardenRepositoryInterface {
                 
                 return coreDataService.save()
                     .map { _ in
-                        self.logger.info("✅ 정원 기록 업데이트: 씨앗 \(entity.totalSeeds)개, 열매 \(entity.totalFruits)개")
                         return self.toModel(entity)
                     }
             }
@@ -48,7 +47,6 @@ final class GardenRepository: GardenRepositoryInterface {
                 guard let self = self else { return .error(CoreDataError.contextNotAvailable) }
                 
                 if let existingEntity = entities.first {
-                    logger.info("✅ 기존 정원 기록 Entity 로드")
                     return .just(existingEntity)
                 }
                 
