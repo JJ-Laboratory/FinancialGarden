@@ -30,8 +30,7 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
         updateEntity(entity, from: challenge)
         
         return coreDataService.save()
-            .map { [weak self] _ in
-                self?.logger.info("✅ 챌린지 저장 완료: \(challenge.category.title)")
+            .map { _ in
                 return challenge
             }
     }
@@ -43,9 +42,8 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
         )
         .map { [weak self] entities -> [Challenge] in
             guard let self = self else { return [] }
-            let challenges = entities.compactMap { self.toModel($0) }
-            logger.info("✅ 전체 챌린지 \(challenges.count)개 로드")
-            return challenges
+            
+            return entities.compactMap { self.toModel($0) }
         }
     }
     
@@ -94,7 +92,6 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
                 
                 return coreDataService.save()
                     .map { _ in
-                        self.logger.info("✅ 챌린지 수정 완료: \(challenge.category.title)")
                         return challenge
                     }
             }
@@ -115,9 +112,9 @@ final class ChallengeRepository: ChallengeRepositoryInterface {
                 }
                 
                 return coreDataService.delete(entity)
-                    .do(onNext: { _ in
+                    .do { _ in
                         self.logger.info("✅ 챌린지 삭제 완료: \(id)")
-                    })
+                    }
             }
     }
     
