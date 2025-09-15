@@ -94,7 +94,7 @@ final class RecordListViewController: UIViewController, View {
                 let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
                 picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
                 picker.maximumDate = Date()
-                 
+                
                 viewController.present(picker, animated: true)
                 return picker.rx.dateSelected.asObservable()
             }
@@ -136,7 +136,8 @@ final class RecordListViewController: UIViewController, View {
         }
         .disposed(by: disposeBag)
         
-        reactor.state.compactMap(\.error)
+        reactor.pulse(\.$error)
+            .compactMap { $0 }
             .subscribe { [weak self] error in
                 self?.showError(error)
             }

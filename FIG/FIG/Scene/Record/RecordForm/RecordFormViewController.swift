@@ -11,6 +11,8 @@ import Then
 import RxSwift
 import RxCocoa
 import ReactorKit
+import Vision
+import VisionKit
 import UITextViewPlaceholder
 
 final class RecordFormViewController: UIViewController, View {
@@ -19,7 +21,10 @@ final class RecordFormViewController: UIViewController, View {
     weak var coordinator: RecordCoordinator?
     var disposeBag = DisposeBag()
     
+    private var loadingPopup: LoadingPopupViewController?
     private var actualAmount: Int = 0
+    
+    var textRecognitionRequest = VNRecognizeTextRequest()
     
     // MARK: - UI Components
     
@@ -91,11 +96,22 @@ final class RecordFormViewController: UIViewController, View {
         $0.setTitle("저장", for: .normal)
     }
     
+    private let scanButton = CustomButton(style: .outline).then {
+        $0.setTitle("영수증 촬영", for: .normal)
+    }
+    
     private lazy var amountStackView = UIStackView(
         axis: .horizontal, alignment: .center, spacing: 10
     ) {
         wonIconImageView
         amountTextField
+    }
+    
+    private lazy var buttonStackView = UIStackView(
+        axis: .horizontal, distribution: .fillEqually, spacing: 20
+    ) {
+        scanButton
+        saveButton
     }
     
     private let scrollView = UIScrollView()
@@ -156,6 +172,7 @@ final class RecordFormViewController: UIViewController, View {
         setupUI()
         setupNavigationBar()
         setupTextFieldDelegates()
+        setupTextRecognition()
     }
     
     // MARK: - Setup UI
@@ -169,8 +186,8 @@ final class RecordFormViewController: UIViewController, View {
         
         view.addSubview(scrollView)
         scrollView.addSubview(contentStackView)
-        scrollView.addSubview(saveButton)
-
+        scrollView.addSubview(buttonStackView)
+        
         scrollView.snp.makeConstraints {
             $0.top.leading.trailing.equalTo(view.safeAreaLayoutGuide)
             $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
@@ -180,20 +197,20 @@ final class RecordFormViewController: UIViewController, View {
             $0.height.greaterThanOrEqualTo(scrollView.safeAreaLayoutGuide)
         }
         
+        memoTextView.snp.makeConstraints {
+            $0.height.greaterThanOrEqualTo(32)
+        }
+        
         contentStackView.snp.makeConstraints {
             $0.top.equalTo(scrollView.contentLayoutGuide).inset(16)
             $0.width.equalTo(scrollView.contentLayoutGuide)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
         }
         
-        saveButton.snp.makeConstraints {
+        buttonStackView.snp.makeConstraints {
             $0.top.greaterThanOrEqualTo(contentStackView.snp.bottom).offset(20)
             $0.leading.trailing.equalTo(scrollView.frameLayoutGuide).inset(20)
             $0.bottom.equalTo(scrollView.contentLayoutGuide).inset(16)
-        }
-        
-        memoTextView.snp.makeConstraints {
-            $0.height.greaterThanOrEqualTo(32)
         }
     }
     
@@ -249,17 +266,35 @@ final class RecordFormViewController: UIViewController, View {
         )
     }
     
+    private func setupTextRecognition() {
+        textRecognitionRequest = VNRecognizeTextRequest(completionHandler: { [weak self] (request, error) in
+            guard let self = self else { return }
+            
+            if let results = request.results, !results.isEmpty {
+                if let requestResults = request.results as? [VNRecognizedTextObservation] {
+                    let recognizedTexts = self.extractTextFromObservations(requestResults)
+                    DispatchQueue.main.async {
+                        self.reactor?.action.onNext(.scanCompleted(recognizedTexts))
+                    }
+                }
+            }
+        })
+        
+        textRecognitionRequest.recognitionLevel = .accurate
+        textRecognitionRequest.recognitionLanguages = ["ko-KR"]
+        textRecognitionRequest.usesLanguageCorrection = true
+    }
+    
     // MARK: - Bind
+    
     func bind(reactor: RecordFormReactor) {
         bindAction(reactor)
         bindState(reactor)
     }
     
     private func bindAction(_ reactor: RecordFormReactor) {
-        let keyboardWillShow = NotificationCenter.default.rx.notification(UIResponder.keyboardWillShowNotification)
-        let keyboardWillHide = NotificationCenter.default.rx.notification(UIResponder.keyboardWillHideNotification)
-        Observable
-            .merge(keyboardWillShow, keyboardWillHide)
+        NotificationCenter.default.rx
+            .notification(UIResponder.keyboardWillShowNotification)
             .compactMap(\.userInfo)
             .bind { [weak self] userInfo in
                 guard let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {
@@ -268,7 +303,7 @@ final class RecordFormViewController: UIViewController, View {
                 guard let self, let responder = view.findFirstResponder() as? UIView else {
                     return
                 }
-                let frame = responder.convert(responder.frame, to: view)
+                let frame = responder.convert(responder.bounds, to: view)
                 let offset = CGPoint(
                     x: scrollView.contentOffset.x,
                     y: max(scrollView.contentOffset.y, max(0, frame.maxY - keyboardFrame.minY + 20))
@@ -276,7 +311,7 @@ final class RecordFormViewController: UIViewController, View {
                 scrollView.setContentOffset(offset, animated: true)
             }
             .disposed(by: disposeBag)
-
+        
         placeTextField.rx.text.orEmpty
             .distinctUntilChanged()
             .map(Reactor.Action.setPlace)
@@ -293,6 +328,11 @@ final class RecordFormViewController: UIViewController, View {
             .map { Reactor.Action.save }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
+        
+        scanButton.rx.tap
+            .map { Reactor.Action.startScan }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
     }
     
     private func bindState(_ reactor: RecordFormReactor) {
@@ -301,10 +341,25 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: saveButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
+        reactor.state.map(\.amount)
+            .distinctUntilChanged()
+            .subscribe { [weak self] amount in
+                self?.setAmount(amount)
+            }
+            .disposed(by: disposeBag)
+        
         reactor.state.map(\.selectedCategory)
             .distinctUntilChanged { $0?.id == $1?.id }
             .map { $0?.title ?? "" }
             .bind(to: categoryLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.place)
+            .distinctUntilChanged()
+            .filter { !$0.isEmpty }
+            .subscribe { [weak self] place in
+                self?.placeTextField.text = place
+            }
             .disposed(by: disposeBag)
         
         reactor.state.map(\.selectedPayment)
@@ -319,7 +374,8 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: dateLabel.rx.text)
             .disposed(by: disposeBag)
         
-        reactor.state.compactMap(\.saveResult)
+        reactor.pulse(\.$saveResult)
+            .compactMap { $0 }
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
@@ -346,7 +402,8 @@ final class RecordFormViewController: UIViewController, View {
             }
             .disposed(by: disposeBag)
         
-        reactor.state.compactMap(\.deleteResult)
+        reactor.pulse(\.$deleteResult)
+            .compactMap { $0 }
             .observe(on: MainScheduler.instance)
             .subscribe { [weak self] result in
                 switch result {
@@ -355,6 +412,40 @@ final class RecordFormViewController: UIViewController, View {
                 case .failure(let error):
                     self?.showDeleteError(error)
                 }
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.shouldStartScan)
+            .distinctUntilChanged()
+            .filter { $0 }
+            .subscribe { [weak self] _ in
+                self?.presentDocumentScanner()
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$recognizedTexts)
+            .filter { !$0.isEmpty }
+            .subscribe { texts in
+                print("인식된 텍스트: \(texts)")
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.isParsingLoading)
+            .distinctUntilChanged()
+            .observe(on: MainScheduler.instance)
+            .subscribe { [weak self] isLoading in
+                if isLoading && self?.loadingPopup == nil {
+                    self?.showLoadingPopup()
+                } else {
+                    self?.hideLoadingPopup()
+                }
+            }
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$parsingError)
+            .compactMap { $0 }
+            .subscribe { [weak self] error in
+                self?.showParsingError(error)
             }
             .disposed(by: disposeBag)
     }
@@ -480,6 +571,65 @@ final class RecordFormViewController: UIViewController, View {
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
     }
+    
+    private func presentDocumentScanner() {
+        let documentCameraViewController = VNDocumentCameraViewController()
+        documentCameraViewController.delegate = self
+        present(documentCameraViewController, animated: true)
+    }
+    
+    private func processImage(image: UIImage) {
+        guard let cgImage = image.cgImage else {
+            print("Failed to get cgimage from input image")
+            return
+        }
+        
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        do {
+            try handler.perform([textRecognitionRequest])
+        } catch {
+            print("텍스트 인식 실패: \(error)")
+        }
+    }
+    
+    private func extractTextFromObservations(_ observations: [VNRecognizedTextObservation]) -> [String] {
+        var recognizedTexts: [String] = []
+        let maximumCandidates = 1
+        
+        for observation in observations {
+            guard let candidate = observation.topCandidates(maximumCandidates).first else { continue }
+            recognizedTexts.append(candidate.string)
+        }
+        
+        return recognizedTexts
+    }
+    
+    private func showLoadingPopup() {
+        guard loadingPopup == nil else { return }
+        
+        let popup = LoadingPopupViewController(
+            title: "영수증 읽는 중",
+            message: "화면을 벗어나지 말고 잠시만 기다려주세요"
+        )
+        
+        loadingPopup = popup
+        present(popup, animated: true)
+    }
+    
+    private func hideLoadingPopup() {
+        loadingPopup?.dismissWithAnimation()
+        loadingPopup = nil
+    }
+    
+    private func showParsingError(_ error: Error) {
+        let alert = UIAlertController(
+            title: "파싱 실패",
+            message: "영수증 분석에 실패했습니다. 직접 입력해주세요.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
 }
 
 extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
@@ -513,5 +663,40 @@ extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
                 textField.text = ""
             }
         }
+    }
+}
+
+extension RecordFormViewController: VNDocumentCameraViewControllerDelegate {
+    func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
+        
+        controller.dismiss(animated: true) {
+            self.showLoadingPopup()
+            
+            // 백그라운드에서 텍스트 인식
+            DispatchQueue.global(qos: .userInitiated).async {
+                
+                guard scan.pageCount > 0 else {
+                    DispatchQueue.main.async {
+                        self.hideLoadingPopup()
+                        print("스캔된 페이지가 없습니다.")
+                    }
+                    return
+                }
+                
+                // 여러장 찍었을 경우 마지막 사진만 처리
+                let lastPageIndex = scan.pageCount - 1
+                let lastImage = scan.imageOfPage(at: lastPageIndex)
+                self.processImage(image: lastImage)
+            }
+        }
+    }
+    
+    func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+        controller.dismiss(animated: true)
+    }
+    
+    func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
+        print("문서 스캔 실패: \(error.localizedDescription)")
+        controller.dismiss(animated: true)
     }
 }
