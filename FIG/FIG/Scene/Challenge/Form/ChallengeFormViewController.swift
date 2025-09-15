@@ -204,35 +204,18 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     private func bindAction(_ reactor: ChallengeFormReactor) {
-        weekButton.rx.tap
-            .map { .selectPeriod(.week) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
         
-        monthButton.rx.tap
-            .map { .selectPeriod(.month) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
+        [weekButton.rx.tap.map { .selectPeriod(.week) },
+         monthButton.rx.tap.map { .selectPeriod(.month) }]
+            .forEach { $0.bind(to: reactor.action).disposed(by: disposeBag) }
         
-        amount1.rx.tap
-            .map { .selectAmount(.zero) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        amount2.rx.tap
-            .map { .selectAmount(.one) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        amount3.rx.tap
-            .map { .selectAmount(.five) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        amount4.rx.tap
-            .map { .selectAmount(.ten) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
+        zip([amount1, amount2, amount3, amount4], [.zero, .one, .five, .ten])
+            .forEach { button, amount in
+                button.rx.tap
+                    .map { .selectAmount(amount) }
+                    .bind(to: reactor.action)
+                    .disposed(by: disposeBag)
+            }
         
         minusButton.rx.tap
             .map { .selectFruitCount(-1) }
@@ -240,8 +223,22 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         plusButton.rx.tap
-            .map { .selectFruitCount(1) }
+            .withLatestFrom(reactor.state.map(\.isSeedInsufficient))
+            .filter { !$0 }
+            .map { _ in .selectFruitCount(1) }
             .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        plusButton.rx.tap
+            .withLatestFrom(reactor.state.map(\.isSeedInsufficient))
+            .filter { $0 }
+            .withUnretained(self)
+            .subscribe(onNext: { vc, _ in
+                vc.showAlert(
+                    title: "씨앗이 모자라요!",
+                    message: "- 일주일 챌린지 : 씨앗 5개 필요\n- 한 달 챌린지 : 씨앗 3개 필요\n가계부 내역을 등록하면 씨앗을 모을 수 있어요!"
+                )
+            })
             .disposed(by: disposeBag)
         
         createButton.rx.tap
@@ -250,18 +247,17 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         deleteButton.rx.tap
-            .subscribe { [weak self] in
-                guard let self else { return }
-                let alert = UIAlertController(title: "삭제 확인", message: "정말로 삭제하시겠습니까?", preferredStyle: .alert)
-                let confirm = UIAlertAction(title: "삭제", style: .destructive) { _ in
-                    reactor.action.onNext(.deleteButtonTapped)
-                }
-                let cancel = UIAlertAction(title: "취소", style: .cancel, handler: nil)
-                
-                alert.addAction(confirm)
-                alert.addAction(cancel)
-                present(alert, animated: true, completion: nil)
-            }
+            .subscribe(onNext: { [weak self] in
+                self?.showAlert(
+                    title: "삭제 확인",
+                    message: "이 챌린지를 삭제하시겠습니까?",
+                    actions: [
+                        UIAlertAction(title: "취소", style: .cancel),
+                        UIAlertAction(title: "삭제", style: .destructive) { _ in reactor.action.onNext(.deleteButtonTapped)
+                        }
+                    ]
+                )
+            })
             .disposed(by: disposeBag)
     }
     
@@ -365,7 +361,7 @@ final class ChallengeFormViewController: UIViewController, View {
     
     private func presentCategoryPicker() {
         guard let reactor = reactor else { return }
-        let picker = ItemPickerController<Category>.allCategoriesPicker()
+        let picker = ItemPickerController<Category>.categoriesByTypePicker(type: .expense)
         picker.itemSelected = { category in
             reactor.action.onNext(.selectCategory(category))
         }
@@ -373,11 +369,14 @@ final class ChallengeFormViewController: UIViewController, View {
         present(picker, animated: true)
     }
     
-    private func showAlert(message: String) {
-            let alert = UIAlertController(title: "알림", message: message, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "확인", style: .default)
-            alert.addAction(okAction)
-            present(alert, animated: true)
-        }
+    private func showAlert(
+        title: String = "알림",
+        message: String,
+        actions: [UIAlertAction] = [UIAlertAction(title: "확인", style: .default)]
+    ) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        actions.forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
 }
 

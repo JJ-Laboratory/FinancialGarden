@@ -65,7 +65,7 @@ class ChallengeFormReactor: Reactor {
         }
         var infoLabelText: String {
             if isSeedInsufficient {
-                return "현재 사용 가능한 씨앗(\(currentSeedCount)개)이 부족해요.\n가계부 내역을 등록하고 씨앗을 모아보세요!"
+                return "현재 사용 가능한 씨앗이 부족해요.\n가계부 내역을 등록하고 씨앗을 모아보세요!"
             } else {
                 return "현재 사용 가능한 씨앗: \(currentSeedCount)개\n열매 1개당 필요 씨앗: 일주일 5개 / 한달 3개"
             }

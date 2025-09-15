@@ -14,6 +14,7 @@ import ReactorKit
 import Vision
 import VisionKit
 import UITextViewPlaceholder
+import Toast
 
 final class RecordFormViewController: UIViewController, View {
     
@@ -379,9 +380,14 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
+                    let isEditMode = reactor.currentState.isEditMode
+                    if !isEditMode {
+                        self?.showSeedLostToast()
+                    }
                     self?.coordinator?.popRecordForm()
                 case .failure(let error):
                     print("저장실패: \(error.localizedDescription)")
+                    self?.showErrorToast(message: "저장에 실패했습니다")
                 }
             }
             .disposed(by: disposeBag)
@@ -404,13 +410,16 @@ final class RecordFormViewController: UIViewController, View {
         
         reactor.pulse(\.$deleteResult)
             .compactMap { $0 }
-            .observe(on: MainScheduler.instance)
+//            .observe(on: MainScheduler.instance)
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
+                    self?.showSeedLostToast()
                     self?.coordinator?.popRecordForm()
                 case .failure(let error):
-                    self?.showDeleteError(error)
+//                    self?.showDeleteError(error)
+                    print("저장실패: \(error.localizedDescription)")
+                    self?.showErrorToast(message: "삭제에 실패했습니다")
                 }
             }
             .disposed(by: disposeBag)
@@ -562,15 +571,15 @@ final class RecordFormViewController: UIViewController, View {
         present(picker, animated: true)
     }
     
-    private func showDeleteError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "삭제 실패",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
-    }
+//    private func showDeleteError(_ error: Error) {
+//        let alert = UIAlertController(
+//            title: "삭제 실패",
+//            message: error.localizedDescription,
+//            preferredStyle: .alert
+//        )
+//        alert.addAction(UIAlertAction(title: "확인", style: .default))
+//        present(alert, animated: true)
+//    }
     
     private func presentDocumentScanner() {
         let documentCameraViewController = VNDocumentCameraViewController()
@@ -629,6 +638,59 @@ final class RecordFormViewController: UIViewController, View {
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
+    }
+    
+    private func showSeedEarnedToast() {
+        var style = ToastStyle()
+        style.messageColor = .white
+        style.backgroundColor = .systemGreen
+        style.cornerRadius = 12
+        style.messageFont = .preferredFont(forTextStyle: .body).withWeight(.semibold)
+        style.fadeDuration = 0.3
+
+        style.imageSize = CGSize(width: 24, height: 24)
+        
+        let message = "씨앗 +1 적립"
+        let image = UIImage(named: "level0")
+        
+        view.makeToast(
+            message,
+            duration: 2.5,
+            image: image,
+            style: style
+        )
+    }
+
+    private func showSeedLostToast() {
+        var style = ToastStyle()
+        style.messageColor = .white
+        style.backgroundColor = .systemRed
+        style.cornerRadius = 12
+        style.messageFont = .preferredFont(forTextStyle: .body).withWeight(.semibold)
+        style.fadeDuration = 0.3
+        
+        let message = "💔 씨앗 -1 차감"
+        
+        view.makeToast(
+            message,
+            duration: 2.5,
+            style: style
+        )
+    }
+
+    private func showErrorToast(message: String) {
+        var style = ToastStyle()
+        style.messageColor = .white
+        style.backgroundColor = .systemRed
+        style.cornerRadius = 8
+        style.messageFont = .preferredFont(forTextStyle: .body).withWeight(.medium)
+        
+        view.makeToast(
+            message,
+            duration: 2.0,
+            position: .center,
+            style: style
+        )
     }
 }
 
