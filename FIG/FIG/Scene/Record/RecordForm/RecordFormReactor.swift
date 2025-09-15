@@ -38,6 +38,9 @@ final class RecordFormReactor: Reactor {
         case setDeleteResult(Result<Void, Error>)
         case setRecognizedTexts([String])
         case setScanStarted(Bool)
+        case setParsingError(Error)
+        case setIsParsingLoading(Bool)
+        case applyAllParsedData(ParsedReceipt)
     }
     
     struct State {
@@ -48,11 +51,13 @@ final class RecordFormReactor: Reactor {
         var selectedDate: Date = Date()
         var memo: String = ""
         var editingRecord: Transaction?
-        var saveResult: Result<Transaction, Error>?
+        @Pulse var saveResult: Result<Transaction, Error>?
         var isSaveEnabled: Bool = false
-        var deleteResult: Result<Void, Error>?
-        var recognizedTexts: [String] = []
+        @Pulse var deleteResult: Result<Void, Error>?
+        @Pulse var recognizedTexts: [String] = []
         var shouldStartScan: Bool = false
+        @Pulse var parsingError: Error?
+        var isParsingLoading: Bool = false
         
         var isEditMode: Bool {
             return editingRecord != nil
@@ -101,7 +106,10 @@ final class RecordFormReactor: Reactor {
         case .startScan:
             return Observable.just(.setScanStarted(true))
         case .scanCompleted(let texts):
-            return Observable.just(.setRecognizedTexts(texts))
+            return Observable.concat([
+                Observable.just(.setRecognizedTexts(texts)),
+                parseReceiptWithAI(texts)
+            ])
         }
     }
     
@@ -132,10 +140,25 @@ final class RecordFormReactor: Reactor {
             newState.shouldStartScan = false
         case .setScanStarted(let shouldStart):
             newState.shouldStartScan = shouldStart
+        case .setParsingError(let error):
+            newState.parsingError = error
+            newState.isParsingLoading = false
+        case .setIsParsingLoading(let isLoading):
+            newState.isParsingLoading = isLoading
+        case .applyAllParsedData(let parsedReceipt):
+            let (category, payment, date) = parsedReceipt.toTransaction()
+            
+            newState.amount = parsedReceipt.amount
+            newState.place = parsedReceipt.place
+            newState.selectedCategory = category
+            newState.selectedPayment = payment
+            if let date = date {
+                newState.selectedDate = date
+            }
+            newState.isParsingLoading = false
         }
         
         newState.isSaveEnabled = calculateSaveEnabled(newState)
-        
         return newState
     }
 }
@@ -205,10 +228,10 @@ extension RecordFormReactor {
     }
     
     private func calculateSaveEnabled(_ state: State) -> Bool {
-
+        
         let hasRequiredFields = state.amount > 0 &&
-                               state.selectedCategory != nil &&
-                               state.selectedPayment != nil
+        state.selectedCategory != nil &&
+        state.selectedPayment != nil
         
         guard hasRequiredFields else { return false }
         
@@ -234,8 +257,8 @@ extension RecordFormReactor {
         
         // 거래처 변경
         let currentTitle = currentState.place.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? (currentState.selectedCategory?.title ?? "")
-            : currentState.place.trimmingCharacters(in: .whitespacesAndNewlines)
+        ? (currentState.selectedCategory?.title ?? "")
+        : currentState.place.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if currentTitle != originalRecord.title {
             return true
@@ -276,5 +299,34 @@ extension RecordFormReactor {
             .catch { error in
                 Observable.just(.setDeleteResult(.failure(error)))
             }
+    }
+}
+
+extension RecordFormReactor {
+    private func parseReceiptWithAI(_ texts: [String]) -> Observable<Mutation> {
+        return Observable.concat([
+            Observable.just(.setIsParsingLoading(true)),
+            Observable.create { observer in
+                Task {
+                    do {
+                        let optionalParsedReceipt = try await AIReceiptParser.shared.parseReceipt(texts) // AIReceiptParser.shared.rx.parseReceipt
+                        
+                        guard let parsedReceipt = optionalParsedReceipt else {
+                            observer.onNext(.setParsingError(AIParsingError.noDataFound))
+                            observer.onCompleted()
+                            return
+                        }
+                        
+                        observer.onNext(.applyAllParsedData(parsedReceipt))
+                        observer.onCompleted()
+                    } catch {
+                        observer.onNext(.setParsingError(error))
+                        observer.onCompleted()
+                    }
+                }
+                return Disposables.create()
+            }
+                .observe(on: MainScheduler.instance)
+        ])
     }
 }

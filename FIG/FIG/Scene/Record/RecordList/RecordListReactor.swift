@@ -15,7 +15,6 @@ final class RecordListReactor: Reactor {
         case viewDidLoad
         case selectMonth(Date)
         case refresh
-//        case recordSelected(Transaction)
     }
     
     enum Mutation {
@@ -29,10 +28,7 @@ final class RecordListReactor: Reactor {
         var selectedMonth = Date()
         var recordGroups: [RecordGroup] = []
         var monthlySummary = MonthlySummary(expense: 0, income: 0, hasRecords: false)
-        var error: Error?
-        
-//        var monthlyExpense: Int { monthlySummary.expense }
-//        var monthlyIncome: Int { monthlySummary.income }
+        @Pulse var error: Error?
     }
     
     struct RecordGroup {
@@ -76,8 +72,6 @@ final class RecordListReactor: Reactor {
             ])
         case .refresh:
             return loadMonthData(currentState.selectedMonth)
-//        case .recordSelected(_):
-//            return Observable.empty()
         }
     }
     
@@ -98,7 +92,7 @@ final class RecordListReactor: Reactor {
         return newState
     }
     
-    // MARK: - Private Methods (단순화)
+    // MARK: - Private Methods
     
     private func loadCurrentMonthData() -> Observable<Mutation> {
         let currentMonth = Date()
@@ -127,14 +121,14 @@ final class RecordListReactor: Reactor {
                     .setMonthlySummary(summary)
                 ]
             }
-            .flatMap { Observable.from($0) }
-            .catch { error in
-                Observable.from([
-                    .setError(error),
-                    .setRecordGroups([]),
-                    .setMonthlySummary(MonthlySummary(expense: 0, income: 0, hasRecords: false))
-                ])
-            }
+                .flatMap { Observable.from($0) }
+                .catch { error in
+                    Observable.from([
+                        .setError(error),
+                        .setRecordGroups([]),
+                        .setMonthlySummary(MonthlySummary(expense: 0, income: 0, hasRecords: false))
+                    ])
+                }
         ])
     }
     
