@@ -21,7 +21,7 @@ final class RecordFormViewController: UIViewController, View {
     weak var coordinator: RecordCoordinator?
     var disposeBag = DisposeBag()
     
-    private let activityIndicator = UIActivityIndicatorView(style: .large)
+    private var loadingPopup: LoadingPopupViewController?
     private var actualAmount: Int = 0
     
     var textRecognitionRequest = VNRecognizeTextRequest()
@@ -341,10 +341,25 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: saveButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
+        reactor.state.map(\.amount)
+            .distinctUntilChanged()
+            .subscribe { [weak self] amount in
+                self?.setAmount(amount)
+            }
+            .disposed(by: disposeBag)
+        
         reactor.state.map(\.selectedCategory)
             .distinctUntilChanged { $0?.id == $1?.id }
             .map { $0?.title ?? "" }
             .bind(to: categoryLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state.map(\.place)
+            .distinctUntilChanged()
+            .filter { !$0.isEmpty }
+            .subscribe { [weak self] place in
+                self?.placeTextField.text = place
+            }
             .disposed(by: disposeBag)
         
         reactor.state.map(\.selectedPayment)
@@ -359,7 +374,8 @@ final class RecordFormViewController: UIViewController, View {
             .bind(to: dateLabel.rx.text)
             .disposed(by: disposeBag)
         
-        reactor.state.compactMap(\.saveResult)
+        reactor.pulse(\.$saveResult)
+            .compactMap { $0 }
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
@@ -386,7 +402,8 @@ final class RecordFormViewController: UIViewController, View {
             }
             .disposed(by: disposeBag)
         
-        reactor.state.compactMap(\.deleteResult)
+        reactor.pulse(\.$deleteResult)
+            .compactMap { $0 }
             .observe(on: MainScheduler.instance)
             .subscribe { [weak self] result in
                 switch result {
@@ -406,8 +423,7 @@ final class RecordFormViewController: UIViewController, View {
             }
             .disposed(by: disposeBag)
         
-        reactor.state.map(\.recognizedTexts)
-            .distinctUntilChanged { $0 == $1 }
+        reactor.pulse(\.$recognizedTexts)
             .filter { !$0.isEmpty }
             .subscribe { texts in
                 print("인식된 텍스트: \(texts)")
@@ -417,15 +433,17 @@ final class RecordFormViewController: UIViewController, View {
         reactor.state.map(\.isParsingLoading)
             .distinctUntilChanged()
             .observe(on: MainScheduler.instance)
-            .subscribe { isLoading in
-                if isLoading {
-                    // TODO: indicator를 띄우든 alert 화면을 띄우든
-                    print("영수증 분석중...")
+            .subscribe { [weak self] isLoading in
+                if isLoading && self?.loadingPopup == nil {
+                    self?.showLoadingPopup()
+                } else {
+                    self?.hideLoadingPopup()
                 }
             }
             .disposed(by: disposeBag)
         
-        reactor.state.compactMap(\.parsingError)
+        reactor.pulse(\.$parsingError)
+            .compactMap { $0 }
             .subscribe { [weak self] error in
                 self?.showParsingError(error)
             }
@@ -586,14 +604,21 @@ final class RecordFormViewController: UIViewController, View {
         return recognizedTexts
     }
     
-    private func showParsingSuccess() {
-        let alert = UIAlertController(
-            title: "🎉 영수증 인식 완료",
-            message: "AI가 영수증 정보를 자동으로 입력했습니다.",
-            preferredStyle: .alert
+    private func showLoadingPopup() {
+        guard loadingPopup == nil else { return }
+        
+        let popup = LoadingPopupViewController(
+            title: "영수증 읽는 중",
+            message: "화면을 벗어나지 말고 잠시만 기다려주세요"
         )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
+        
+        loadingPopup = popup
+        present(popup, animated: true)
+    }
+    
+    private func hideLoadingPopup() {
+        loadingPopup?.dismissWithAnimation()
+        loadingPopup = nil
     }
     
     private func showParsingError(_ error: Error) {
@@ -644,15 +669,15 @@ extension RecordFormViewController: UITextFieldDelegate, UITextViewDelegate {
 extension RecordFormViewController: VNDocumentCameraViewControllerDelegate {
     func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
         
-        activityIndicator.startAnimating()
-        
         controller.dismiss(animated: true) {
+            self.showLoadingPopup()
+            
             // 백그라운드에서 텍스트 인식
             DispatchQueue.global(qos: .userInitiated).async {
                 
                 guard scan.pageCount > 0 else {
                     DispatchQueue.main.async {
-                        self.activityIndicator.stopAnimating()
+                        self.hideLoadingPopup()
                         print("스캔된 페이지가 없습니다.")
                     }
                     return
@@ -662,10 +687,6 @@ extension RecordFormViewController: VNDocumentCameraViewControllerDelegate {
                 let lastPageIndex = scan.pageCount - 1
                 let lastImage = scan.imageOfPage(at: lastPageIndex)
                 self.processImage(image: lastImage)
-                
-                DispatchQueue.main.async {
-                    self.activityIndicator.stopAnimating()
-                }
             }
         }
     }

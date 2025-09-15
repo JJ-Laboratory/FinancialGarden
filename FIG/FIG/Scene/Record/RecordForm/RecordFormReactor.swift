@@ -51,12 +51,12 @@ final class RecordFormReactor: Reactor {
         var selectedDate: Date = Date()
         var memo: String = ""
         var editingRecord: Transaction?
-        var saveResult: Result<Transaction, Error>?
+        @Pulse var saveResult: Result<Transaction, Error>?
         var isSaveEnabled: Bool = false
-        var deleteResult: Result<Void, Error>?
-        var recognizedTexts: [String] = []
+        @Pulse var deleteResult: Result<Void, Error>?
+        @Pulse var recognizedTexts: [String] = []
         var shouldStartScan: Bool = false
-        var parsingError: Error?
+        @Pulse var parsingError: Error?
         var isParsingLoading: Bool = false
         
         var isEditMode: Bool {
@@ -140,7 +140,6 @@ final class RecordFormReactor: Reactor {
             newState.shouldStartScan = false
         case .setScanStarted(let shouldStart):
             newState.shouldStartScan = shouldStart
-            newState.isParsingLoading = false
         case .setParsingError(let error):
             newState.parsingError = error
             newState.isParsingLoading = false
@@ -157,7 +156,6 @@ final class RecordFormReactor: Reactor {
                 newState.selectedDate = date
             }
             newState.isParsingLoading = false
-            newState.recognizedTexts = []
         }
         
         newState.isSaveEnabled = calculateSaveEnabled(newState)
@@ -311,7 +309,7 @@ extension RecordFormReactor {
             Observable.create { observer in
                 Task {
                     do {
-                        let optionalParsedReceipt = try await AIReceiptParser.shared.parseReceipt(texts)
+                        let optionalParsedReceipt = try await AIReceiptParser.shared.parseReceipt(texts) // AIReceiptParser.shared.rx.parseReceipt
                         
                         guard let parsedReceipt = optionalParsedReceipt else {
                             observer.onNext(.setParsingError(AIParsingError.noDataFound))
@@ -328,7 +326,7 @@ extension RecordFormReactor {
                 }
                 return Disposables.create()
             }
-            .observe(on: MainScheduler.instance)
+                .observe(on: MainScheduler.instance)
         ])
     }
 }
