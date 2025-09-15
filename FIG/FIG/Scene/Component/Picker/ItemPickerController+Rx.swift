@@ -89,6 +89,21 @@ extension ItemPickerController where Item == Category {
             contentHeight: contentHeight
         )
     }
+    
+    static func categoriesByTypePicker(
+        selectedCategory: Category? = nil,
+        contentHeight: CGFloat = 500,
+        type: TransactionType
+    ) -> ItemPickerController<Category> {
+        let categoriesByType = CategoryService.shared.fetchCategoriesByType(type)
+        
+        return ItemPickerController(
+            title: "카테고리 선택",
+            categories: categoriesByType,
+            selectedCategory: selectedCategory,
+            contentHeight: contentHeight
+        )
+    }
 }
 
 // MARK: - ItemPickerController PaymentMethod
