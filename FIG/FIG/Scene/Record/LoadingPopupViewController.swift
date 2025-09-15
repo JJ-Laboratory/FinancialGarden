@@ -1,5 +1,5 @@
 //
-//  LoadingAlertController.swift
+//  LoadingPopupViewController.swift
 //  FIG
 //
 //  Created by Milou on 9/15/25.
