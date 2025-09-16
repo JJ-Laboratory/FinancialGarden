@@ -14,6 +14,7 @@ import ReactorKit
 import Vision
 import VisionKit
 import UITextViewPlaceholder
+import Toast
 
 final class RecordFormViewController: UIViewController, View {
     
@@ -379,8 +380,18 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
+                    let isEditMode = reactor.currentState.isEditMode
+                    if !isEditMode {
+                        let toast = Toast.default(
+                            image: UIImage(named: "seed")!,
+                            title: "씨앗이 +1 적립되었어요",
+                        )
+                        toast.show()
+                    }
                     self?.coordinator?.popRecordForm()
                 case .failure(let error):
+                    let toast = Toast.text("삭제에 실패했습니다")
+                    toast.show()
                     print("저장실패: \(error.localizedDescription)")
                 }
             }
@@ -408,9 +419,13 @@ final class RecordFormViewController: UIViewController, View {
             .subscribe { [weak self] result in
                 switch result {
                 case .success:
+                    let toast = Toast.text("💔    씨앗이 -1 차감되었어요")
+                    toast.show()
                     self?.coordinator?.popRecordForm()
                 case .failure(let error):
-                    self?.showDeleteError(error)
+                    let toast = Toast.text("삭제에 실패했습니다")
+                    toast.show()
+                    print("저장실패: \(error.localizedDescription)")
                 }
             }
             .disposed(by: disposeBag)
@@ -560,16 +575,6 @@ final class RecordFormViewController: UIViewController, View {
         }
         
         present(picker, animated: true)
-    }
-    
-    private func showDeleteError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "삭제 실패",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
     }
     
     private func presentDocumentScanner() {

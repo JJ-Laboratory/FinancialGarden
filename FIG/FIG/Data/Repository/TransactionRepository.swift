@@ -35,7 +35,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
             let entity = TransactionEntity(context: context)
             
             entity.id = transaction.id
-            entity.amount = Int32(transaction.amount)
+            entity.amount = Int64(transaction.amount) // Thread 1: Fatal error: Not enough bits to represent the passed value
             entity.title = transaction.title
             entity.paymentMethod = transaction.payment.rawValue
             entity.categoryID = transaction.category.id
@@ -125,7 +125,7 @@ final class TransactionRepository: TransactionRepositoryInterface {
                     return Observable.error(CoreDataError.entityNotFound)
                 }
                 
-                entity.amount = Int32(transaction.amount)
+                entity.amount = Int64(transaction.amount)
                 entity.title = transaction.title
                 entity.paymentMethod = transaction.payment.rawValue
                 entity.categoryID = transaction.category.id
