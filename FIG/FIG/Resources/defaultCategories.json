@@ -1,12 +1,6 @@
 {
     "categories": [
         {
-            "id": "00000000-0000-0000-0000-000000000000",
-            "title": "급여(수입)",
-            "iconName": "wonsign.arrow.trianglehead.counterclockwise.rotate.90",
-            "transactionType": "income"
-        },
-        {
             "id": "00000000-0000-0000-0000-000000000001",
             "title": "식비",
             "iconName": "fork.knife",
@@ -131,6 +125,18 @@
             "title": "후불결제대금",
             "iconName": "clock.arrow.circlepath",
             "transactionType": "expense"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000022",
+            "title": "급여(수입)",
+            "iconName": "wonsign.arrow.trianglehead.counterclockwise.rotate.90",
+            "transactionType": "income"
+        },
+        {
+            "id": "00000000-0000-0000-0000-000000000023",
+            "title": "기타 수입",
+            "iconName": "plus.circle",
+            "transactionType": "income"
         }
     ]
 }
