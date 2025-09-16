@@ -40,6 +40,12 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
         )
     }()
     
+    private lazy var mbtiResultRepository: MBTIResultRepositoryInterface = {
+        MBTIResultRepository(
+            coreDataService: .shared
+        )
+    }()
+    
     private lazy var recordUseCase = RecordUseCase(
         transactionRepository: transactionRepository
     )
@@ -100,12 +106,19 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
         return ChartViewController(reactor: reactor)
     }
     
-    
     func makeAnalysisViewController() -> AnalysisViewController {
-        return AnalysisViewController()
+        let reactor = AnalysisReactor(
+            mbtiResultRepository: mbtiResultRepository,
+            gardenRepository: gardenRepository,
+            transactionRepository: transactionRepository
+        )
+        return AnalysisViewController(reactor: reactor)
     }
     
     func makeAnalysisResultViewController() -> AnalysisResultViewController {
-        return AnalysisResultViewController()
+        let reactor = AnalysisResultReactor(
+            mbtiResultRepository: mbtiResultRepository
+        )
+        return AnalysisResultViewController(reactor: reactor)
     }
 }
