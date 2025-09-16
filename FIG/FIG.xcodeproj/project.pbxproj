@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B54E25932E7835D900575011 /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = B54E25922E7835D900575011 /* Toast */; };
 		B57F87392E73A51B004A897D /* UITextViewPlaceholder in Frameworks */ = {isa = PBXBuildFile; productRef = B57F87382E73A51B004A897D /* UITextViewPlaceholder */; };
 		B57F90D62E7546A1004A897D /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = B57F90D52E7546A1004A897D /* FirebaseAI */; };
 		B5983F9F2E54473C00DEB52A /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = B5983F9E2E54473C00DEB52A /* RxCocoa */; };
@@ -51,6 +52,7 @@
 				B5FF75332E5DBFA200298146 /* Then in Frameworks */,
 				B5983FA12E54473C00DEB52A /* RxSwift in Frameworks */,
 				B5983FA72E54475700DEB52A /* SnapKit in Frameworks */,
+				B54E25932E7835D900575011 /* Toast in Frameworks */,
 				B5983FA42E54474A00DEB52A /* ReactorKit in Frameworks */,
 				B5FF78652E5FF07E00298146 /* RxGesture in Frameworks */,
 				B57F90D62E7546A1004A897D /* FirebaseAI in Frameworks */,
@@ -108,6 +110,7 @@
 				B5FF78642E5FF07E00298146 /* RxGesture */,
 				B57F87382E73A51B004A897D /* UITextViewPlaceholder */,
 				B57F90D52E7546A1004A897D /* FirebaseAI */,
+				B54E25922E7835D900575011 /* Toast */,
 			);
 			productName = FIG;
 			productReference = B5983F812E5445DD00DEB52A /* FIG.app */;
@@ -147,6 +150,7 @@
 				B5FF78632E5FF07E00298146 /* XCRemoteSwiftPackageReference "RxGesture" */,
 				B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */,
 				B57F90D42E7546A1004A897D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B54E25912E7835D900575011 /* XCRemoteSwiftPackageReference "toast-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5983F822E5445DD00DEB52A /* Products */;
@@ -423,6 +427,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B54E25912E7835D900575011 /* XCRemoteSwiftPackageReference "toast-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/BastiaanJansen/toast-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.3;
+			};
+		};
 		B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Jaesung-Jung/UITextView-Placeholder.git";
@@ -482,6 +494,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B54E25922E7835D900575011 /* Toast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B54E25912E7835D900575011 /* XCRemoteSwiftPackageReference "toast-swift" */;
+			productName = Toast;
+		};
 		B57F87382E73A51B004A897D /* UITextViewPlaceholder */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */;
