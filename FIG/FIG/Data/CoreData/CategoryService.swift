@@ -50,7 +50,12 @@ final class CategoryService {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             let response = try decoder.decode(CategoryResponse.self, from: data)
-            self.categories = response.categories
+            let decodedCategories = response.categories
+            
+            let incomeCategories = decodedCategories.filter { $0.transactionType == .income }
+            let expenseCategories = decodedCategories.filter { $0.transactionType == .expense }
+            
+            self.categories = incomeCategories + expenseCategories
             self.categoryDict = Dictionary(uniqueKeysWithValues: categories.map { ($0.id, $0) })
         } catch {
             logger.error("❌ defaultCategories json parsing 실패: \(error)")
