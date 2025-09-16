@@ -8,10 +8,12 @@
 import UIKit
 import Then
 import SnapKit
+import ReactorKit
 
-final class AnalysisResultViewController: UIViewController {
+final class AnalysisResultViewController: UIViewController, View {
     
     weak var coordinator: ChartCoordinator?
+    var disposeBag = DisposeBag()
     
     private let subtitleLabel = UILabel().then {
         $0.numberOfLines = 0
@@ -22,7 +24,6 @@ final class AnalysisResultViewController: UIViewController {
     
     private let mbtiLabel = UILabel().then {
         $0.textColor = .charcoal
-        $0.text = "ISFJ"
         $0.font = .preferredFont(forTextStyle: .largeTitle).withWeight(.semibold)
     }
     
@@ -32,7 +33,6 @@ final class AnalysisResultViewController: UIViewController {
     
     private let subMbtiLabel = UILabel().then {
         $0.textColor = .gray1
-        $0.text = "성인군자형"
         $0.font = .preferredFont(forTextStyle: .title2)
     }
     
@@ -47,19 +47,19 @@ final class AnalysisResultViewController: UIViewController {
         $0.image = UIImage(named: "success")
     }
     
-    private lazy var featureTitleLabel = createTitleLabel(text: "소비 특징")
-    private lazy var featureContentLabel = createContentLabel()
-    private lazy var habitTitleLabel = createTitleLabel(text: "추천 습관")
-    private lazy var habitContentLabel = createContentLabel()
+    private lazy var descriptionTitleLabel = createTitleLabel(text: "소비 특징")
+    private lazy var descriptionContentLabel = createContentLabel()
+    private lazy var recommendTitleLabel = createTitleLabel(text: "추천 습관")
+    private lazy var recommendContentLabel = createContentLabel()
     
     private lazy var contentsStackView = UIStackView(axis: .vertical, alignment: .leading, spacing: 40) {
         UIStackView(axis: .vertical, alignment: .leading, spacing: 8) {
-            featureTitleLabel
-            featureContentLabel
+            descriptionTitleLabel
+            descriptionContentLabel
         }
         UIStackView(axis: .vertical, alignment: .leading, spacing: 8) {
-            habitTitleLabel
-            habitContentLabel
+            recommendTitleLabel
+            recommendContentLabel
         }
     }
     
@@ -67,6 +67,20 @@ final class AnalysisResultViewController: UIViewController {
         $0.backgroundColor = .white
         $0.layer.cornerRadius = 10
         $0.layer.masksToBounds = true
+    }
+    
+    init(reactor: AnalysisResultReactor) {
+        super.init(nibName: nil, bundle: nil)
+        self.reactor = reactor
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        reactor?.action.onNext(.viewDidLoad)
     }
     
     override func viewDidLoad() {
@@ -91,7 +105,7 @@ final class AnalysisResultViewController: UIViewController {
         cardView.addSubview(contentsStackView)
         
         labelStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(60)
+            $0.top.equalTo(view.safeAreaLayoutGuide).inset(40)
             $0.leading.trailing.equalToSuperview().inset(42)
         }
         
@@ -119,6 +133,32 @@ final class AnalysisResultViewController: UIViewController {
         }
     }
     
+    func bind(reactor: AnalysisResultReactor) {
+        let resultDriver = reactor.state
+            .compactMap(\.analysisResult)
+            .asDriver(onErrorDriveWith: .empty())
+        
+        resultDriver
+            .map(\.mbti)
+            .drive(mbtiLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        resultDriver
+            .map(\.title)
+            .drive(subMbtiLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        resultDriver
+            .map(\.description)
+            .drive(descriptionContentLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        resultDriver
+            .map(\.recommend)
+            .drive(recommendContentLabel.rx.text)
+            .disposed(by: disposeBag)
+    }
+    
     @objc private func backButtonTapped() {
         coordinator?.popAnalysis()
     }
@@ -133,7 +173,7 @@ final class AnalysisResultViewController: UIViewController {
     
     private func createContentLabel() -> UILabel {
         UILabel().then {
-            $0.text = "sample~~~"
+            $0.numberOfLines = 0
             $0.textColor = .gray1
             $0.font = .preferredFont(forTextStyle: .body)
         }
