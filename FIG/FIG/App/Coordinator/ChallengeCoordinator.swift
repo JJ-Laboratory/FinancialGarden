@@ -48,7 +48,18 @@ final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
         navigationController.pushViewController(challengeDetailVC, animated: true)
     }
     
+    func pushChallengeEdit(result: MBTIResult) {
+        let challengeDetailVC = viewControllerFactory.makeChallengeFormViewController(mode: .edit(result))
+        challengeDetailVC.coordinator = self
+        challengeDetailVC.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(challengeDetailVC, animated: true)
+    }
+    
     func popChallengeForm() {
         navigationController.popViewController(animated: true)
+    }
+    
+    func navigateToChallengeList(){
+        (parentCoordinator as? ChartCoordinator)?.navigateToChallengeList()
     }
 }

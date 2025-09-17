@@ -21,11 +21,14 @@ protocol RecordCoordinatorProtocol: AnyObject {
 protocol ChallengeCoordinatorProtocol: AnyObject {
     func pushChallengeForm()
     func pushChallengeDetail(challenge: Challenge)
+    func pushChallengeEdit(result: MBTIResult)
     func popChallengeForm()
+    func navigateToChallengeList()
 }
 
 protocol ChartCoordinatorProtocol: AnyObject {
     func pushAnalysis()
     func popAnalysis()
     func pushAnalysisResult()
+    func navigateToChallengeList()
 }

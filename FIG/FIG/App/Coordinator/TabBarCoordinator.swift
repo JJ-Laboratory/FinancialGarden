@@ -60,6 +60,7 @@ final class TabBarCoordinator: Coordinator {
             navigationController: challengeNavController,
             viewControllerFactory: viewControllerFactory
         )
+        challengeCoordinator.parentCoordinator = self
         addChildCoordinator(challengeCoordinator)
         challengeCoordinator.start()
         challengeNavController.tabBarItem = UITabBarItem(
@@ -74,6 +75,7 @@ final class TabBarCoordinator: Coordinator {
             navigationController: chartNavController,
             viewControllerFactory: viewControllerFactory
         )
+        chartCoordinator.parentCoordinator = self
         addChildCoordinator(chartCoordinator)
         chartCoordinator.start()
         chartNavController.tabBarItem = UITabBarItem(

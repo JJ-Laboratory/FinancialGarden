@@ -11,6 +11,7 @@ final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
     weak var parentCoordinator: Coordinator?
+    private var challengeCoordinator: ChallengeCoordinator?
     
     private let viewControllerFactory: ViewControllerFactoryInterface
     
@@ -44,11 +45,24 @@ final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
     func pushAnalysisResult() {
         let analysisResultVC = viewControllerFactory.makeAnalysisResultViewController()
         analysisResultVC.coordinator = self
+        
+        let challengeCoordinator = ChallengeCoordinator(navigationController: navigationController, viewControllerFactory: viewControllerFactory)
+        challengeCoordinator.parentCoordinator = self
+        self.challengeCoordinator = challengeCoordinator
+        analysisResultVC.challengeCoordinator = challengeCoordinator
+        
         analysisResultVC.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(analysisResultVC, animated: true)
     }
     
     func popAnalysis() {
         navigationController.popViewController(animated: true)
+    }
+    
+    func navigateToChallengeList(){
+        if let tabBarcoordinator = parentCoordinator as? TabBarCoordinatorProtocol {
+            navigationController.popToRootViewController(animated: true)
+            tabBarcoordinator.selectTab(for: .challenge)
+        }
     }
 }
