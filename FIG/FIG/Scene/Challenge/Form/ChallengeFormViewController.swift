@@ -328,8 +328,12 @@ final class ChallengeFormViewController: UIViewController, View {
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
             .subscribe { [weak self] isClose in
-                if isClose == true {
-                    self?.coordinator?.popChallengeForm()
+                if isClose {
+                    if case .edit = reactor.currentState.mode {
+                        self?.coordinator?.navigateToChallengeList()
+                    } else {
+                        self?.coordinator?.popChallengeForm()
+                    }
                 }
             }
             .disposed(by: disposeBag)
@@ -344,7 +348,7 @@ final class ChallengeFormViewController: UIViewController, View {
     
     private func updateUI(for mode: ChallengeFormReactor.Mode) {
         switch mode {
-        case .create:
+        case .create, .edit:
             createButton.isHidden = false
             deleteButton.isHidden = true
             

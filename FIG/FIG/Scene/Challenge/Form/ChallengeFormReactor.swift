@@ -13,6 +13,7 @@ class ChallengeFormReactor: Reactor {
     enum Mode: Equatable {
         case create
         case detail(Challenge)
+        case edit(MBTIResult)
     }
     
     enum Action {
@@ -37,6 +38,7 @@ class ChallengeFormReactor: Reactor {
     
     struct State {
         let mode: Mode
+        var mbtiResult: MBTIResult?
         var currentSeedCount: Int = 0
         var selectedCategory: Category?
         var selectedPeriod: ChallengeDuration = .week
@@ -54,6 +56,12 @@ class ChallengeFormReactor: Reactor {
                 self.selectedPeriod = challenge.duration
                 self.amount = challenge.spendingLimit
                 self.fruitCount = challenge.targetFruitsCount
+            case .edit(let mbtiResult):
+                self.mbtiResult = mbtiResult
+                self.selectedCategory = mbtiResult.categoryData
+                self.selectedPeriod = mbtiResult.durationType
+                self.amount = mbtiResult.spendingLimit
+                self.fruitCount = 0
             }
         }
         
