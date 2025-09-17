@@ -12,14 +12,21 @@ class AnalysisResultReactor: Reactor {
     
     enum Action {
         case viewDidLoad
+        case challengeButtonTapped
     }
     
     enum Mutation {
         case setAnalysisResult(MBTIResult?)
+        case navigateToChallengeForm
     }
     
     struct State {
         var analysisResult: MBTIResult?
+        var recommendedChallenge: String {
+            guard let analysisResult else { return "" }
+            return "\(analysisResult.category) \(analysisResult.duration) 챌린지(목표: \(analysisResult.spendingLimit.formattedWithComma)원)"
+        }
+        @Pulse var isNavigatingToChallengeForm: Void?
     }
     
     private let mbtiResultRepository: MBTIResultRepositoryInterface
@@ -36,6 +43,9 @@ class AnalysisResultReactor: Reactor {
         case .viewDidLoad:
             return mbtiResultRepository.fetchResult()
                 .map{ .setAnalysisResult($0) }
+            
+        case .challengeButtonTapped:
+            return .just(.navigateToChallengeForm)
         }
     }
     
@@ -44,6 +54,8 @@ class AnalysisResultReactor: Reactor {
         switch mutation {
         case .setAnalysisResult(let result):
             newState.analysisResult = result
+        case .navigateToChallengeForm:
+            newState.isNavigatingToChallengeForm = ()
         }
         return newState
     }
