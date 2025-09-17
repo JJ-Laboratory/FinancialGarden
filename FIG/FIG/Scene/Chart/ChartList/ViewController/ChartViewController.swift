@@ -52,7 +52,7 @@ final class ChartViewController: UIViewController, View {
             return outgoing
         }
         $0.configuration?.title = "나의 MBTI"
-        $0.configuration?.image = UIImage(named: "level0")?.resized(height: font.lineHeight)
+        $0.configuration?.image = UIImage(named: "ai_icon")?.resized(height: font.lineHeight)
         $0.configuration?.imagePlacement = .trailing
         $0.configuration?.imagePadding = 4
     }

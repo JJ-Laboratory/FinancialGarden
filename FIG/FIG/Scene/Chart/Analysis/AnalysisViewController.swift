@@ -28,6 +28,7 @@ final class AnalysisViewController: UIViewController, View {
     private let titleLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.numberOfLines = 0
+        $0.textAlignment = .center
         let text = "나의 소비 스타일에 딱 맞는 개선 습관은?"
         let attributedString = NSMutableAttributedString(string: text)
         let range = NSRange(location: text.count - 7, length: 5)
@@ -43,7 +44,7 @@ final class AnalysisViewController: UIViewController, View {
     
     private let imageView = UIImageView().then {
         $0.contentMode = .scaleAspectFit
-        $0.image = UIImage(named: "success")
+        $0.image = UIImage(named: "analysis_img")
     }
     
     private let resultButton = CustomButton(style: .plain).then {
@@ -104,9 +105,9 @@ final class AnalysisViewController: UIViewController, View {
         
         imageView.snp.makeConstraints {
             $0.centerX.equalToSuperview()
-            $0.top.equalTo(labelStackView.snp.bottom).offset(120)
-            $0.width.equalToSuperview().multipliedBy(0.6)
-            $0.height.equalToSuperview().multipliedBy(0.3)
+            $0.top.equalTo(labelStackView.snp.bottom).offset(44)
+            $0.width.equalToSuperview().multipliedBy(0.9)
+            $0.height.equalToSuperview().multipliedBy(0.4)
         }
         
         buttonStackView.snp.makeConstraints {
