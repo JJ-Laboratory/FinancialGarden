@@ -347,16 +347,10 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     private func updateUI(for mode: ChallengeFormReactor.Mode) {
-        switch mode {
-        case .create, .edit:
-            createButton.isHidden = false
-            deleteButton.isHidden = true
-            
-        case .detail(_):
-            createButton.isHidden = true
-            deleteButton.isHidden = false
-            formView.isUserInteractionEnabled = false
-        }
+        createButton.isHidden = mode.isCreateButtonHidden
+        deleteButton.isHidden = mode.isDeleteButtonHidden
+        formView.isUserInteractionEnabled = mode.isFormEditable
+        titleLabel.text = mode.titleText
     }
     
     @objc private func backButtonTapped() {

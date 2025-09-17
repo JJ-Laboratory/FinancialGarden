@@ -197,3 +197,33 @@ class ChallengeFormReactor: Reactor {
         }
     }
 }
+
+extension ChallengeFormReactor.Mode {
+    var isCreateButtonHidden: Bool {
+        switch self {
+        case .create, .edit: return false
+        case .detail: return true
+        }
+    }
+    
+    var isDeleteButtonHidden: Bool {
+        switch self {
+        case .create, .edit: return true
+        case .detail: return false
+        }
+    }
+    
+    var isFormEditable: Bool {
+        switch self {
+        case .detail: return false
+        default: return true
+        }
+    }
+    
+    var titleText: String {
+        switch self {
+        case .edit: return "추천 챌린지를 추가하시나요?"
+        default: return "어떤 챌린지를 추가하시나요?"
+        }
+    }
+}
