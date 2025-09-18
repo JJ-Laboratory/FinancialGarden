@@ -325,16 +325,11 @@ final class ChallengeFormViewController: UIViewController, View {
             .bind(to: createButton.rx.isEnabled)
             .disposed(by: disposeBag)
         
-        // FIXME: analysisResult에서 들어왔을때 dismiss 안되는 문제
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
             .subscribe { [weak self] isClose in
                 if isClose {
-                    if case .edit = reactor.currentState.mode {
-                        self?.coordinator?.navigateToChallengeList()
-                    } else {
-                        self?.coordinator?.popChallengeForm()
-                    }
+                    self?.coordinator?.popChallengeForm()
                 }
             }
             .disposed(by: disposeBag)

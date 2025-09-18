@@ -12,7 +12,6 @@ protocol ChallengeCoordinatorProtocol: AnyObject {
     func pushChallengeDetail(challenge: Challenge)
     func pushChallengeEdit(result: MBTIResult)
     func popChallengeForm()
-    func navigateToChallengeList()
 }
 
 final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
@@ -65,9 +64,5 @@ final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     
     func popChallengeForm() {
         navigationController.popViewController(animated: true)
-    }
-    
-    func navigateToChallengeList(){
-        (parentCoordinator as? ChartCoordinator)?.navigateToChallengeList()
     }
 }

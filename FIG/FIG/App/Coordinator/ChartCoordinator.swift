@@ -8,7 +8,8 @@
 import UIKit
 
 protocol ChartCoordinatorProtocol: AnyObject {
-    func navigateToChallengeList()
+    func presentAnalysis()
+    func handleChallengeFormRequest(_ result: MBTIResult)
 }
 
 final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
@@ -56,13 +57,6 @@ final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
     func handleChallengeFormRequest(_ result: MBTIResult) {
         if let tabBarcoordinator = parentCoordinator as? TabBarCoordinatorProtocol {
             tabBarcoordinator.navigateToChallenge(with: result)
-        }
-    }
-    
-    func navigateToChallengeList(){
-        if let tabBarcoordinator = parentCoordinator as? TabBarCoordinatorProtocol {
-            navigationController.popToRootViewController(animated: true)
-            tabBarcoordinator.selectTab(for: .challenge)
         }
     }
 }

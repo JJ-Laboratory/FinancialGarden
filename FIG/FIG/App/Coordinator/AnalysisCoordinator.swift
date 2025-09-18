@@ -50,8 +50,8 @@ final class AnalysisCoordinator: Coordinator, AnalysisCoordinatorProtocol {
     }
     
     func requestChallengeForm(result: MBTIResult) {
-        dismiss()
         (parentCoordinator as? ChartCoordinator)?.handleChallengeFormRequest(result)
+        navigationController.presentingViewController?.dismiss(animated: false)
     }
     
     func dismiss() {
