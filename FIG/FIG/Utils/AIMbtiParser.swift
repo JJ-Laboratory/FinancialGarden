@@ -9,11 +9,14 @@ import Foundation
 import FirebaseAI
 import OSLog
 
-struct MBTIResult: Codable {
+struct MBTIResult: Codable, Equatable {
     let mbti: String
     let title: String
     let description: String
-    let recommend: String
+    let category: String
+    let duration: String
+    let spendingLimit: Int
+    let reason: String
 }
 
 final class AIMbtiParser {
@@ -29,7 +32,7 @@ final class AIMbtiParser {
     }
     
     func parseMbti(_ recognizedTexts: [String]) async throws -> MBTIResult? {
-        let joinedText = recognizedTexts.joined(separator: "\n")
+        let joinedText = recognizedTexts.joined(separator: ", ")
         
         let prompt = createPrompt(with: joinedText)
         
@@ -51,12 +54,15 @@ final class AIMbtiParser {
     
     private func createPrompt(with text: String) -> String {
         return """
-                    소비 내역을 1개의 MBTI 유형으로 선정.
+                    규칙으로 소비 내역과 어울리는 MBTI를 1개 선정하고, 소비 습관 개선을 위한 챌린지 1개 추천.
                     필드:
-                    - mbti(string):
-                    - title(string): (소비 특징과 어율리는 별명)
-                    - description(string): (mbti 선정 이유와 소비 특징 한 문장)
-                    - recommend(string): (구체적인 소비 개선 습관 한 가지)
+                    - mbti(string): (16가지의 MBTI 유형 중 1개)
+                    - title(string): (소비 내역의 특징과 어울리는 별명)
+                    - description(string): (소비 내역의 특징과 mbti 선정 근거 한 문장)
+                    - category(string): (소비 내역에 있는 카테고리 중에서 개선이 가장 필요한 카테고리 1개)
+                    - duration(string): (챌린지 기간(일주일, 한달 2가지 중 선택))
+                    - spendingLimit(int): (목표 제한 금액)
+                    - reason(string): (위의 챌린지를 추천한 근거 한 문장)
                     규칙:
                     - E: 유흥·여행↑, I: 온라인·집↑
                     - S: 생활·필수↑, N: 교육·투자·취미↑
@@ -64,7 +70,7 @@ final class AIMbtiParser {
                     - J: 고정비·정기↑, P: 변동·즉흥↑
                     - 출력은 JSON 배열만, 다른 설명 없이
                     소비 내역:
-                    \(text)
+                    [\(text)]
                     """
     }
     
@@ -90,3 +96,18 @@ final class AIMbtiParser {
         }
     }
 }
+
+extension MBTIResult {
+    var categoryData: Category? {
+        let categoryService = CategoryService.shared
+        
+        return categoryService.fetchAllCategories()
+            .first { $0.title == category } ?? categoryService.fetchAllCategories()
+            .first { $0.title == "기타 지출" }
+    }
+    
+    var durationType: ChallengeDuration {
+        duration == "일주일" ? .week : .month
+    }
+}
+

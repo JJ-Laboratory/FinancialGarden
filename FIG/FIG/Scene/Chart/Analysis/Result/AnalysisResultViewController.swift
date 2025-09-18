@@ -12,7 +12,7 @@ import ReactorKit
 
 final class AnalysisResultViewController: UIViewController, View {
     
-    weak var coordinator: ChartCoordinator?
+    weak var coordinator: AnalysisCoordinatorProtocol?
     var disposeBag = DisposeBag()
     
     private let subtitleLabel = UILabel().then {
@@ -49,7 +49,8 @@ final class AnalysisResultViewController: UIViewController, View {
     
     private lazy var descriptionTitleLabel = createTitleLabel(text: "소비 특징")
     private lazy var descriptionContentLabel = createContentLabel()
-    private lazy var recommendTitleLabel = createTitleLabel(text: "추천 습관")
+    private lazy var recommendTitleLabel = createTitleLabel(text: "추천 챌린지")
+    private lazy var recommendChallengeLabel = createContentLabel()
     private lazy var recommendContentLabel = createContentLabel()
     
     private lazy var contentsStackView = UIStackView(axis: .vertical, alignment: .leading, spacing: 40) {
@@ -59,6 +60,7 @@ final class AnalysisResultViewController: UIViewController, View {
         }
         UIStackView(axis: .vertical, alignment: .leading, spacing: 8) {
             recommendTitleLabel
+            recommendChallengeLabel
             recommendContentLabel
         }
     }
@@ -67,6 +69,10 @@ final class AnalysisResultViewController: UIViewController, View {
         $0.backgroundColor = .white
         $0.layer.cornerRadius = 10
         $0.layer.masksToBounds = true
+    }
+    
+    private let challengeButton = CustomButton(style: .filled).then {
+        $0.setTitle("추천 챌린지 추가하기", for: .normal)
     }
     
     init(reactor: AnalysisResultReactor) {
@@ -101,11 +107,11 @@ final class AnalysisResultViewController: UIViewController, View {
     
     private func setupUI() {
         view.backgroundColor = .background
-        [labelStackView, imageView, cardView, mbtiBackgroundView].forEach { view.addSubview($0) }
+        [labelStackView, imageView, cardView, mbtiBackgroundView, challengeButton].forEach { view.addSubview($0) }
         cardView.addSubview(contentsStackView)
         
         labelStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(40)
+            $0.top.equalTo(view.safeAreaLayoutGuide).inset(20)
             $0.leading.trailing.equalToSuperview().inset(42)
         }
         
@@ -117,7 +123,7 @@ final class AnalysisResultViewController: UIViewController, View {
         }
         
         cardView.snp.makeConstraints {
-            $0.top.equalTo(imageView.snp.bottom).offset(40)
+            $0.top.equalTo(imageView.snp.bottom).offset(30)
             $0.leading.trailing.equalToSuperview().inset(24)
         }
         
@@ -131,9 +137,28 @@ final class AnalysisResultViewController: UIViewController, View {
             $0.width.equalTo(mbtiLabel).multipliedBy(1.2)
             $0.height.equalTo(mbtiLabel).multipliedBy(0.5)
         }
+        
+        challengeButton.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview().inset(20)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
+        }
     }
     
     func bind(reactor: AnalysisResultReactor) {
+        challengeButton.rx.tap
+            .map { .challengeButtonTapped }
+            .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        reactor.pulse(\.$isNavigatingToChallengeForm)
+            .compactMap { $0 }
+            .asDriver(onErrorDriveWith: .empty())
+            .drive(onNext: { [weak self] _ in
+                guard let self, let result = reactor.currentState.analysisResult else { return }
+                coordinator?.requestChallengeForm(result: result)
+            })
+            .disposed(by: disposeBag)
+        
         let resultDriver = reactor.state
             .compactMap(\.analysisResult)
             .asDriver(onErrorDriveWith: .empty())
@@ -154,8 +179,15 @@ final class AnalysisResultViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         resultDriver
-            .map(\.recommend)
+            .map(\.reason)
             .drive(recommendContentLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+        reactor.state
+            .map(\.recommendedChallenge)
+            .distinctUntilChanged()
+            .asDriver(onErrorJustReturn: "")
+            .drive(recommendChallengeLabel.rx.text)
             .disposed(by: disposeBag)
     }
     
@@ -166,6 +198,7 @@ final class AnalysisResultViewController: UIViewController, View {
     private func createTitleLabel(text: String) -> UILabel {
         UILabel().then {
             $0.text = text
+            $0.numberOfLines = 0
             $0.textColor = .charcoal
             $0.font = .preferredFont(forTextStyle: .body).withWeight(.semibold)
         }

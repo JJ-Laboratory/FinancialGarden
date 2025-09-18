@@ -7,6 +7,11 @@
 
 import UIKit
 
+protocol ChartCoordinatorProtocol: AnyObject {
+    func presentAnalysis()
+    func handleChallengeFormRequest(_ result: MBTIResult)
+}
+
 final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
@@ -34,21 +39,24 @@ final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
         navigationController.setViewControllers([chartVC], animated: true)
     }
     
-    func pushAnalysis() {
-        let analysisVC = viewControllerFactory.makeAnalysisViewController()
-        analysisVC.coordinator = self
-        analysisVC.hidesBottomBarWhenPushed = true
-        navigationController.pushViewController(analysisVC, animated: true)
+    func presentAnalysis() {
+        let analysisNavController = UINavigationController()
+        let analysisCoordinator = AnalysisCoordinator(
+            navigationController: analysisNavController,
+            viewControllerFactory: viewControllerFactory
+        )
+        
+        addChildCoordinator(analysisCoordinator)
+        analysisCoordinator.parentCoordinator = self
+        analysisCoordinator.start()
+        
+        navigationController.modalPresentationStyle = .fullScreen
+        navigationController.present(analysisNavController, animated: true)
     }
     
-    func pushAnalysisResult() {
-        let analysisResultVC = viewControllerFactory.makeAnalysisResultViewController()
-        analysisResultVC.coordinator = self
-        analysisResultVC.hidesBottomBarWhenPushed = true
-        navigationController.pushViewController(analysisResultVC, animated: true)
-    }
-    
-    func popAnalysis() {
-        navigationController.popViewController(animated: true)
+    func handleChallengeFormRequest(_ result: MBTIResult) {
+        if let tabBarcoordinator = parentCoordinator as? TabBarCoordinatorProtocol {
+            tabBarcoordinator.navigateToChallenge(with: result)
+        }
     }
 }

@@ -13,6 +13,7 @@ class ChallengeFormReactor: Reactor {
     enum Mode: Equatable {
         case create
         case detail(Challenge)
+        case edit(MBTIResult)
     }
     
     enum Action {
@@ -37,6 +38,7 @@ class ChallengeFormReactor: Reactor {
     
     struct State {
         let mode: Mode
+        var mbtiResult: MBTIResult?
         var currentSeedCount: Int = 0
         var selectedCategory: Category?
         var selectedPeriod: ChallengeDuration = .week
@@ -54,6 +56,12 @@ class ChallengeFormReactor: Reactor {
                 self.selectedPeriod = challenge.duration
                 self.amount = challenge.spendingLimit
                 self.fruitCount = challenge.targetFruitsCount
+            case .edit(let mbtiResult):
+                self.mbtiResult = mbtiResult
+                self.selectedCategory = mbtiResult.categoryData
+                self.selectedPeriod = mbtiResult.durationType
+                self.amount = mbtiResult.spendingLimit
+                self.fruitCount = 0
             }
         }
         
@@ -186,6 +194,36 @@ class ChallengeFormReactor: Reactor {
             start == newStart &&
             end == newEnd &&
             !challenge.isCompleted
+        }
+    }
+}
+
+extension ChallengeFormReactor.Mode {
+    var isCreateButtonHidden: Bool {
+        switch self {
+        case .create, .edit: return false
+        case .detail: return true
+        }
+    }
+    
+    var isDeleteButtonHidden: Bool {
+        switch self {
+        case .create, .edit: return true
+        case .detail: return false
+        }
+    }
+    
+    var isFormEditable: Bool {
+        switch self {
+        case .detail: return false
+        default: return true
+        }
+    }
+    
+    var titleText: String {
+        switch self {
+        case .edit: return "추천 챌린지를 추가하시나요?"
+        default: return "어떤 챌린지를 추가하시나요?"
         }
     }
 }

@@ -14,7 +14,7 @@ import ReactorKit
 
 final class RecordListViewController: UIViewController, View {
     
-    weak var coordinator: RecordCoordinator?
+    weak var coordinator: RecordCoordinatorProtocol?
     var disposeBag = DisposeBag()
     
     enum Section: Int, CaseIterable {

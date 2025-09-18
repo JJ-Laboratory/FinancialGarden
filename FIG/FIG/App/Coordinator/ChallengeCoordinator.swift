@@ -7,6 +7,13 @@
 
 import UIKit
 
+protocol ChallengeCoordinatorProtocol: AnyObject {
+    func pushChallengeForm()
+    func pushChallengeDetail(challenge: Challenge)
+    func pushChallengeEdit(result: MBTIResult)
+    func popChallengeForm()
+}
+
 final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
@@ -43,6 +50,13 @@ final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     
     func pushChallengeDetail(challenge: Challenge) {
         let challengeDetailVC = viewControllerFactory.makeChallengeFormViewController(mode: .detail(challenge))
+        challengeDetailVC.coordinator = self
+        challengeDetailVC.hidesBottomBarWhenPushed = true
+        navigationController.pushViewController(challengeDetailVC, animated: true)
+    }
+    
+    func pushChallengeEdit(result: MBTIResult) {
+        let challengeDetailVC = viewControllerFactory.makeChallengeFormViewController(mode: .edit(result))
         challengeDetailVC.coordinator = self
         challengeDetailVC.hidesBottomBarWhenPushed = true
         navigationController.pushViewController(challengeDetailVC, animated: true)

@@ -2,7 +2,7 @@
 //  MBTIResultEntity+CoreDataClass.swift
 //  FIG
 //
-//  Created by estelle on 9/16/25.
+//  Created by estelle on 9/17/25.
 //
 //
 

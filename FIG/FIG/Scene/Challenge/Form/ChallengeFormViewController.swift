@@ -328,7 +328,7 @@ final class ChallengeFormViewController: UIViewController, View {
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
             .subscribe { [weak self] isClose in
-                if isClose == true {
+                if isClose {
                     self?.coordinator?.popChallengeForm()
                 }
             }
@@ -343,16 +343,10 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     private func updateUI(for mode: ChallengeFormReactor.Mode) {
-        switch mode {
-        case .create:
-            createButton.isHidden = false
-            deleteButton.isHidden = true
-            
-        case .detail(_):
-            createButton.isHidden = true
-            deleteButton.isHidden = false
-            formView.isUserInteractionEnabled = false
-        }
+        createButton.isHidden = mode.isCreateButtonHidden
+        deleteButton.isHidden = mode.isDeleteButtonHidden
+        formView.isUserInteractionEnabled = mode.isFormEditable
+        titleLabel.text = mode.titleText
     }
     
     @objc private func backButtonTapped() {

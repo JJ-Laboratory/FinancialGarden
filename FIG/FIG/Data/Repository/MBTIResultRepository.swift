@@ -57,11 +57,16 @@ final class MBTIResultRepository: MBTIResultRepositoryInterface {
     }
     
     private func toModel(_ entity: MBTIResultEntity) -> MBTIResult {
+        let categoryService = CategoryService.shared
+    
         return MBTIResult(
             mbti: entity.mbti ?? "",
             title: entity.title ?? "",
             description: entity.desc ?? "",
-            recommend: entity.recommend ?? ""
+            category: categoryService.fetchCategoryByID(entity.categoryID ?? UUID())?.title ?? "",
+            duration: entity.duration ?? "",
+            spendingLimit: Int(entity.spendingLimit),
+            reason: entity.reason ?? ""
         )
     }
     
@@ -69,6 +74,9 @@ final class MBTIResultRepository: MBTIResultRepositoryInterface {
         entity.mbti = model.mbti
         entity.title = model.title
         entity.desc = model.description
-        entity.recommend = model.recommend
+        entity.categoryID = model.categoryData?.id
+        entity.duration = model.duration
+        entity.spendingLimit = Int32(model.spendingLimit)
+        entity.reason = model.reason
     }
 }
