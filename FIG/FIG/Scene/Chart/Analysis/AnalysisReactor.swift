@@ -76,7 +76,7 @@ class AnalysisReactor: Reactor {
                 .map { transactions, gardenInfo -> Mutation in
                     let expenses = transactions.filter { $0.category.transactionType == .expense }
                     if expenses.count < 10 {
-                        return .setAlertMessage("분석을 위해 이번 달 거래 내역이 최소 10개 이상 필요해요\n가계부에 거래 내역을 추가해주세요!")
+                        return .setAlertMessage("분석을 위해 이번 달 지출 내역이 최소 10개 이상 필요해요\n가계부에 지출 내역을 추가해주세요!")
                     } else if gardenInfo.totalFruits < 1 {
                         return .setAlertMessage("분석을 위해 열매 1개가 필요해요\n챌린지를 성공해 열매를 모아보세요!")
                     } else {
