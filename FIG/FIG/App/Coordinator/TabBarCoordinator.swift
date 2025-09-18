@@ -7,6 +7,12 @@
 
 import UIKit
 
+protocol TabBarCoordinatorProtocol: AnyObject {
+    func selectTab(for section: HomeSection)
+    func navigateToFormScreen(type: EmptyStateType)
+    func navigateToChallenge(with result: MBTIResult)
+}
+
 final class TabBarCoordinator: Coordinator {
     var childCoordinators: [Coordinator] = []
     weak var parentCoordinator: Coordinator?
@@ -130,6 +136,14 @@ extension TabBarCoordinator: TabBarCoordinatorProtocol {
         
         if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
             challengeCoordinator.pushChallengeForm()
+        }
+    }
+    
+    func navigateToChallenge(with result: MBTIResult) {
+        selectTab(at: 2)
+        
+        if let challengeCoordinator = childCoordinators.first(where: { $0 is ChallengeCoordinator }) as? ChallengeCoordinator {
+            challengeCoordinator.pushChallengeEdit(result: result)
         }
     }
 }

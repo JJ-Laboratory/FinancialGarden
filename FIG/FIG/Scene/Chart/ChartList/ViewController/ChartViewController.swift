@@ -120,7 +120,7 @@ final class ChartViewController: UIViewController, View {
         
         mbtiButton.rx.tap
             .subscribe { [weak self] _ in
-                self?.coordinator?.pushAnalysis()
+                self?.coordinator?.presentAnalysis()
             }
             .disposed(by: disposeBag)
         

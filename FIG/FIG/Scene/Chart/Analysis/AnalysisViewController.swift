@@ -14,7 +14,7 @@ import ReactorKit
 
 final class AnalysisViewController: UIViewController, View {
     
-    weak var coordinator: ChartCoordinator?
+    weak var coordinator: AnalysisCoordinatorProtocol?
     var disposeBag = DisposeBag()
     private var loadingPopup: LoadingPopupViewController?
     
@@ -85,11 +85,11 @@ final class AnalysisViewController: UIViewController, View {
     }
     
     private func setupNavigationBar() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "chevron.left"),
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "xmark"),
             style: .plain,
             target: self,
-            action: #selector(backButtonTapped)
+            action: #selector(closeButtonTapped)
         )
         navigationController?.navigationBar.tintColor = .charcoal
     }
@@ -181,8 +181,8 @@ final class AnalysisViewController: UIViewController, View {
             .disposed(by: disposeBag)
     }
     
-    @objc private func backButtonTapped() {
-        coordinator?.popAnalysis()
+    @objc private func closeButtonTapped() {
+        coordinator?.dismiss()
     }
     
     private func showAlert(

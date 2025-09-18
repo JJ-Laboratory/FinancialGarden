@@ -7,6 +7,14 @@
 
 import UIKit
 
+protocol ChallengeCoordinatorProtocol: AnyObject {
+    func pushChallengeForm()
+    func pushChallengeDetail(challenge: Challenge)
+    func pushChallengeEdit(result: MBTIResult)
+    func popChallengeForm()
+    func navigateToChallengeList()
+}
+
 final class ChallengeCoordinator: Coordinator, ChallengeCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []

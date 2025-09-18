@@ -12,8 +12,7 @@ import ReactorKit
 
 final class AnalysisResultViewController: UIViewController, View {
     
-    weak var coordinator: ChartCoordinator?
-    weak var challengeCoordinator: ChallengeCoordinator?
+    weak var coordinator: AnalysisCoordinatorProtocol?
     var disposeBag = DisposeBag()
     
     private let subtitleLabel = UILabel().then {
@@ -156,7 +155,7 @@ final class AnalysisResultViewController: UIViewController, View {
             .asDriver(onErrorDriveWith: .empty())
             .drive(onNext: { [weak self] _ in
                 guard let self, let result = reactor.currentState.analysisResult else { return }
-                challengeCoordinator?.pushChallengeEdit(result: result)
+                coordinator?.requestChallengeForm(result: result)
             })
             .disposed(by: disposeBag)
         

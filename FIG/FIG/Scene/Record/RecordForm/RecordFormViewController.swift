@@ -19,7 +19,7 @@ import Toast
 final class RecordFormViewController: UIViewController, View {
     
     // MARK: - Properties
-    weak var coordinator: RecordCoordinator?
+    weak var coordinator: RecordCoordinatorProtocol?
     var disposeBag = DisposeBag()
     
     private var loadingPopup: LoadingPopupViewController?
