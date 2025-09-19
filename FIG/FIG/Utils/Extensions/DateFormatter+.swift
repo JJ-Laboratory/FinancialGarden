@@ -128,4 +128,25 @@ extension Date {
         
         return Float(progress)
     }
+    
+    func progressDayString(to endDate: Date, now: Date = Date()) -> String {
+        let startDate = self
+        let calendar = Calendar.current
+        
+        let startDay = calendar.startOfDay(for: startDate)
+        let endDay = calendar.startOfDay(for: endDate)
+        let nowDay = calendar.startOfDay(for: now)
+        
+        guard let total = calendar.dateComponents([.day], from: startDay, to: endDay).day else {
+            return "0 / 0일"
+        }
+        let totalDays = total + 1
+        
+        guard let elapsed = calendar.dateComponents([.day], from: startDay, to: nowDay).day else {
+            return "0 / \(totalDays)일"
+        }
+        let elapsedDays = min(totalDays, max(0, elapsed + 1))
+        
+        return "\(elapsedDays) / \(totalDays)일"
+    }
 }
