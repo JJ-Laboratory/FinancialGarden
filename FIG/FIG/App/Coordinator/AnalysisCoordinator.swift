@@ -11,6 +11,7 @@ protocol AnalysisCoordinatorProtocol: AnyObject {
     func pushAnalysisResult()
     func popAnalysis()
     func requestChallengeForm(result: MBTIResult)
+    func requestRecordForm()
     func dismiss()
 }
 
@@ -51,6 +52,11 @@ final class AnalysisCoordinator: Coordinator, AnalysisCoordinatorProtocol {
     
     func requestChallengeForm(result: MBTIResult) {
         (parentCoordinator as? ChartCoordinator)?.handleChallengeFormRequest(result)
+        navigationController.presentingViewController?.dismiss(animated: false)
+    }
+    
+    func requestRecordForm() {
+        (parentCoordinator as? ChartCoordinator)?.handleRecordFormRequest()
         navigationController.presentingViewController?.dismiss(animated: false)
     }
     

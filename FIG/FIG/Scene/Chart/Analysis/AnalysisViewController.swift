@@ -151,24 +151,35 @@ final class AnalysisViewController: UIViewController, View {
             .compactMap { $0 }
             .asDriver(onErrorDriveWith: .empty())
             .drive(onNext: { [weak self] message in
-                self?.showAlert(message: message)
-            })
-            .disposed(by: disposeBag)
-        
-        reactor.pulse(\.$isShowStartAlert)
-            .compactMap { $0 }
-            .asDriver(onErrorDriveWith: .empty())
-            .drive(onNext: { [weak self] _ in
-                self?.showAlert(
-                    title: "분석 시작",
-                    message: "AI 분석을 위해 열매 1개가 소모돼요! 계속하시겠습니까?",
-                    actions: [
-                        UIAlertAction(title: "취소", style: .cancel),
-                        UIAlertAction(title: "확인", style: .default) { _ in
-                            reactor.action.onNext(.analysisStarted)
-                        }
-                    ]
-                )
+                guard let self else { return }
+                
+                switch reactor.currentState.alertType {
+                case .transaction:
+                    showAlert(
+                        message: message,
+                        actions: [
+                            UIAlertAction(title: "취소", style: .cancel),
+                            UIAlertAction(title: "내역 추가", style: .default) { _ in
+                                self.coordinator?.requestRecordForm()
+                            }
+                        ]
+                    )
+                    
+                case .analysisStart:
+                    showAlert(
+                        title: "분석 시작",
+                        message: message,
+                        actions: [
+                            UIAlertAction(title: "취소", style: .cancel),
+                            UIAlertAction(title: "확인", style: .default) { _ in
+                                reactor.action.onNext(.analysisStarted)
+                            }
+                        ]
+                    )
+                    
+                case .fruit, .defaultValue(_), .none:
+                    showAlert(message: message)
+                }
             })
             .disposed(by: disposeBag)
         
