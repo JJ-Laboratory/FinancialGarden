@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AF86710E2E7D19410018DFFA /* SwiftyGif in Frameworks */ = {isa = PBXBuildFile; productRef = AF86710D2E7D19410018DFFA /* SwiftyGif */; };
 		B54E25932E7835D900575011 /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = B54E25922E7835D900575011 /* Toast */; };
 		B57F87392E73A51B004A897D /* UITextViewPlaceholder in Frameworks */ = {isa = PBXBuildFile; productRef = B57F87382E73A51B004A897D /* UITextViewPlaceholder */; };
 		B57F90D62E7546A1004A897D /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = B57F90D52E7546A1004A897D /* FirebaseAI */; };
@@ -58,6 +59,7 @@
 				B57F90D62E7546A1004A897D /* FirebaseAI in Frameworks */,
 				B5983F9F2E54473C00DEB52A /* RxCocoa in Frameworks */,
 				B57F87392E73A51B004A897D /* UITextViewPlaceholder in Frameworks */,
+				AF86710E2E7D19410018DFFA /* SwiftyGif in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,6 +113,7 @@
 				B57F87382E73A51B004A897D /* UITextViewPlaceholder */,
 				B57F90D52E7546A1004A897D /* FirebaseAI */,
 				B54E25922E7835D900575011 /* Toast */,
+				AF86710D2E7D19410018DFFA /* SwiftyGif */,
 			);
 			productName = FIG;
 			productReference = B5983F812E5445DD00DEB52A /* FIG.app */;
@@ -151,6 +154,7 @@
 				B57F87372E73A51B004A897D /* XCRemoteSwiftPackageReference "UITextView-Placeholder" */,
 				B57F90D42E7546A1004A897D /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				B54E25912E7835D900575011 /* XCRemoteSwiftPackageReference "toast-swift" */,
+				AF86710C2E7D19410018DFFA /* XCRemoteSwiftPackageReference "SwiftyGif" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5983F822E5445DD00DEB52A /* Products */;
@@ -427,6 +431,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		AF86710C2E7D19410018DFFA /* XCRemoteSwiftPackageReference "SwiftyGif" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alexiscreuzot/SwiftyGif";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.4.5;
+			};
+		};
 		B54E25912E7835D900575011 /* XCRemoteSwiftPackageReference "toast-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/BastiaanJansen/toast-swift";
@@ -494,6 +506,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		AF86710D2E7D19410018DFFA /* SwiftyGif */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF86710C2E7D19410018DFFA /* XCRemoteSwiftPackageReference "SwiftyGif" */;
+			productName = SwiftyGif;
+		};
 		B54E25922E7835D900575011 /* Toast */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B54E25912E7835D900575011 /* XCRemoteSwiftPackageReference "toast-swift" */;

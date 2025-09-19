@@ -20,8 +20,7 @@ class AnalysisReactor: Reactor {
     
     enum Mutation {
         case setResultButtonHidden(Bool)
-        case setAlertMessage(String)
-        case showStartAlert
+        case setAlertMessage(AlertType)
         case setLoading(Bool)
         case showResultScreen
     }
@@ -29,8 +28,8 @@ class AnalysisReactor: Reactor {
     struct State {
         var isResultButtonHidden: Bool = true
         var isLoading: Bool = false
+        var alertType: AlertType?
         @Pulse var alertMessage: String?
-        @Pulse var isShowStartAlert: Bool?
         @Pulse var isShowResultScreen: Bool?
     }
     
@@ -76,11 +75,11 @@ class AnalysisReactor: Reactor {
                 .map { transactions, gardenInfo -> Mutation in
                     let expenses = transactions.filter { $0.category.transactionType == .expense }
                     if expenses.count < 10 {
-                        return .setAlertMessage("분석을 위해 이번 달 지출 내역이 최소 10개 이상 필요해요\n가계부에 지출 내역을 추가해주세요!")
+                        return .setAlertMessage(.transaction)
                     } else if gardenInfo.totalFruits < 1 {
-                        return .setAlertMessage("분석을 위해 열매 1개가 필요해요\n챌린지를 성공해 열매를 모아보세요!")
+                        return .setAlertMessage(.fruit)
                     } else {
-                        return .showStartAlert
+                        return .setAlertMessage(.analysisStart)
                     }
                 }
             
@@ -90,7 +89,7 @@ class AnalysisReactor: Reactor {
             
             let analysisProcess = mbtiAnalysis(year: year, month: month)
                 .map { _ in Mutation.showResultScreen }
-                .catch { error in .just(.setAlertMessage(error.localizedDescription)) }
+                .catch { error in .just(.setAlertMessage(.defaultValue(error.localizedDescription))) }
             
             return .concat([startLoading, analysisProcess, endLoading])
         }
@@ -105,10 +104,9 @@ class AnalysisReactor: Reactor {
             newState.isShowResultScreen = true
         case .setLoading(let isLoading):
             newState.isLoading = isLoading
-        case .setAlertMessage(let message):
-            newState.alertMessage = message
-        case .showStartAlert:
-            newState.isShowStartAlert = true
+        case .setAlertMessage(let alertType):
+            newState.alertType = alertType
+            newState.alertMessage = alertType.description
         }
         return newState
     }
@@ -150,5 +148,27 @@ class AnalysisReactor: Reactor {
                         self.mbtiResultRepository.saveOrUpdateResult(result)
                     }
             }
+    }
+}
+
+extension AnalysisReactor {
+    enum AlertType: Equatable {
+        case transaction
+        case fruit
+        case analysisStart
+        case defaultValue(String)
+        
+        var description: String {
+            switch self {
+            case .transaction:
+                return "분석을 위해 이번 달 지출 내역이 최소 10개 이상 필요해요\n가계부에 지출 내역을 추가해주세요!"
+            case .fruit:
+                return "분석을 위해 열매 1개가 필요해요\n챌린지를 성공해 열매를 모아보세요!"
+            case .analysisStart:
+                return "AI 분석을 위해 열매 1개가 소모돼요! 계속하시겠습니까?"
+            case .defaultValue(let message):
+                return message
+            }
+        }
     }
 }

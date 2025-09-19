@@ -8,7 +8,10 @@
 import UIKit
 import Then
 import SnapKit
+import RxSwift
+import RxCocoa
 import ReactorKit
+import SwiftyGif
 
 final class AnalysisResultViewController: UIViewController, View {
     
@@ -20,11 +23,13 @@ final class AnalysisResultViewController: UIViewController, View {
         $0.textColor = .gray1
         $0.text = "당신의 소비 MBTI는"
         $0.font = .preferredFont(forTextStyle: .title2).withWeight(.semibold)
+        $0.setContentHuggingPriority(.required, for: .vertical)
     }
     
     private let mbtiLabel = UILabel().then {
         $0.textColor = .charcoal
         $0.font = .preferredFont(forTextStyle: .largeTitle).withWeight(.semibold)
+        $0.setContentHuggingPriority(.required, for: .vertical)
     }
     
     private let mbtiBackgroundView = UIView().then {
@@ -34,6 +39,7 @@ final class AnalysisResultViewController: UIViewController, View {
     private let subMbtiLabel = UILabel().then {
         $0.textColor = .gray1
         $0.font = .preferredFont(forTextStyle: .title2)
+        $0.setContentHuggingPriority(.required, for: .vertical)
     }
     
     private lazy var labelStackView = UIStackView(axis: .vertical, alignment: .center, spacing: 8) {
@@ -44,7 +50,6 @@ final class AnalysisResultViewController: UIViewController, View {
     
     private let imageView = UIImageView().then {
         $0.contentMode = .scaleAspectFit
-        $0.image = UIImage(named: "success")
     }
     
     private lazy var descriptionTitleLabel = createTitleLabel(text: "소비 특징")
@@ -74,6 +79,9 @@ final class AnalysisResultViewController: UIViewController, View {
     private let challengeButton = CustomButton(style: .filled).then {
         $0.setTitle("추천 챌린지 추가하기", for: .normal)
     }
+    
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
     
     init(reactor: AnalysisResultReactor) {
         super.init(nibName: nil, bundle: nil)
@@ -107,11 +115,24 @@ final class AnalysisResultViewController: UIViewController, View {
     
     private func setupUI() {
         view.backgroundColor = .background
-        [labelStackView, imageView, cardView, mbtiBackgroundView, challengeButton].forEach { view.addSubview($0) }
+        [scrollView, challengeButton].forEach { view.addSubview($0) }
+        [labelStackView, imageView, cardView, mbtiBackgroundView].forEach { contentView.addSubview($0) }
+        scrollView.addSubview(contentView)
         cardView.addSubview(contentsStackView)
         
+        scrollView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+            $0.bottom.equalTo(challengeButton.snp.top)
+        }
+        
+        contentView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+            $0.width.equalToSuperview()
+            $0.bottom.equalTo(cardView.snp.bottom).offset(20)
+        }
+        
         labelStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(20)
+            $0.top.equalToSuperview().inset(20)
             $0.leading.trailing.equalToSuperview().inset(42)
         }
         
@@ -119,7 +140,7 @@ final class AnalysisResultViewController: UIViewController, View {
             $0.centerX.equalToSuperview()
             $0.top.equalTo(labelStackView.snp.bottom).offset(40)
             $0.width.equalToSuperview().multipliedBy(0.35)
-            $0.height.equalToSuperview().multipliedBy(0.18)
+            $0.height.equalTo(imageView.snp.width)
         }
         
         cardView.snp.makeConstraints {
@@ -169,6 +190,11 @@ final class AnalysisResultViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         resultDriver
+            .map(\.mbti)
+            .drive(imageView.rx.gifImage)
+            .disposed(by: disposeBag)
+        
+        resultDriver
             .map(\.title)
             .drive(subMbtiLabel.rx.text)
             .disposed(by: disposeBag)
@@ -201,6 +227,7 @@ final class AnalysisResultViewController: UIViewController, View {
             $0.numberOfLines = 0
             $0.textColor = .charcoal
             $0.font = .preferredFont(forTextStyle: .body).withWeight(.semibold)
+            $0.setContentHuggingPriority(.required, for: .vertical)
         }
     }
     
@@ -209,6 +236,7 @@ final class AnalysisResultViewController: UIViewController, View {
             $0.numberOfLines = 0
             $0.textColor = .gray1
             $0.font = .preferredFont(forTextStyle: .body)
+            $0.setContentHuggingPriority(.required, for: .vertical)
         }
     }
 }

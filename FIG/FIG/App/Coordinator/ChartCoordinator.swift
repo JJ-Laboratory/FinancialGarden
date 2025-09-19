@@ -10,6 +10,7 @@ import UIKit
 protocol ChartCoordinatorProtocol: AnyObject {
     func presentAnalysis()
     func handleChallengeFormRequest(_ result: MBTIResult)
+    func handleRecordFormRequest()
 }
 
 final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
@@ -57,6 +58,12 @@ final class ChartCoordinator: Coordinator, ChartCoordinatorProtocol {
     func handleChallengeFormRequest(_ result: MBTIResult) {
         if let tabBarcoordinator = parentCoordinator as? TabBarCoordinatorProtocol {
             tabBarcoordinator.navigateToChallenge(with: result)
+        }
+    }
+    
+    func handleRecordFormRequest() {
+        if let tabBarcoordinator = parentCoordinator as? TabBarCoordinatorProtocol {
+            tabBarcoordinator.navigateToFormScreen(type: .transaction)
         }
     }
 }
