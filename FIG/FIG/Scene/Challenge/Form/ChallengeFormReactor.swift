@@ -172,10 +172,11 @@ class ChallengeFormReactor: Reactor {
         let endDate: Date
         let requiredSeedCount: Int
         if currentState.selectedPeriod == .week {
-            endDate = Calendar.current.date(byAdding: .day, value: 7, to: startDate) ?? startDate
+            endDate = Calendar.current.date(byAdding: .day, value: 6, to: startDate) ?? startDate
             requiredSeedCount = currentState.fruitCount * 5
         } else {
-            endDate = Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
+            let oneMonthDate = Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
+            endDate = Calendar.current.date(byAdding: .day, value: -1, to: oneMonthDate) ?? oneMonthDate
             requiredSeedCount = currentState.fruitCount * 3
         }
         
