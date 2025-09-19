@@ -1,5 +1,5 @@
 {
-  "originHash" : "8ebd9ac45d1f3e80abf228b9b430a0ab3b2a6c5b16a35ed2e32de77d13f3e0ef",
+  "originHash" : "6069faf8614ddaf7dd4918cfaaeffd5b417a34b534923a31bbaa2ed2ee102cfa",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -161,6 +161,15 @@
       "state" : {
         "revision" : "e3f69fd321d0c9fcdc16fb576a0cdd956675face",
         "version" : "1.31.0"
+      }
+    },
+    {
+      "identity" : "swiftygif",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/alexiscreuzot/SwiftyGif",
+      "state" : {
+        "revision" : "4430cbc148baa3907651d40562d96325426f409a",
+        "version" : "5.4.5"
       }
     },
     {
