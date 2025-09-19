@@ -16,7 +16,7 @@ extension TransactionEntity {
         return NSFetchRequest<TransactionEntity>(entityName: "TransactionEntity")
     }
 
-    @NSManaged public var amount: Int32
+    @NSManaged public var amount: Int64
     @NSManaged public var categoryID: UUID?
     @NSManaged public var date: Date?
     @NSManaged public var id: UUID?

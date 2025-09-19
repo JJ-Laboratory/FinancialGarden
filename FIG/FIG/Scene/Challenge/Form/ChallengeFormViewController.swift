@@ -8,6 +8,7 @@
 import UIKit
 import Then
 import SnapKit
+import Toast
 import RxSwift
 import RxCocoa
 import ReactorKit
@@ -16,6 +17,7 @@ final class ChallengeFormViewController: UIViewController, View {
     
     weak var coordinator: ChallengeCoordinator?
     var disposeBag = DisposeBag()
+    var onChallengeCreated: ((ChallengeDuration) -> Void)?
     
     // MARK: - UI Components
     private let deleteButton = CustomButton(style: .plain).then {
@@ -192,7 +194,7 @@ final class ChallengeFormViewController: UIViewController, View {
         
         createButton.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview().inset(20)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).inset(16)
         }
     }
     
@@ -204,35 +206,18 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     private func bindAction(_ reactor: ChallengeFormReactor) {
-        weekButton.rx.tap
-            .map { .selectPeriod(.week) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
         
-        monthButton.rx.tap
-            .map { .selectPeriod(.month) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
+        [weekButton.rx.tap.map { .selectPeriod(.week) },
+         monthButton.rx.tap.map { .selectPeriod(.month) }]
+            .forEach { $0.bind(to: reactor.action).disposed(by: disposeBag) }
         
-        amount1.rx.tap
-            .map { .selectAmount(.zero) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        amount2.rx.tap
-            .map { .selectAmount(.one) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        amount3.rx.tap
-            .map { .selectAmount(.five) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
-        
-        amount4.rx.tap
-            .map { .selectAmount(.ten) }
-            .bind(to: reactor.action)
-            .disposed(by: disposeBag)
+        zip([amount1, amount2, amount3, amount4], [.zero, .one, .five, .ten])
+            .forEach { button, amount in
+                button.rx.tap
+                    .map { .selectAmount(amount) }
+                    .bind(to: reactor.action)
+                    .disposed(by: disposeBag)
+            }
         
         minusButton.rx.tap
             .map { .selectFruitCount(-1) }
@@ -240,8 +225,19 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         plusButton.rx.tap
-            .map { .selectFruitCount(1) }
+            .withLatestFrom(reactor.state.map(\.isSeedInsufficient))
+            .filter { !$0 }
+            .map { _ in .selectFruitCount(1) }
             .bind(to: reactor.action)
+            .disposed(by: disposeBag)
+        
+        plusButton.rx.tap
+            .withLatestFrom(reactor.state.map(\.isSeedInsufficient))
+            .filter { $0 }
+            .withUnretained(self)
+            .subscribe(onNext: { vc, _ in
+                vc.present(SeedPopupViewController(), animated: true)
+            })
             .disposed(by: disposeBag)
         
         createButton.rx.tap
@@ -250,18 +246,17 @@ final class ChallengeFormViewController: UIViewController, View {
             .disposed(by: disposeBag)
         
         deleteButton.rx.tap
-            .subscribe { [weak self] in
-                guard let self else { return }
-                let alert = UIAlertController(title: "삭제 확인", message: "정말로 삭제하시겠습니까?", preferredStyle: .alert)
-                let confirm = UIAlertAction(title: "삭제", style: .destructive) { _ in
-                    reactor.action.onNext(.deleteButtonTapped)
-                }
-                let cancel = UIAlertAction(title: "취소", style: .cancel, handler: nil)
-                
-                alert.addAction(confirm)
-                alert.addAction(cancel)
-                present(alert, animated: true, completion: nil)
-            }
+            .subscribe(onNext: { [weak self] in
+                self?.showAlert(
+                    title: "삭제 확인",
+                    message: "이 챌린지를 삭제하시겠습니까?",
+                    actions: [
+                        UIAlertAction(title: "취소", style: .cancel),
+                        UIAlertAction(title: "삭제", style: .destructive) { _ in reactor.action.onNext(.deleteButtonTapped)
+                        }
+                    ]
+                )
+            })
             .disposed(by: disposeBag)
     }
     
@@ -331,10 +326,19 @@ final class ChallengeFormViewController: UIViewController, View {
         
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
-            .subscribe { [weak self] isClose in
-                if isClose == true {
-                    self?.coordinator?.popChallengeForm()
+            .filter { $0 }
+            .subscribe { [weak self] _ in
+                guard let self else { return }
+                onChallengeCreated?(reactor.currentState.selectedPeriod)
+                coordinator?.popChallengeForm()
+                if case .detail = reactor.currentState.mode {
+                    let toast = Toast.text("챌린지가 삭제되었어요")
+                    toast.show()
+                } else {
+                    let toast = Toast.text("🎉  새로운 챌린지를 응원합니다!")
+                    toast.show()
                 }
+                
             }
             .disposed(by: disposeBag)
         
@@ -347,16 +351,10 @@ final class ChallengeFormViewController: UIViewController, View {
     }
     
     private func updateUI(for mode: ChallengeFormReactor.Mode) {
-        switch mode {
-        case .create:
-            createButton.isHidden = false
-            deleteButton.isHidden = true
-            
-        case .detail(_):
-            createButton.isHidden = true
-            deleteButton.isHidden = false
-            formView.isUserInteractionEnabled = false
-        }
+        createButton.isHidden = mode.isCreateButtonHidden
+        deleteButton.isHidden = mode.isDeleteButtonHidden
+        formView.isUserInteractionEnabled = mode.isFormEditable
+        titleLabel.text = mode.titleText
     }
     
     @objc private func backButtonTapped() {
@@ -365,7 +363,7 @@ final class ChallengeFormViewController: UIViewController, View {
     
     private func presentCategoryPicker() {
         guard let reactor = reactor else { return }
-        let picker = ItemPickerController<Category>.allCategoriesPicker()
+        let picker = ItemPickerController<Category>.categoriesByTypePicker(type: .expense)
         picker.itemSelected = { category in
             reactor.action.onNext(.selectCategory(category))
         }
@@ -373,11 +371,14 @@ final class ChallengeFormViewController: UIViewController, View {
         present(picker, animated: true)
     }
     
-    private func showAlert(message: String) {
-            let alert = UIAlertController(title: "알림", message: message, preferredStyle: .alert)
-            let okAction = UIAlertAction(title: "확인", style: .default)
-            alert.addAction(okAction)
-            present(alert, animated: true)
-        }
+    private func showAlert(
+        title: String = "알림",
+        message: String,
+        actions: [UIAlertAction] = [UIAlertAction(title: "확인", style: .default)]
+    ) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        actions.forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
 }
 

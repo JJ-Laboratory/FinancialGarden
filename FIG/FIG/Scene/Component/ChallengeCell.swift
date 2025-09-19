@@ -200,8 +200,6 @@ class ChallengeCell: UICollectionViewCell {
         self.isHomeMode = isHomeMode
         
         titleLabel.text = challenge.category.title
-        dDayLabel.text = challenge.endDate.dDayString
-        dDayView.isHidden = challenge.isCompleted ? true : false
         dateLabel.text = challenge.startDate.toFormattedRange(to: challenge.endDate)
         
         configureAmount(with: challenge)
@@ -238,7 +236,6 @@ class ChallengeCell: UICollectionViewCell {
         DispatchQueue.main.async {
             self.progressView.setProgress(progressValue, animated: true)
         }
-        
         progressView.tintColor = (challenge.status == .failure) ? .gray1 : .primary
         
         let stage = ProgressStage(progress: progressValue)
@@ -248,15 +245,19 @@ class ChallengeCell: UICollectionViewCell {
     /// 상태별 UI 설정 (제목, 이미지, 버튼)
     private func configureStatusUI(with challenge: Challenge) {
         bottomStackView.isHidden = true
+        progressView.text = ""
         
         switch challenge.status {
         case .progress:
-            break
+            dDayLabel.text = challenge.endDate.dDayString
+            progressView.text = challenge.startDate.progressDayString(to: challenge.endDate)
             
         case .success:
+            dDayLabel.text = "성공"
             configureSuccessStatus(with: challenge)
             
         case .failure:
+            dDayLabel.text = "실패"
             configureFailureStatus(with: challenge)
         }
     }

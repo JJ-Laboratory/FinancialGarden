@@ -43,6 +43,20 @@ final class ChartViewController: UIViewController, View {
         $0.translatesAutoresizingMaskIntoConstraints = false
     }
     
+    private let mbtiButton = UIButton(configuration: .plain()).then {
+        let font = UIFont.preferredFont(forTextStyle: .body).withWeight(.semibold)
+        $0.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.foregroundColor = .charcoal
+            outgoing.font = font
+            return outgoing
+        }
+        $0.configuration?.title = "나의 MBTI"
+        $0.configuration?.image = UIImage(named: "ai_icon")?.resized(height: font.lineHeight)
+        $0.configuration?.imagePlacement = .trailing
+        $0.configuration?.imagePadding = 4
+    }
+    
     private lazy var collectionView = UICollectionView(
         frame: .zero,
         collectionViewLayout: collectionViewLayout()
@@ -68,6 +82,7 @@ final class ChartViewController: UIViewController, View {
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: monthButton)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: mbtiButton)
         collectionView.backgroundColor = .background
         collectionView.showsVerticalScrollIndicator = false
         collectionView.directionalLayoutMargins = NSDirectionalEdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
@@ -92,7 +107,7 @@ final class ChartViewController: UIViewController, View {
                 let picker = DatePickerController(title: "월 선택", date: currentMonth, mode: .yearAndMonth)
                 picker.minimumDate = Calendar.current.date(from: DateComponents(year: 2000, month: 1, day: 1))
                 picker.maximumDate = Date()
-                 
+                
                 viewController.present(picker, animated: true)
                 return picker.rx.dateSelected.asObservable()
             }
@@ -102,7 +117,13 @@ final class ChartViewController: UIViewController, View {
             .map { .selectMonth($0) }
             .bind(to: reactor.action)
             .disposed(by: disposeBag)
-    
+        
+        mbtiButton.rx.tap
+            .subscribe { [weak self] _ in
+                self?.coordinator?.presentAnalysis()
+            }
+            .disposed(by: disposeBag)
+        
         let monthDriver = reactor.state
             .map(\.selectedMonth)
             .distinctUntilChanged()
@@ -137,7 +158,7 @@ final class ChartViewController: UIViewController, View {
 
 extension ChartViewController {
     private func collectionViewLayout() -> UICollectionViewCompositionalLayout {
-        let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { [weak self] sectionIndex, _ in
+        let sectionProvider: UICollectionViewCompositionalLayoutSectionProvider = { [weak self] sectionIndex, environment in
             guard let section = self?.dataSource.sectionIdentifier(for: sectionIndex) else {
                 return nil
             }

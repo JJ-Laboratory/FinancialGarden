@@ -9,6 +9,12 @@ import UIKit
 import RxSwift
 import RxCocoa
 
+protocol RecordCoordinatorProtocol: AnyObject {
+    func pushRecordForm()
+    func popRecordForm()
+    func pushRecordFormEdit(transaction: Transaction)
+}
+
 final class RecordCoordinator: Coordinator, RecordCoordinatorProtocol {
     let navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []

@@ -13,6 +13,7 @@ class ChallengeFormReactor: Reactor {
     enum Mode: Equatable {
         case create
         case detail(Challenge)
+        case edit(MBTIResult)
     }
     
     enum Action {
@@ -37,6 +38,7 @@ class ChallengeFormReactor: Reactor {
     
     struct State {
         let mode: Mode
+        var mbtiResult: MBTIResult?
         var currentSeedCount: Int = 0
         var selectedCategory: Category?
         var selectedPeriod: ChallengeDuration = .week
@@ -54,6 +56,12 @@ class ChallengeFormReactor: Reactor {
                 self.selectedPeriod = challenge.duration
                 self.amount = challenge.spendingLimit
                 self.fruitCount = challenge.targetFruitsCount
+            case .edit(let mbtiResult):
+                self.mbtiResult = mbtiResult
+                self.selectedCategory = mbtiResult.categoryData
+                self.selectedPeriod = mbtiResult.durationType
+                self.amount = mbtiResult.spendingLimit
+                self.fruitCount = 0
             }
         }
         
@@ -65,7 +73,7 @@ class ChallengeFormReactor: Reactor {
         }
         var infoLabelText: String {
             if isSeedInsufficient {
-                return "현재 사용 가능한 씨앗(\(currentSeedCount)개)이 부족해요.\n가계부 내역을 등록하고 씨앗을 모아보세요!"
+                return "현재 사용 가능한 씨앗이 부족해요.\n가계부 내역을 등록하고 씨앗을 모아보세요!"
             } else {
                 return "현재 사용 가능한 씨앗: \(currentSeedCount)개\n열매 1개당 필요 씨앗: 일주일 5개 / 한달 3개"
             }
@@ -164,10 +172,11 @@ class ChallengeFormReactor: Reactor {
         let endDate: Date
         let requiredSeedCount: Int
         if currentState.selectedPeriod == .week {
-            endDate = Calendar.current.date(byAdding: .day, value: 7, to: startDate) ?? startDate
+            endDate = Calendar.current.date(byAdding: .day, value: 6, to: startDate) ?? startDate
             requiredSeedCount = currentState.fruitCount * 5
         } else {
-            endDate = Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
+            let oneMonthDate = Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
+            endDate = Calendar.current.date(byAdding: .day, value: -1, to: oneMonthDate) ?? oneMonthDate
             requiredSeedCount = currentState.fruitCount * 3
         }
         
@@ -186,6 +195,36 @@ class ChallengeFormReactor: Reactor {
             start == newStart &&
             end == newEnd &&
             !challenge.isCompleted
+        }
+    }
+}
+
+extension ChallengeFormReactor.Mode {
+    var isCreateButtonHidden: Bool {
+        switch self {
+        case .create, .edit: return false
+        case .detail: return true
+        }
+    }
+    
+    var isDeleteButtonHidden: Bool {
+        switch self {
+        case .create, .edit: return true
+        case .detail: return false
+        }
+    }
+    
+    var isFormEditable: Bool {
+        switch self {
+        case .detail: return false
+        default: return true
+        }
+    }
+    
+    var titleText: String {
+        switch self {
+        case .edit: return "추천 챌린지를 추가하시나요?"
+        default: return "어떤 챌린지를 추가하시나요?"
         }
     }
 }

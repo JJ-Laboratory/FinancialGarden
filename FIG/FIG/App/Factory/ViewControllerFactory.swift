@@ -14,6 +14,8 @@ protocol ViewControllerFactoryInterface {
     func makeChallengeListViewController() -> ChallengeListViewController
     func makeChallengeFormViewController(mode: ChallengeFormReactor.Mode) -> ChallengeFormViewController
     func makeChartViewController() -> ChartViewController
+    func makeAnalysisViewController() -> AnalysisViewController
+    func makeAnalysisResultViewController() -> AnalysisResultViewController
 }
 
 final class ViewControllerFactory: ViewControllerFactoryInterface {
@@ -34,6 +36,12 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
     
     private lazy var gardenRepository: GardenRepositoryInterface = {
         GardenRepository(
+            coreDataService: .shared
+        )
+    }()
+    
+    private lazy var mbtiResultRepository: MBTIResultRepositoryInterface = {
+        MBTIResultRepository(
             coreDataService: .shared
         )
     }()
@@ -96,5 +104,21 @@ final class ViewControllerFactory: ViewControllerFactoryInterface {
             recordUseCase: recordUseCase
         )
         return ChartViewController(reactor: reactor)
+    }
+    
+    func makeAnalysisViewController() -> AnalysisViewController {
+        let reactor = AnalysisReactor(
+            mbtiResultRepository: mbtiResultRepository,
+            gardenRepository: gardenRepository,
+            transactionRepository: transactionRepository
+        )
+        return AnalysisViewController(reactor: reactor)
+    }
+    
+    func makeAnalysisResultViewController() -> AnalysisResultViewController {
+        let reactor = AnalysisResultReactor(
+            mbtiResultRepository: mbtiResultRepository
+        )
+        return AnalysisResultViewController(reactor: reactor)
     }
 }
