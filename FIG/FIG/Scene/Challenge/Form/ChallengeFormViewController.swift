@@ -8,6 +8,7 @@
 import UIKit
 import Then
 import SnapKit
+import Toast
 import RxSwift
 import RxCocoa
 import ReactorKit
@@ -16,6 +17,7 @@ final class ChallengeFormViewController: UIViewController, View {
     
     weak var coordinator: ChallengeCoordinator?
     var disposeBag = DisposeBag()
+    var onChallengeCreated: ((ChallengeDuration) -> Void)?
     
     // MARK: - UI Components
     private let deleteButton = CustomButton(style: .plain).then {
@@ -234,10 +236,7 @@ final class ChallengeFormViewController: UIViewController, View {
             .filter { $0 }
             .withUnretained(self)
             .subscribe(onNext: { vc, _ in
-                vc.showAlert(
-                    title: "씨앗이 모자라요!",
-                    message: "- 일주일 챌린지 : 씨앗 5개 필요\n- 한 달 챌린지 : 씨앗 3개 필요\n가계부 내역을 등록하면 씨앗을 모을 수 있어요!"
-                )
+                vc.present(SeedPopupViewController(), animated: true)
             })
             .disposed(by: disposeBag)
         
@@ -327,10 +326,19 @@ final class ChallengeFormViewController: UIViewController, View {
         
         reactor.pulse(\.$isClose)
             .compactMap { $0 }
-            .subscribe { [weak self] isClose in
-                if isClose {
-                    self?.coordinator?.popChallengeForm()
+            .filter { $0 }
+            .subscribe { [weak self] _ in
+                guard let self else { return }
+                onChallengeCreated?(reactor.currentState.selectedPeriod)
+                coordinator?.popChallengeForm()
+                if case .detail = reactor.currentState.mode {
+                    let toast = Toast.text("챌린지가 삭제되었어요")
+                    toast.show()
+                } else {
+                    let toast = Toast.text("🎉  새로운 챌린지를 응원합니다!")
+                    toast.show()
                 }
+                
             }
             .disposed(by: disposeBag)
         
