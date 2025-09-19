@@ -151,7 +151,7 @@ final class ChallengeListViewController: UIViewController, View {
         }
         
         let headerRegistration = UICollectionView.SupplementaryRegistration<ChallengeListHeaderView>(elementKind: UICollectionView.elementKindSectionHeader) { [weak self] supplementaryView, _, _ in
-            guard let self = self, let reactor = reactor else { return }
+            guard let self, let reactor = reactor else { return }
             
             supplementaryView.rx.tabSelected
                 .map { .selectTab($0 == 0 ? .week : .month) }
@@ -162,6 +162,17 @@ final class ChallengeListViewController: UIViewController, View {
                 .map { .selectFilter($0) }
                 .bind(to: reactor.action)
                 .disposed(by: supplementaryView.disposeBag)
+            
+            reactor.state
+                .map(\.selectedTab)
+                .distinctUntilChanged()
+                .map { $0 == .week ? 0 : 1}
+                .asDriver(onErrorJustReturn: 0)
+                .drive(onNext: { [weak supplementaryView] index in
+                    supplementaryView?.tabView.selectTab(index: index)
+                })
+                .disposed(by: supplementaryView.disposeBag)
+                
             
             reactor.state
                 .map(\.selectedFilter.rawValue)
@@ -257,7 +268,9 @@ final class ChallengeListViewController: UIViewController, View {
     }
     
     @objc private func addButtonTapped() {
-        coordinator?.pushChallengeForm()
+        coordinator?.pushChallengeForm { [weak self] duration in
+            self?.reactor?.action.onNext(.selectTab(duration))
+        }
     }
     
     private func presentPopup(status: ChallengeStatus, count: Int) {

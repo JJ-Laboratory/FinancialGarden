@@ -67,10 +67,21 @@ class TabView: UIView {
     }
     
     @objc func tabButtonTapped(_ sender: UIButton) {
+        selectTab(index: sender.tag)
+    }
+    
+    private func updateButtonColors(selectedIndex: Int) {
+        weekButton.setTitleColor(selectedIndex == 0 ? .charcoal : .gray1, for: .normal)
+        monthButton.setTitleColor(selectedIndex == 1 ? .charcoal : .gray1, for: .normal)
+    }
+    
+    func selectTab(index: Int) {
+        let selectedButton = (index == 0) ? weekButton : monthButton
+        
         indicatorView.snp.remakeConstraints {
             $0.height.equalTo(2)
             $0.top.equalTo(stackView.snp.bottom).offset(6)
-            $0.leading.trailing.equalTo(sender)
+            $0.leading.trailing.equalTo(selectedButton)
             $0.bottom.equalToSuperview()
         }
         
@@ -78,12 +89,7 @@ class TabView: UIView {
             self.layoutIfNeeded()
         }
         
-        updateButtonColors(selectedIndex: sender.tag)
-    }
-    
-    private func updateButtonColors(selectedIndex: Int) {
-        weekButton.setTitleColor(selectedIndex == 0 ? .charcoal : .gray1, for: .normal)
-        monthButton.setTitleColor(selectedIndex == 1 ? .charcoal : .gray1, for: .normal)
+        updateButtonColors(selectedIndex: index)
     }
 }
 

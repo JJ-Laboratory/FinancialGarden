@@ -102,7 +102,9 @@ final class ChallengeUseCase {
             .map { amounts in
                 var updatedChallenges: [Challenge] = []
                 for (var challenge, amount) in zip(challenges, amounts) {
-                    challenge.currentSpending = amount
+                    if !challenge.isCompleted {
+                        challenge.currentSpending = amount
+                    }
                     updatedChallenges.append(challenge)
                 }
                 return updatedChallenges
