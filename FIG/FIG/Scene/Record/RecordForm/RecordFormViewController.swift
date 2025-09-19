@@ -97,8 +97,12 @@ final class RecordFormViewController: UIViewController, View {
         $0.setTitle("저장", for: .normal)
     }
     
-    private let scanButton = CustomButton(style: .outline).then {
+    private let scanButton = CustomButton(style: .plain).then {
         $0.setTitle("영수증 촬영", for: .normal)
+        $0.layer.cornerRadius = 8
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = UIColor.primary.cgColor
+        $0.layer.masksToBounds = true
     }
     
     private lazy var amountStackView = UIStackView(

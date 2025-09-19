@@ -12,11 +12,31 @@ import Then
 class ProgressView: UIView {
     private let trackView = UIView()
     
-    private let progressView = UIView()
+    private let progressView = UIView().then {
+        $0.clipsToBounds = true
+    }
+    
+    private let backgroundLabel = UILabel().then {
+        $0.textColor = .gray1
+        $0.font = .preferredFont(forTextStyle: .caption1).withWeight(.semibold)
+    }
+    
+    private let foregroundLabel = UILabel().then {
+        $0.textColor = .white
+        $0.font = .preferredFont(forTextStyle: .caption1).withWeight(.semibold)
+    }
     
     var trackTintColor: UIColor? {
         get { trackView.backgroundColor }
         set { trackView.backgroundColor = newValue }
+    }
+    
+    var text: String? {
+        get { foregroundLabel.text }
+        set {
+            foregroundLabel.text = newValue
+            backgroundLabel.text = newValue
+        }
     }
     
     var thickness: CGFloat = 8 {
@@ -81,7 +101,17 @@ extension ProgressView {
         trackView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+        
+        addSubview(backgroundLabel)
+        backgroundLabel.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        
         addSubview(progressView)
+        progressView.addSubview(foregroundLabel)
+        foregroundLabel.snp.makeConstraints {
+            $0.center.equalTo(backgroundLabel)
+        }
         updateTintColor()
         
         clipsToBounds = true
